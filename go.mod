@@ -1,0 +1,10 @@
+module github.com/t3kton/contractorcli
+
+go 1.13
+
+require (
+	github.com/cinp/go v0.0.0-20170310040936-c34d718823bd // indirect
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/spf13/cobra v0.0.5
+	github.com/spf13/viper v1.6.1
+)
