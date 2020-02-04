@@ -20,26 +20,25 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
-var sitesCmd = &cobra.Command{
-	Use:   "sites",
-	Short: "Work with sites",
+var structureCmd = &cobra.Command{
+	Use:   "structure",
+	Short: "Work with structures",
 }
 
-var siteListCmd = &cobra.Command{
+var structureListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List Sites",
+	Short: "List Structures",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("List Sites")
+		fmt.Println("List Structures")
 	},
 }
 
-var siteGetCmd = &cobra.Command{
+var structureGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get Site",
+	Short: "Get Structure",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("requires a site id argument")
@@ -50,14 +49,18 @@ var siteGetCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		siteID, _ := strconv.Atoi(args[0])
-		fmt.Printf("Getting Site %d\n", siteID)
-		golang.NewClient()
+		id, _ := strconv.Atoi(args[0])
+		fmt.Printf("Getting Site %d\n", id)
+		c := getContractor()
+		s, err := c.Building.Structure.Get(id)
+		fmt.Println(err)
+		fmt.Printf("%+v\n", s)
+
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(sitesCmd)
-	sitesCmd.AddCommand(siteListCmd)
-	sitesCmd.AddCommand(siteGetCmd)
+	rootCmd.AddCommand(structureCmd)
+	structureCmd.AddCommand(structureListCmd)
+	structureCmd.AddCommand(structureGetCmd)
 }

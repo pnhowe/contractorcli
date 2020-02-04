@@ -20,21 +20,19 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 
+	"github.com/t3kton/contractorcli/contractor"
+
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "contractorcli",
 	Short: "A CLI utility to work with Contractor",
 	Long: `contractorcli allows you to do some basic maniplutation
 of contractor without having to write your own small app, or use the API`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -49,11 +47,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
 	rootCmd.PersistentFlags().BoolP("json", "j", false, "Output as JSON")
 
 	// Cobra also supports local flags, which will only run
@@ -79,10 +73,28 @@ func initConfig() {
 		viper.SetConfigName(".contractorcli")
 	}
 
+	viper.SetDefault("contractor.host", "http://contractor")
+	viper.SetEnvPrefix("CONTRACTOR")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	err := viper.ReadInConfig()
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			fmt.Printf("Error reading config file: '%s'\n", err)
+			os.Exit(1)
+		}
+	} else {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func getContractor() *contractor.Contractor {
+	c, err := contractor.NewContractor(viper.GetString("contractor.host"), "")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	return c
 }
