@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Peter Howe <pnhowe@gmail.com>
 
@@ -13,12 +15,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 	"os"
+	"text/template"
 
 	"github.com/t3kton/contractorcli/contractor"
 
@@ -27,6 +31,7 @@ import (
 )
 
 var cfgFile string
+var asJSON bool
 
 var rootCmd = &cobra.Command{
 	Use:   "contractorcli",
@@ -48,7 +53,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
-	rootCmd.PersistentFlags().BoolP("json", "j", false, "Output as JSON")
+	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -85,7 +90,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 	} else {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }
 
@@ -97,4 +102,66 @@ func getContractor() *contractor.Contractor {
 	}
 
 	return c
+}
+
+func outputList(valueList []cinp.Object, header string, itemTemplate string) {
+	if asJSON {
+		buff, err := json.MarshalIndent(valueList, "", " ")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(buff)
+	} else {
+		t, err := template.New("output").Parse(itemTemplate)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.WriteString(header)
+		for _, value := range valueList {
+			err = t.Execute(os.Stdout, value)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+	}
+}
+
+func outputDetail(value interface{}, detailTemplate string) {
+	if asJSON {
+		buff, err := json.MarshalIndent(value, "", " ")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(buff)
+	} else {
+		t, err := template.New("output").Parse(detailTemplate)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = t.Execute(os.Stdout, value)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+}
+
+func outputKV(valueMap map[string]interface{}) {
+	if asJSON {
+		buff, err := json.MarshalIndent(valueMap, "", " ")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(buff)
+	} else {
+		for k, v := range valueMap {
+			fmt.Printf("%s:\t%+v\n", k, v)
+		}
+	}
 }

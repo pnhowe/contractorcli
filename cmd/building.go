@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 Peter Howe <pnhowe@gmail.com>
 
@@ -13,12 +15,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
+	"text/template"
 
 	"github.com/spf13/cobra"
 )
@@ -49,13 +52,60 @@ var structureGetCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		id, _ := strconv.Atoi(args[0])
-		fmt.Printf("Getting Site %d\n", id)
+		id := args[0]
+		fmt.Printf("Getting Structure '%s'\n", id)
 		c := getContractor()
-		s, err := c.Building.Structure.Get(id)
-		fmt.Println(err)
-		fmt.Printf("%+v\n", s)
+		r, err := c.BuildingStructureGet(id)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		t, err := template.New("structure detail").Parse(`
+Hostname:      {{.Hostname}}
+Site:          {{.Site}}
+Blueprint:     {{.Blueprint}}
+Foundation:    {{.Foundation}}
+Config UUID:   {{.ConfigUUID}}
+Config Values: {{.ConfigValues}}
+State:         {{.State}}
+Built At:      {{.BuiltAt}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = t.Execute(os.Stdout, r)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	},
+}
 
+var structureGetConfig = &cobra.Command{
+	Use:   "getConfig",
+	Short: "Get Structure Config",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires a structure id argument")
+		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		siteID := args[0]
+		fmt.Printf("Getting Structure '%s'\n", siteID)
+		c := getContractor()
+		structure := c.BuildingStructureNewWithID(siteID)
+		r, err := structure.CallGetConfig()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		for k, v := range r {
+			fmt.Printf("%s:\t%+v\n", k, v)
+		}
 	},
 }
 
@@ -63,4 +113,5 @@ func init() {
 	rootCmd.AddCommand(structureCmd)
 	structureCmd.AddCommand(structureListCmd)
 	structureCmd.AddCommand(structureGetCmd)
+	structureCmd.AddCommand(structureGetConfig)
 }
