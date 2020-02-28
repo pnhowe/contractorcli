@@ -19,13 +19,14 @@ limitations under the License.
 import (
 	"encoding/json"
 	"fmt"
-	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/t3kton/contractorcli/contractor"
 
+	cinp "github.com/cinp/go"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -79,6 +80,7 @@ func initConfig() {
 	}
 
 	viper.SetDefault("contractor.host", "http://contractor")
+	viper.SetDefault("contractor.proxy", "")
 	viper.SetEnvPrefix("CONTRACTOR")
 	viper.AutomaticEnv() // read in environment variables that match
 
@@ -95,13 +97,20 @@ func initConfig() {
 }
 
 func getContractor() *contractor.Contractor {
-	c, err := contractor.NewContractor(viper.GetString("contractor.host"), "")
+	c, err := contractor.NewContractor(viper.GetString("contractor.host"), viper.GetString("contractor.proxy"), viper.GetString("contractor.username"), viper.GetString("contractor.password"))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	return c
+}
+
+func extractID(value string) string {
+	if value == "" {
+		return ""
+	}
+	return strings.Split(value, ":")[1]
 }
 
 func outputList(valueList []cinp.Object, header string, itemTemplate string) {
@@ -113,7 +122,9 @@ func outputList(valueList []cinp.Object, header string, itemTemplate string) {
 		}
 		os.Stdout.Write(buff)
 	} else {
-		t, err := template.New("output").Parse(itemTemplate)
+		t := template.New("output")
+		t.Funcs(template.FuncMap{"extractID": extractID})
+		t, err := t.Parse(itemTemplate)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -138,7 +149,9 @@ func outputDetail(value interface{}, detailTemplate string) {
 		}
 		os.Stdout.Write(buff)
 	} else {
-		t, err := template.New("output").Parse(detailTemplate)
+		t := template.New("output")
+		t.Funcs(template.FuncMap{"extractID": extractID})
+		t, err := t.Parse(detailTemplate)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
