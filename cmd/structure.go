@@ -54,7 +54,7 @@ var structureListCmd = &cobra.Command{
 		for v := range c.BuildingStructureList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "id	Site	Hostname	Foundation	Blueprint	Created	Updated\n", "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Blueprint | extractID}}	{{.Foundation | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, "Id	Site	Hostname	Foundation	Blueprint	Created	Updated\n", "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
 	},
 }
 
@@ -146,6 +146,7 @@ var structureUpdateCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
 		if detailHostname != "" {
 			o.Hostname = detailHostname
 			fieldList = append(fieldList, "hostname")
@@ -289,9 +290,10 @@ var structureJobCmd = &cobra.Command{
 Structure      {{.Structure}}
 State:         {{.State}}
 Status:        {{.Status}}
+Progress:      {{.Progress}}
 Message:       {{.Message}}
 Script Name:   {{.ScriptName}}
-Script Runner: {{.ScriptRunner}}
+Can Start:     {{.CanStart}}
 Updated:       {{.Updated}}
 Created:       {{.Created}}
 `)
