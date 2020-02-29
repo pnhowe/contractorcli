@@ -32,21 +32,7 @@ type typeEntry struct {
 
 var fundationTypes = map[string]typeEntry{}
 
-/*
-		func(c *contractor.Contractor) foundation { return c.AmtAMTFoundationNew() }, []string{}},
-	"ipmi": typeEntry{"/api/v1/IPMI/", "0.1",
-		func(c *contractor.Contractor) foundation { return c.IpmiIPMIFoundationNew() }, []string{}},
-	"vcenter": typeEntry{"/api/v1/VCenter/", "0.1",
-		func(c *contractor.Contractor) foundation { return c.VcenterVCenterFoundationNew() }, []string{}},
-	"virtualbox": typeEntry{"/api/v1/VirtualBox/", "0.1",
-		func(c *contractor.Contractor) foundation { return c.VirtualboxVirtualBoxFoundationNew() }, []string{}},
-	"azure": typeEntry{"/api/v1/Azure/", "0.1",
-		func(c *contractor.Contractor) foundation { return c.AzureAzureFoundationNew() }, []string{}},
-	"docker": typeEntry{"/api/v1/Docker/", "0.1",
-		func(c *contractor.Contractor) foundation { return c.DockerDockerFoundationNew() }, []string{}},
-*/
-
-var detailLocator, detailPlot string
+var detailLocator, detailPlot, detailComplex string
 
 func foundationArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
