@@ -33,8 +33,6 @@ type typeEntry struct {
 var fundationTypes = map[string]typeEntry{}
 
 /*
-		func(c *contractor.Contractor) foundation { return c.ManualManualFoundationNew() }, []string{}},
-	"amt": typeEntry{"/api/v1/AMT/", "0.1",
 		func(c *contractor.Contractor) foundation { return c.AmtAMTFoundationNew() }, []string{}},
 	"ipmi": typeEntry{"/api/v1/IPMI/", "0.1",
 		func(c *contractor.Contractor) foundation { return c.IpmiIPMIFoundationNew() }, []string{}},
@@ -46,7 +44,6 @@ var fundationTypes = map[string]typeEntry{}
 		func(c *contractor.Contractor) foundation { return c.AzureAzureFoundationNew() }, []string{}},
 	"docker": typeEntry{"/api/v1/Docker/", "0.1",
 		func(c *contractor.Contractor) foundation { return c.DockerDockerFoundationNew() }, []string{}},
-
 */
 
 var detailLocator, detailPlot string
