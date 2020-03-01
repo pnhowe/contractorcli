@@ -212,6 +212,28 @@ Can Start:     {{.CanStart}}
 Updated:       {{.Updated}}
 Created:       {{.Created}}
 `)
+		} else if jobState {
+			jID, err := o.CallGetJob()
+			if err != nil {
+				return err
+			}
+			j, err := c.ForemanFoundationJobGet(extractID(jID))
+			if err != nil {
+				return err
+			}
+			vars, err := j.CallJobRunnerVariables()
+			if err != nil {
+				return err
+			}
+			state, err := j.CallJobRunnerState()
+			if err != nil {
+				return err
+			}
+			outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables: {{.variables}}
+Script State: {{.state.state}}
+Script Line No: {{.state.cur_line}}
+-- Script --
+{{.state.script}}`)
 		} else {
 			var j int
 			if jobCreate {
@@ -233,6 +255,7 @@ Created:       {{.Created}}
 
 func init() {
 	foundationJobCmd.Flags().BoolVarP(&jobInfo, "info", "i", false, "Show Running Job Info")
+	foundationJobCmd.Flags().BoolVarP(&jobState, "state", "s", false, "Show Running Job State")
 	foundationJobCmd.Flags().BoolVarP(&jobCreate, "do-create", "c", false, "Submit a Create job")
 	foundationJobCmd.Flags().BoolVarP(&jobDestroy, "do-destroy", "d", false, "Submit a Destroy job")
 	foundationJobCmd.Flags().StringVarP(&jobUtility, "utility", "u", "", "Submit Utility Job")
