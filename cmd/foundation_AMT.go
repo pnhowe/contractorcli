@@ -17,9 +17,6 @@ limitations under the License.
 */
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -34,15 +31,14 @@ var foundationAMTGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get AMT Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.AmtAMTFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		outputDetail(r, `Locator:        {{.Locator}}
 AMT Username:   {{.AmtUsername}}
@@ -60,13 +56,15 @@ Built At:       {{.BuiltAt}}
 Created:        {{.Created}}
 Updated:        {{.Updated}}
 `)
+
+		return nil
 	},
 }
 
 var foundationAMTCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New AMT Foundation",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -79,8 +77,7 @@ var foundationAMTCreateCmd = &cobra.Command{
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 		}
@@ -88,8 +85,7 @@ var foundationAMTCreateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 		}
@@ -97,16 +93,16 @@ var foundationAMTCreateCmd = &cobra.Command{
 		if detailPlot != "" {
 			r, err := c.SurveyPlotGet(detailPlot)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Plot = r.GetID()
 		}
 
 		if err := o.Create(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -114,7 +110,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update AMT Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
 		foundationID := args[0]
 		c := getContractor()
@@ -122,8 +118,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 
 		o, err := c.AmtAMTFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if detailAMTUsername != "" {
@@ -144,8 +139,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 			fieldList = append(fieldList, "site")
@@ -154,8 +148,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 			fieldList = append(fieldList, "blueprint")
@@ -164,17 +157,17 @@ var foundationAMTUpdateCmd = &cobra.Command{
 		if detailPlot != "" {
 			r, err := c.SurveyPlotGet(detailPlot)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Plot = r.GetID()
 			fieldList = append(fieldList, "plot")
 		}
 
 		if err := o.Update(fieldList); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 

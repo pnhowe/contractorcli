@@ -17,9 +17,6 @@ limitations under the License.
 */
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -32,15 +29,14 @@ var foundationAzureGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get Azure Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.AzureAzureFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		outputDetail(r, `Locator:        {{.Locator}}
 Complex:        {{.AzureComplex | extractID}}
@@ -56,13 +52,15 @@ Built At:       {{.BuiltAt}}
 Created:        {{.Created}}
 Updated:        {{.Updated}}
 `)
+
+		return nil
 	},
 }
 
 var foundationAzureCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Azure Foundation",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -72,8 +70,7 @@ var foundationAzureCreateCmd = &cobra.Command{
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 		}
@@ -81,8 +78,7 @@ var foundationAzureCreateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 		}
@@ -90,16 +86,16 @@ var foundationAzureCreateCmd = &cobra.Command{
 		if detailComplex != "" {
 			r, err := c.AzureAzureComplexGet(detailComplex)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.AzureComplex = r.GetID()
 		}
 
 		if err := o.Create(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -107,7 +103,7 @@ var foundationAzureUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update Azure Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
 		foundationID := args[0]
 		c := getContractor()
@@ -115,15 +111,13 @@ var foundationAzureUpdateCmd = &cobra.Command{
 
 		o, err := c.AzureAzureFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 			fieldList = append(fieldList, "site")
@@ -132,8 +126,7 @@ var foundationAzureUpdateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 			fieldList = append(fieldList, "blueprint")
@@ -142,17 +135,17 @@ var foundationAzureUpdateCmd = &cobra.Command{
 		if detailComplex != "" {
 			r, err := c.AzureAzureComplexGet(detailComplex)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.AzureComplex = r.GetID()
 			fieldList = append(fieldList, "azure_complex")
 		}
 
 		if err := o.Update(fieldList); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 

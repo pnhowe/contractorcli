@@ -18,8 +18,6 @@ limitations under the License.
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
@@ -46,7 +44,7 @@ var structureCmd = &cobra.Command{
 var structureListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Structures",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -55,6 +53,8 @@ var structureListCmd = &cobra.Command{
 			rl = append(rl, v)
 		}
 		outputList(rl, "Id	Site	Hostname	Foundation	Blueprint	Created	Updated\n", "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+
+		return nil
 	},
 }
 
@@ -62,15 +62,14 @@ var structureGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get Structure",
 	Args:  structureArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		structureID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.BuildingStructureGet(structureID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		outputDetail(r, `
 Hostname:      {{.Hostname}}
@@ -84,13 +83,15 @@ Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
+
+		return nil
 	},
 }
 
 var structureCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Structure",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -100,8 +101,7 @@ var structureCreateCmd = &cobra.Command{
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 		}
@@ -109,8 +109,7 @@ var structureCreateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintStructureBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 		}
@@ -118,16 +117,16 @@ var structureCreateCmd = &cobra.Command{
 		if detailFoundation != "" {
 			r, err := c.BuildingFoundationGet(detailFoundation)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Foundation = r.GetID()
 		}
 
 		if err := o.Create(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -135,7 +134,7 @@ var structureUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update Structure",
 	Args:  structureArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
 		structureID := args[0]
 		c := getContractor()
@@ -143,8 +142,7 @@ var structureUpdateCmd = &cobra.Command{
 
 		o, err := c.BuildingStructureGet(structureID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if detailHostname != "" {
@@ -155,8 +153,7 @@ var structureUpdateCmd = &cobra.Command{
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 			fieldList = append(fieldList, "site")
@@ -165,8 +162,7 @@ var structureUpdateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintStructureBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 			fieldList = append(fieldList, "blueprint")
@@ -175,17 +171,17 @@ var structureUpdateCmd = &cobra.Command{
 		if detailFoundation != "" {
 			r, err := c.BuildingFoundationGet(detailFoundation)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Foundation = r.GetID()
 			fieldList = append(fieldList, "foundation")
 		}
 
 		if err := o.Update(fieldList); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -193,20 +189,20 @@ var structureDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete Structure",
 	Args:  structureArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		structureID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.BuildingStructureGet(structureID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		if err := r.Delete(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -214,7 +210,7 @@ var structureConfigCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Work With Structure Config",
 	Args:  structureArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		structureID := args[0]
 		c := getContractor()
 		defer c.Logout()
@@ -222,26 +218,22 @@ var structureConfigCmd = &cobra.Command{
 		if configSetName != "" {
 			o, err := c.BuildingStructureGet(structureID)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.ConfigValues[configSetName] = configSetValue
 			if err := o.Update([]string{"config_values"}); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(o.ConfigValues)
 
 		} else if configDeleteName != "" {
 			o, err := c.BuildingStructureGet(structureID)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			delete(o.ConfigValues, configDeleteName)
 			if err := o.Update([]string{"config_values"}); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(o.ConfigValues)
 
@@ -249,19 +241,19 @@ var structureConfigCmd = &cobra.Command{
 			o := c.BuildingStructureNewWithID(structureID)
 			r, err := o.CallGetConfig()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(r)
 
 		} else {
 			o, err := c.BuildingStructureGet(structureID)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(o.ConfigValues)
 		}
+
+		return nil
 	},
 }
 
@@ -269,22 +261,20 @@ var structureJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Structure Jobs",
 	Args:  structureArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		structureID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		o, err := c.BuildingStructureGet(structureID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if jobInfo {
 			j, err := o.CallGetJob()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputDetail(j, `Site           {{.Site}}
 Structure      {{.Structure}}
@@ -307,11 +297,12 @@ Created:       {{.Created}}
 				j, err = o.CallDoJob(jobUtility)
 			}
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(map[string]interface{}{"job": j})
 		}
+
+		return nil
 	},
 }
 

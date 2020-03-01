@@ -18,12 +18,9 @@ limitations under the License.
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
-	//"github.com/t3kton/contractorcli/contractor"
 )
 
 // var configSetName, configSetValue, configDeleteName string
@@ -45,7 +42,7 @@ var siteCmd = &cobra.Command{
 var siteListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Sites",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -54,6 +51,8 @@ var siteListCmd = &cobra.Command{
 			rl = append(rl, v)
 		}
 		outputList(rl, "Id	Name	Description	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
+
+		return nil
 	},
 }
 
@@ -61,15 +60,14 @@ var siteGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get Site",
 	Args:  siteArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		siteID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.SiteSiteGet(siteID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		outputDetail(r, `Site:          {{.Name}}
 Description:   {{.Description}}
@@ -79,13 +77,14 @@ Config Values: {{.ConfigValues}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
+		return nil
 	},
 }
 
 var siteCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Site",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -96,8 +95,7 @@ var siteCreateCmd = &cobra.Command{
 		if detailParent != "" {
 			r, err := c.SiteSiteGet(detailParent)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Parent = r.GetID()
 		}
@@ -105,16 +103,16 @@ var siteCreateCmd = &cobra.Command{
 		if detailZone != "" {
 			r, err := c.DirectoryZoneGet(detailZone)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Zone = r.GetID()
 		}
 
 		if err := o.Create(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -122,7 +120,7 @@ var siteUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update Site",
 	Args:  siteArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
 		siteID := args[0]
 		c := getContractor()
@@ -130,8 +128,7 @@ var siteUpdateCmd = &cobra.Command{
 
 		o, err := c.SiteSiteGet(siteID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		if detailDescription != "" {
 			o.Description = detailDescription
@@ -141,8 +138,7 @@ var siteUpdateCmd = &cobra.Command{
 		if detailParent != "" {
 			r, err := c.SiteSiteGet(detailParent)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Parent = r.GetID()
 			fieldList = append(fieldList, "parent")
@@ -151,17 +147,17 @@ var siteUpdateCmd = &cobra.Command{
 		if detailZone != "" {
 			r, err := c.DirectoryZoneGet(detailZone)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Zone = r.GetID()
 			fieldList = append(fieldList, "zone")
 		}
 
 		if err := o.Update(fieldList); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -169,20 +165,20 @@ var siteDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete Site",
 	Args:  siteArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		siteID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.SiteSiteGet(siteID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		if err := r.Delete(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -190,7 +186,7 @@ var siteConfigCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Work With Site Config",
 	Args:  siteArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		siteID := args[0]
 		c := getContractor()
 		defer c.Logout()
@@ -198,26 +194,22 @@ var siteConfigCmd = &cobra.Command{
 		if configSetName != "" {
 			o, err := c.SiteSiteGet(siteID)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.ConfigValues[configSetName] = configSetValue
 			if err := o.Update([]string{"config_values"}); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(o.ConfigValues)
 
 		} else if configDeleteName != "" {
 			o, err := c.SiteSiteGet(siteID)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			delete(o.ConfigValues, configDeleteName)
 			if err := o.Update([]string{"config_values"}); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(o.ConfigValues)
 
@@ -225,19 +217,18 @@ var siteConfigCmd = &cobra.Command{
 			o := c.SiteSiteNewWithID(siteID)
 			r, err := o.CallGetConfig()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(r)
 
 		} else {
 			o, err := c.SiteSiteGet(siteID)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(o.ConfigValues)
 		}
+		return nil
 	},
 }
 

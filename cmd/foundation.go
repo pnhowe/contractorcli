@@ -18,8 +18,6 @@ limitations under the License.
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
@@ -49,7 +47,7 @@ var foundationCmd = &cobra.Command{
 var foundationListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Foundations",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -58,6 +56,8 @@ var foundationListCmd = &cobra.Command{
 			rl = append(rl, v)
 		}
 		outputList(rl, "id	Site	Locator	Structure	Blueprint	Created	Updated\n", "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Locator}}	{{.Structure | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+
+		return nil
 	},
 }
 
@@ -65,15 +65,14 @@ var foundationGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.BuildingFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		outputDetail(r, `Locator:       {{.Locator}}
 Type:          {{.Type}}
@@ -88,13 +87,15 @@ Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
+
+		return nil
 	},
 }
 
 var foundationTypesCmd = &cobra.Command{
 	Use:   "types",
 	Short: "List Supported Types",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -102,8 +103,7 @@ var foundationTypesCmd = &cobra.Command{
 		for k, v := range fundationTypes {
 			APIVersion, err := c.GetAPIVersion(v.URI)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			if APIVersion != v.APIVersion {
 				continue // API Version mismatch, print a warning?
@@ -111,7 +111,8 @@ var foundationTypesCmd = &cobra.Command{
 			typeList = append(typeList, k)
 		}
 		outputKV(map[string]interface{}{"type": typeList})
-		return
+
+		return nil
 	},
 }
 
@@ -119,7 +120,7 @@ var foundationUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
 		foundationID := args[0]
 		c := getContractor()
@@ -127,15 +128,13 @@ var foundationUpdateCmd = &cobra.Command{
 
 		o, err := c.BuildingFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 			fieldList = append(fieldList, "site")
@@ -144,17 +143,17 @@ var foundationUpdateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 			fieldList = append(fieldList, "blueprint")
 		}
 
 		if err := o.Update(fieldList); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -162,20 +161,20 @@ var foundationDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.BuildingFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		if err := r.Delete(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -183,27 +182,24 @@ var foundationJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Foundation Jobs",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		o, err := c.BuildingFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if jobInfo {
 			jID, err := o.CallGetJob()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			j, err := c.ForemanFoundationJobGet(extractID(jID))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputDetail(j, `Site           {{.Site | extractID}}
 Foundation     {{.Foundation | extractID}}
@@ -226,11 +222,12 @@ Created:       {{.Created}}
 				j, err = o.CallDoJob(jobUtility)
 			}
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			outputKV(map[string]interface{}{"job": j})
 		}
+
+		return nil
 	},
 }
 

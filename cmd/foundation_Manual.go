@@ -17,9 +17,6 @@ limitations under the License.
 */
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -32,15 +29,14 @@ var foundationManualGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get Manual Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		c := getContractor()
 		defer c.Logout()
 
 		r, err := c.ManualManualFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		outputDetail(r, `Locator:        {{.Locator}}
 Type:           {{.Type}}
@@ -54,13 +50,15 @@ Built At:       {{.BuiltAt}}
 Created:        {{.Created}}
 Updated:        {{.Updated}}
 `)
+
+		return nil
 	},
 }
 
 var foundationManualCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Manual Foundation",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
 
@@ -70,8 +68,7 @@ var foundationManualCreateCmd = &cobra.Command{
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 		}
@@ -79,16 +76,16 @@ var foundationManualCreateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 		}
 
 		if err := o.Create(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -96,7 +93,7 @@ var foundationManualUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update Manual Foundation",
 	Args:  foundationArgCheck,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
 		foundationID := args[0]
 		c := getContractor()
@@ -104,15 +101,13 @@ var foundationManualUpdateCmd = &cobra.Command{
 
 		o, err := c.ManualManualFoundationGet(foundationID)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Site = r.GetID()
 			fieldList = append(fieldList, "site")
@@ -121,17 +116,17 @@ var foundationManualUpdateCmd = &cobra.Command{
 		if detailBlueprint != "" {
 			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
 			}
 			o.Blueprint = r.GetID()
 			fieldList = append(fieldList, "blueprint")
 		}
 
 		if err := o.Update(fieldList); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
+
+		return nil
 	},
 }
 

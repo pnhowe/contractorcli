@@ -19,16 +19,18 @@ limitations under the License.
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
 	"text/template"
 
 	"github.com/t3kton/contractorcli/contractor"
 
+	"github.com/c-bata/go-prompt"
 	cinp "github.com/cinp/go"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/stromland/cobra-prompt"
 )
 
 var cfgFile string
@@ -39,13 +41,32 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI utility to work with Contractor",
 	Long: `contractorcli allows you to do some basic maniplutation
 of contractor without having to write your own small app, or use the API`,
+	SilenceUsage: true,
+}
+
+var shellCmd = &cobra.Command{
+	Use:   "shell",
+	Short: "Start Interactive Shell",
+	Run: func(cmd *cobra.Command, args []string) {
+		rootCmd.RemoveCommand(cmd)
+		shell := &cobraprompt.CobraPrompt{
+			RootCmd:        rootCmd,
+			ResetFlagsFlag: true,
+			GoPromptOptions: []prompt.Option{
+				prompt.OptionTitle("contractor"),
+				prompt.OptionPrefix("contractor> "),
+				prompt.OptionMaxSuggestion(10),
+			},
+		}
+		shell.Run()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		// fmt.Println("Error:", err) cobra prints the error message unless SilenceErrors is set
 		os.Exit(1)
 	}
 }
@@ -56,9 +77,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
 	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//rootCmd.Flags().BoolP("json", "j", false, "Output as JSON")
+	rootCmd.AddCommand(shellCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
