@@ -35,6 +35,8 @@ import (
 
 var cfgFile string
 var asJSON bool
+var version = "development"
+var gitVersion = "none"
 
 var rootCmd = &cobra.Command{
 	Use:   "contractorcli",
@@ -62,6 +64,14 @@ var shellCmd = &cobra.Command{
 	},
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Show Version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("contractorcli\n  Version:\t%s\n  Commit:\t%s\n", version, gitVersion)
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -78,6 +88,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
 
 	rootCmd.AddCommand(shellCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
