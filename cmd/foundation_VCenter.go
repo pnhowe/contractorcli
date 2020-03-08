@@ -21,7 +21,7 @@ import (
 )
 
 var foundationVCenterCmd = &cobra.Command{
-	Use:   "virtualbox",
+	Use:   "vcenter",
 	Short: "Work with VCenter Foundations",
 }
 

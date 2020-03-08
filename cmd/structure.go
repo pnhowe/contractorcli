@@ -71,8 +71,7 @@ var structureGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `
-Hostname:      {{.Hostname}}
+		outputDetail(r, `Hostname:      {{.Hostname}}
 Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
 Foundation:    {{.Foundation | extractID}}

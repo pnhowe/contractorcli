@@ -23,8 +23,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// var configSetName, configSetValue, configDeleteName string
-// var configFull bool
 var detailName, detailDescription, detailParent, detailZone string
 
 func siteArgCheck(cmd *cobra.Command, args []string) error {
@@ -69,7 +67,7 @@ var siteGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Site:          {{.Name}}
+		outputDetail(r, `Name:          {{.Name}}
 Description:   {{.Description}}
 Parent:        {{.Parent | extractID}}
 Zone:          {{.Zone | extractID}}

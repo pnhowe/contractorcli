@@ -21,7 +21,7 @@ import (
 )
 
 var foundationDockerCmd = &cobra.Command{
-	Use:   "virtualbox",
+	Use:   "docker",
 	Short: "Work with Docker Foundations",
 }
 

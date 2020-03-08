@@ -21,7 +21,7 @@ import (
 )
 
 var foundationAzureCmd = &cobra.Command{
-	Use:   "virtualbox",
+	Use:   "azure",
 	Short: "Work with Azure Foundations",
 }
 
