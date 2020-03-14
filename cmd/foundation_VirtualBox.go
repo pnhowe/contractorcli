@@ -150,7 +150,7 @@ var foundationVirtualBoxUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	fundationTypes["virtualbox"] = typeEntry{"/api/v1/VirtualBox/", "0.1"}
+	fundationTypes["virtualbox"] = foundationTypeEntry{"/api/v1/VirtualBox/", "0.1"}
 
 	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New VirtualBox Foundation")
 	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VirtualBox Foundation")

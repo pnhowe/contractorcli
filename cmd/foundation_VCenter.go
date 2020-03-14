@@ -150,7 +150,7 @@ var foundationVCenterUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	fundationTypes["vcenter"] = typeEntry{"/api/v1/VCenter/", "0.1"}
+	fundationTypes["vcenter"] = foundationTypeEntry{"/api/v1/VCenter/", "0.1"}
 
 	foundationVCenterCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New VCenter Foundation")
 	foundationVCenterCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VCenter Foundation")

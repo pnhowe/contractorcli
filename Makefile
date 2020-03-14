@@ -1,4 +1,4 @@
-VERSION = 0.2
+VERSION = 0.3
 GIT_VERSION = $(shell git rev-list -1 HEAD)
 
 all: contractorcli

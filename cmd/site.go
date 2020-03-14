@@ -128,6 +128,7 @@ var siteUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
 		if detailDescription != "" {
 			o.Description = detailDescription
 			fieldList = append(fieldList, "description")
