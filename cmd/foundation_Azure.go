@@ -150,7 +150,7 @@ var foundationAzureUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	fundationTypes["azure"] = typeEntry{"/api/v1/Azure/", "0.1"}
+	fundationTypes["azure"] = foundationTypeEntry{"/api/v1/Azure/", "0.1"}
 
 	foundationAzureCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Azure Foundation")
 	foundationAzureCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Azure Foundation")

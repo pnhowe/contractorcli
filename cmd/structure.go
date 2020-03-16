@@ -331,6 +331,30 @@ Script Line No: {{.state.cur_line}}
 	},
 }
 
+var structureJobLogCmd = &cobra.Command{
+	Use:   "joblog",
+	Short: "Job Log List for a Structure",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+
+		rl := []cinp.Object{}
+		for v := range c.ForemanJobLogList("structure", map[string]interface{}{"structure": o.GetID()}) {
+			rl = append(rl, v)
+		}
+		outputList(rl, "Script Name	Created By	Started At	Finished At	Cancled By	Cancled At	Created	Updated\n", "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
+
+		return nil
+	},
+}
+
 func init() {
 	structureConfigCmd.Flags().BoolVarP(&configFull, "full", "f", false, "Display the Full/Compiled config")
 	structureConfigCmd.Flags().StringVarP(&configSetName, "set-name", "n", "", "Set Config Value Key Name, if set-value is not specified, the value will be set to ''")
@@ -361,4 +385,5 @@ func init() {
 	structureCmd.AddCommand(structureDeleteCmd)
 	structureCmd.AddCommand(structureConfigCmd)
 	structureCmd.AddCommand(structureJobCmd)
+	structureCmd.AddCommand(structureJobLogCmd)
 }

@@ -172,7 +172,7 @@ var foundationIPMIUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	fundationTypes["ipmi"] = typeEntry{"/api/v1/IPMI/", "0.1"}
+	fundationTypes["ipmi"] = foundationTypeEntry{"/api/v1/IPMI/", "0.1"}
 
 	foundationIPMICreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New IPMI Foundation")
 	foundationIPMICreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New IPMI Foundation")

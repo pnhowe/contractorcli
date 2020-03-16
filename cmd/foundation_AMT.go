@@ -172,7 +172,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	fundationTypes["amt"] = typeEntry{"/api/v1/AMT/", "0.1"}
+	fundationTypes["amt"] = foundationTypeEntry{"/api/v1/AMT/", "0.1"}
 
 	foundationAMTCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New AMT Foundation")
 	foundationAMTCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New AMT Foundation")

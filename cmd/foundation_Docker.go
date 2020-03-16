@@ -150,7 +150,7 @@ var foundationDockerUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	fundationTypes["docker"] = typeEntry{"/api/v1/Docker/", "0.1"}
+	fundationTypes["docker"] = foundationTypeEntry{"/api/v1/Docker/", "0.1"}
 
 	foundationDockerCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Docker Foundation")
 	foundationDockerCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Docker Foundation")

@@ -23,12 +23,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type typeEntry struct {
+type foundationTypeEntry struct {
 	URI        string // Namespace URI, for checking to see if it's loaded and the API version
 	APIVersion string
 }
 
-var fundationTypes = map[string]typeEntry{}
+var fundationTypes = map[string]foundationTypeEntry{}
 
 var detailLocator, detailPlot, detailComplex string
 
@@ -103,7 +103,8 @@ var foundationTypesCmd = &cobra.Command{
 		for k, v := range fundationTypes {
 			APIVersion, err := c.GetAPIVersion(v.URI)
 			if err != nil {
-				return err
+				// return err
+				continue // TODO: really should only do this if it is a 404
 			}
 			if APIVersion != v.APIVersion {
 				continue // API Version mismatch, print a warning?
@@ -111,47 +112,6 @@ var foundationTypesCmd = &cobra.Command{
 			typeList = append(typeList, k)
 		}
 		outputKV(map[string]interface{}{"type": typeList})
-
-		return nil
-	},
-}
-
-var foundationUpdateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update Foundation",
-	Args:  foundationArgCheck,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
-		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
-
-		o, err := c.BuildingFoundationGet(foundationID)
-		if err != nil {
-			return err
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
 
 		return nil
 	},
@@ -253,6 +213,30 @@ Script Line No: {{.state.cur_line}}
 	},
 }
 
+var foundationJobLogCmd = &cobra.Command{
+	Use:   "joblog",
+	Short: "Job Log List for a Foundation",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		rl := []cinp.Object{}
+		for v := range c.ForemanJobLogList("foundation", map[string]interface{}{"structure": o.GetID()}) {
+			rl = append(rl, v)
+		}
+		outputList(rl, "Script Name	Created By	Started At	Finished At	Cancled By	Cancled At	Created	Updated\n", "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
+
+		return nil
+	},
+}
+
 func init() {
 	foundationJobCmd.Flags().BoolVarP(&jobInfo, "info", "i", false, "Show Running Job Info")
 	foundationJobCmd.Flags().BoolVarP(&jobState, "state", "s", false, "Show Running Job State")
@@ -266,4 +250,5 @@ func init() {
 	foundationCmd.AddCommand(foundationTypesCmd)
 	foundationCmd.AddCommand(foundationDeleteCmd)
 	foundationCmd.AddCommand(foundationJobCmd)
+	foundationCmd.AddCommand(foundationJobLogCmd)
 }
