@@ -132,6 +132,9 @@ github.com/stromland/cobra-prompt v0.0.0-20181123224253-940a0a2bd0d3 h1:OuM7BVIB
 github.com/stromland/cobra-prompt v0.0.0-20181123224253-940a0a2bd0d3/go.mod h1:5Ga13ycXHPnvxBIV5JNA3smhUwnk9W3E7dTcBSe2NNw=
 github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
+github.com/t3kton/contractor_client v0.0.0-20200416202645-40ed3b10dcb7 h1:QMHc5P4Qe225jsRAeKcmdibuyrBOcrjpT9UtiaLgonc=
+github.com/t3kton/contractor_client/go v0.0.0-20200416202645-40ed3b10dcb7 h1:M2vz4cH0EWze/PVToCjjLHg9q7sNBQeUPsf4rD/DyRA=
+github.com/t3kton/contractor_client/go v0.0.0-20200416202645-40ed3b10dcb7/go.mod h1:mf2Omi3W8kTplkKIFnqcspOYVHEWaGUHzc1e1Cn+//M=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
