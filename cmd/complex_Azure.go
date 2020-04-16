@@ -99,6 +99,8 @@ var complexAzureCreateCmd = &cobra.Command{
 			return err
 		}
 
+		outputKV(map[string]interface{}{"id": o.GetID()})
+
 		return nil
 	},
 }

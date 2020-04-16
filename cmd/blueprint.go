@@ -107,6 +107,8 @@ var blueprintFoundationCreateCmd = &cobra.Command{
 			return err
 		}
 
+		outputKV(map[string]interface{}{"id": o.GetID()})
+
 		return nil
 	},
 }
@@ -283,6 +285,8 @@ var blueprintStructureCreateCmd = &cobra.Command{
 		if err := o.Create(); err != nil {
 			return err
 		}
+
+		outputKV(map[string]interface{}{"id": o.GetID()})
 
 		return nil
 	},
