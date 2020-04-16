@@ -23,7 +23,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/t3kton/contractorcli/contractor"
+	contractor "github.com/t3kton/contractor_client/go"
 
 	"github.com/c-bata/go-prompt"
 	cinp "github.com/cinp/go"
