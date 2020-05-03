@@ -26,7 +26,7 @@ import (
 var detailName, detailDescription, detailParent, detailZone string
 
 func siteArgCheck(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
+	if len(args) != 1 {
 		return errors.New("Requires a Site Id/Name Argument")
 	}
 	return nil

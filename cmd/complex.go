@@ -35,7 +35,7 @@ var detailMembers []string
 var detailUsername, detailPassword string
 
 func complexArgCheck(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
+	if len(args) != 1 {
 		return errors.New("Requires a Complex Id(Name) Argument")
 	}
 	return nil
