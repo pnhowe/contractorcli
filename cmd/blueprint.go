@@ -27,6 +27,14 @@ import (
 )
 
 var scriptFile string
+var detailAddParent string
+var detailDeleteParent string
+var detailAddFoundationBluePrint string
+var detailDeleteFoundationBluePrint string
+var detailAddType string
+var detailDeleteType string
+var detailAddIfaceName string
+var detailDeleteIfaceName string
 
 func blueprintArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -107,13 +115,7 @@ var blueprintFoundationCreateCmd = &cobra.Command{
 		o := c.BlueprintFoundationBluePrintNew()
 		o.Name = detailName
 		o.Description = detailDescription
-
-		// will deal with these later
-		// FoundationTypeList []string `json:"foundation_type_list"`
-		// Template map[string]interface{} `json:"template"`
-		// PhysicalInterfaceNames []string `json:"physical_interface_names"`
-		// Scripts []string `json:"scripts"`
-		// ParentList []string `json:"parent_list"`
+		o.FoundationTypeList = []string{detailAddType}
 
 		if err := o.Create(); err != nil {
 			return err
@@ -135,7 +137,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		c := getContractor()
 		defer c.Logout()
 
-		o, err := c.BlueprintBluePrintGet(blueprintID)
+		o, err := c.BlueprintFoundationBluePrintGet(blueprintID)
 		if err != nil {
 			return err
 		}
@@ -144,11 +146,62 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "description")
 		}
 
+		if detailAddParent != "" {
+			p, err := c.BlueprintStructureBluePrintGet(detailAddParent)
+			if err != nil {
+				return err
+			}
+			o.ParentList = append(o.ParentList, p.GetID())
+			fieldList = append(fieldList, "parent_list")
+		}
+
+		if detailDeleteParent != "" {
+			p, err := c.BlueprintStructureBluePrintGet(detailDeleteParent)
+			if err != nil {
+				return err
+			}
+			id := p.GetID()
+			for i := 0; i < len(o.ParentList); i++ {
+				if o.ParentList[i] == id {
+					o.ParentList = append(o.ParentList[:i], o.ParentList[i+1:]...)
+					break
+				}
+			}
+			fieldList = append(fieldList, "parent_list")
+		}
+
+		if detailAddType != "" {
+			o.FoundationTypeList = append(o.FoundationTypeList, detailAddType)
+			fieldList = append(fieldList, "foundation_type_list")
+		}
+
+		if detailDeleteType != "" {
+			for i := 0; i < len(o.FoundationTypeList); i++ {
+				if o.FoundationTypeList[i] == detailDeleteType {
+					o.FoundationTypeList = append(o.FoundationTypeList[:i], o.FoundationTypeList[i+1:]...)
+					break
+				}
+			}
+			fieldList = append(fieldList, "foundation_type_list")
+		}
+
+		if detailAddIfaceName != "" {
+			o.PhysicalInterfaceNames = append(o.PhysicalInterfaceNames, detailAddIfaceName)
+			fieldList = append(fieldList, "physical_interface_names")
+		}
+
+		if detailDeleteIfaceName != "" {
+			for i := 0; i < len(o.PhysicalInterfaceNames); i++ {
+				if o.PhysicalInterfaceNames[i] == detailDeleteIfaceName {
+					o.PhysicalInterfaceNames = append(o.PhysicalInterfaceNames[:i], o.PhysicalInterfaceNames[i+1:]...)
+					break
+				}
+			}
+			fieldList = append(fieldList, "physical_interface_names")
+		}
+
 		// will deal with these later
-		// FoundationTypeList []string `json:"foundation_type_list"`
 		// Template map[string]interface{} `json:"template"`
-		// PhysicalInterfaceNames []string `json:"physical_interface_names"`
-		// ParentList []string `json:"parent_list"`
 
 		if err := o.Update(fieldList); err != nil {
 			return err
@@ -373,10 +426,6 @@ var blueprintStructureCreateCmd = &cobra.Command{
 		o.Name = detailName
 		o.Description = detailDescription
 
-		// will deal with these later
-		// ParentList []string `json:"parent_list"`
-		// FoundationBlueprintList []string `json:"foundation_blueprint_list"`
-
 		if err := o.Create(); err != nil {
 			return err
 		}
@@ -397,7 +446,7 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 		c := getContractor()
 		defer c.Logout()
 
-		o, err := c.BlueprintBluePrintGet(blueprintID)
+		o, err := c.BlueprintStructureBluePrintGet(blueprintID)
 		if err != nil {
 			return err
 		}
@@ -406,9 +455,53 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "description")
 		}
 
-		// will deal with these later
-		// ParentList []string `json:"parent_list"`
-		// FoundationBlueprintList []string `json:"foundation_blueprint_list"`
+		if detailAddParent != "" {
+			p, err := c.BlueprintStructureBluePrintGet(detailAddParent)
+			if err != nil {
+				return err
+			}
+			o.ParentList = append(o.ParentList, p.GetID())
+			fieldList = append(fieldList, "parent_list")
+		}
+
+		if detailDeleteParent != "" {
+			p, err := c.BlueprintStructureBluePrintGet(detailDeleteParent)
+			if err != nil {
+				return err
+			}
+			id := p.GetID()
+			for i := 0; i < len(o.ParentList); i++ {
+				if o.ParentList[i] == id {
+					o.ParentList = append(o.ParentList[:i], o.ParentList[i+1:]...)
+					break
+				}
+			}
+			fieldList = append(fieldList, "parent_list")
+		}
+
+		if detailAddFoundationBluePrint != "" {
+			p, err := c.BlueprintFoundationBluePrintGet(detailAddFoundationBluePrint)
+			if err != nil {
+				return err
+			}
+			o.FoundationBlueprintList = append(o.FoundationBlueprintList, p.GetID())
+			fieldList = append(fieldList, "foundation_blueprint_list")
+		}
+
+		if detailDeleteFoundationBluePrint != "" {
+			p, err := c.BlueprintFoundationBluePrintGet(detailDeleteFoundationBluePrint)
+			if err != nil {
+				return err
+			}
+			id := p.GetID()
+			for i := 0; i < len(o.FoundationBlueprintList); i++ {
+				if o.FoundationBlueprintList[i] == id {
+					o.FoundationBlueprintList = append(o.FoundationBlueprintList[:i], o.FoundationBlueprintList[i+1:]...)
+					break
+				}
+			}
+			fieldList = append(fieldList, "foundation_blueprint_list")
+		}
 
 		if err := o.Update(fieldList); err != nil {
 			return err
@@ -757,13 +850,24 @@ func init() {
 
 	blueprintFoundationCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Foundation Blueprint")
 	blueprintFoundationCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Foundation Blueprint")
+	blueprintFoundationCreateCmd.Flags().StringVarP(&detailAddType, "type", "t", "", "Type of New Foundation Blueprint")
 
 	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Foundation Blueprint with value")
+	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailAddParent, "add-parent", "p", "", "Add Parent to Foundation Blueprint")
+	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailDeleteParent, "delete-parent", "q", "", "Remove Parent from Foundation Blueprint")
+	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailAddType, "add-type", "t", "", "Add Type to Foundation Blueprint")
+	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailDeleteType, "delete-type", "u", "", "Remove Type from Foundation Blueprint")
+	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailAddIfaceName, "add-iface-name", "i", "", "Add Physical Interface Name to Foundation Blueprint")
+	blueprintFoundationUpdateCmd.Flags().StringVarP(&detailDeleteIfaceName, "delete-iface-name", "k", "", "Remove Physical Interface Name from Foundation Blueprint")
 
 	blueprintStructureCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Structure Blueprint")
 	blueprintStructureCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Structure Blueprint")
 
 	blueprintStructureUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Structure Blueprint with value")
+	blueprintStructureUpdateCmd.Flags().StringVarP(&detailAddParent, "add-parent", "p", "", "Add Parent to Structure Blueprint")
+	blueprintStructureUpdateCmd.Flags().StringVarP(&detailDeleteParent, "delete-parent", "q", "", "Remove Parent from Structure Blueprint")
+	blueprintStructureUpdateCmd.Flags().StringVarP(&detailAddFoundationBluePrint, "add-foundation-blueprint", "f", "", "Add Foundation Blueprint to Structure Blueprint")
+	blueprintStructureUpdateCmd.Flags().StringVarP(&detailDeleteFoundationBluePrint, "delete-foundation-blueprint", "g", "", "Remove Foundation Blueprint from Structure Blueprint")
 
 	scriptCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Scriptt")
 	scriptCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Script")
