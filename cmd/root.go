@@ -19,7 +19,9 @@ limitations under the License.
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -43,7 +45,8 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI utility to work with Contractor",
 	Long: `contractorcli allows you to do some basic maniplutation
 of contractor without having to write your own small app, or use the API`,
-	SilenceUsage: true,
+	SilenceUsage:  true,
+	SilenceErrors: false,
 }
 
 var shellCmd = &cobra.Command{
@@ -141,6 +144,65 @@ func extractID(value string) string {
 		return ""
 	}
 	return strings.Split(value, ":")[1]
+}
+
+func editBuffer(value string) (string, error) {
+	editor := os.Getenv("CONTRACTORCLI_EDITOR")
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+	}
+	if editor == "" {
+		tmp, err := os.Readlink("/etc/alternatives/editor")
+		if err == nil {
+			editor = tmp
+		}
+	}
+	if editor == "" {
+		editor = "/usr/bin/vi"
+		_, err := os.Stat(editor)
+		if err != nil {
+			return "", fmt.Errorf("Unable to detect or find an editor, set CONTRACTORCLI_EDITOR or EDITOR")
+		}
+	}
+
+	tmpfile, err := ioutil.TempFile("", "contractorcli")
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		tmpfile.Close()
+		os.Remove(tmpfile.Name())
+	}()
+
+	if _, err := tmpfile.Write([]byte(value)); err != nil {
+		return "", err
+	}
+
+	if err := tmpfile.Close(); err != nil {
+		return "", err
+	}
+
+	cmd := exec.Command(editor, tmpfile.Name())
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+
+	fd, err := os.Open(tmpfile.Name())
+	if err != nil {
+		return "", err
+	}
+	defer fd.Close()
+
+	buf := make([]byte, 4096*1024)
+	len, err := fd.Read(buf)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(buf[:len])), nil
 }
 
 func outputList(valueList []cinp.Object, header string, itemTemplate string) {

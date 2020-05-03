@@ -33,7 +33,7 @@ var fundationTypes = map[string]foundationTypeEntry{}
 var detailLocator, detailPlot, detailComplex string
 
 func foundationArgCheck(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
+	if len(args) != 1 {
 		return errors.New("Requires a Foundation Id(Locator) Argument")
 	}
 	return nil

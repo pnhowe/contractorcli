@@ -132,6 +132,10 @@ github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/t3kton/contractor_client/go v0.0.0-20200417011631-5a12862adcc9 h1:Qa4ROKpz50ZSoUKJXApahh6GEh++Y7oIsS632KXuezU=
 github.com/t3kton/contractor_client/go v0.0.0-20200417011631-5a12862adcc9/go.mod h1:pfMI0pCurbW9//qoSzCyiC9R+reUIEXKfPHymU3PlkM=
+github.com/t3kton/contractor_client/go v0.0.0-20200502040625-547da7d1918e h1:iNqqYKitQmym3BiTxYdmzm+iqDEzqrzZUjw7AnmXq9w=
+github.com/t3kton/contractor_client/go v0.0.0-20200502040625-547da7d1918e/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
+github.com/t3kton/contractor_client/go v0.0.0-20200502235718-5ffd909faa2a h1:Qta/NFXWHCDUxWyiggtXZDX2RKVxpkddAqPNlVEtIbo=
+github.com/t3kton/contractor_client/go v0.0.0-20200502235718-5ffd909faa2a/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=

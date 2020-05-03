@@ -30,7 +30,7 @@ var jobInfo, jobState, jobCreate, jobDestroy bool
 var jobUtility string
 
 func structureArgCheck(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
+	if len(args) != 1 {
 		return errors.New("Requires a Structure Id Argument")
 	}
 	return nil
