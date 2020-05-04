@@ -799,38 +799,52 @@ var scriptEditCmd = &cobra.Command{
 
 		var newScript string
 
-		if scriptFile != "" {
-			var source *os.File
-			if scriptFile == "-" {
-				source = os.Stdin
+		for true {
+			if scriptFile != "" {
+				var source *os.File
+				if scriptFile == "-" {
+					source = os.Stdin
+				} else {
+					source, err = os.Open(scriptFile)
+					if err != nil {
+						return err
+					}
+				}
+				buf := make([]byte, 4096*1024)
+				len, err := source.Read(buf)
+				if err != nil {
+					return err
+				}
+				newScript = strings.TrimSpace(string(buf[:len]))
+
 			} else {
-				source, err = os.Open(scriptFile)
+				newScript, err = editBuffer(r.Script)
 				if err != nil {
 					return err
 				}
 			}
-			buf := make([]byte, 4096*1024)
-			len, err := source.Read(buf)
-			if err != nil {
-				return err
-			}
-			newScript = strings.TrimSpace(string(buf[:len]))
 
-		} else {
-			newScript, err = editBuffer(r.Script)
-			if err != nil {
-				return err
+			if newScript != r.Script {
+				r.Script = newScript
+				if err := r.Update([]string{"script"}); err != nil {
+					if scriptFile == "" && strings.HasPrefix(err.Error(), "Invalid Request: 'map[script:[Script is invalid: Incomplete Parsing") {
+						fmt.Printf("Error parsing the script:%s\n", err.Error())
+						fmt.Println("Return to Editor?(Y/N)")
+						var b []byte = make([]byte, 1)
+						os.Stdin.Read(b)
+						if b[0] == 'Y' || b[0] == 'y' {
+							continue
+						}
+						fmt.Println("Aborting")
+						break
+					}
+					return err
+				}
+				fmt.Println("Changes Saved")
+			} else {
+				fmt.Println("No Change Detected")
 			}
-		}
-
-		if newScript != r.Script {
-			r.Script = newScript
-			if err := r.Update([]string{"script"}); err != nil {
-				return err
-			}
-			fmt.Println("Changes Saved")
-		} else {
-			fmt.Println("No Change Detected")
+			break
 		}
 
 		return nil
