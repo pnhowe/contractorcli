@@ -27,14 +27,7 @@ import (
 )
 
 var scriptFile string
-var detailAddParent string
-var detailDeleteParent string
-var detailAddFoundationBluePrint string
-var detailDeleteFoundationBluePrint string
-var detailAddType string
-var detailDeleteType string
-var detailAddIfaceName string
-var detailDeleteIfaceName string
+var detailAddParent, detailDeleteParent, detailAddFoundationBluePrint, detailDeleteFoundationBluePrint, detailAddType, detailDeleteType, detailAddIfaceName, detailDeleteIfaceName string
 
 func blueprintArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -147,7 +140,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		}
 
 		if detailAddParent != "" {
-			p, err := c.BlueprintStructureBluePrintGet(detailAddParent)
+			p, err := c.BlueprintFoundationBluePrintGet(detailAddParent)
 			if err != nil {
 				return err
 			}
@@ -156,7 +149,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		}
 
 		if detailDeleteParent != "" {
-			p, err := c.BlueprintStructureBluePrintGet(detailDeleteParent)
+			p, err := c.BlueprintFoundationBluePrintGet(detailDeleteParent)
 			if err != nil {
 				return err
 			}
@@ -253,7 +246,7 @@ var blueprintFoundationConfigCmd = &cobra.Command{
 			outputKV(o.ConfigValues)
 
 		} else if configDeleteName != "" {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintFoundationBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -272,7 +265,7 @@ var blueprintFoundationConfigCmd = &cobra.Command{
 			outputKV(r)
 
 		} else {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintFoundationBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -553,7 +546,7 @@ var blueprintStructureConfigCmd = &cobra.Command{
 			outputKV(o.ConfigValues)
 
 		} else if configDeleteName != "" {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintStructureBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -572,7 +565,7 @@ var blueprintStructureConfigCmd = &cobra.Command{
 			outputKV(r)
 
 		} else {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintStructureBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -827,7 +820,7 @@ var scriptEditCmd = &cobra.Command{
 			if newScript != r.Script {
 				r.Script = newScript
 				if err := r.Update([]string{"script"}); err != nil {
-					if scriptFile == "" && strings.HasPrefix(err.Error(), "Invalid Request: 'map[script:[Script is invalid: Incomplete Parsing") {
+					if scriptFile == "" && strings.HasPrefix(err.Error(), "Invalid Request: 'map[script:[Script is invalid") {
 						fmt.Printf("Error parsing the script:%s\n", err.Error())
 						fmt.Println("Return to Editor?(Y/N)")
 						var b []byte = make([]byte, 1)
