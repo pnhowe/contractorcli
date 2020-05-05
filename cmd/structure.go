@@ -26,8 +26,6 @@ import (
 var configSetName, configSetValue, configDeleteName string
 var configFull bool
 var detailHostname, detailSite, detailBlueprint, detailFoundation string
-var jobInfo, jobState, jobCreate, jobDestroy bool
-var jobUtility string
 
 func structureArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -261,6 +259,11 @@ var structureConfigCmd = &cobra.Command{
 var structureJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Structure Jobs",
+}
+
+var structureJobInfoCmd = &cobra.Command{
+	Use:   "info",
+	Short: "Show Structure Job Info",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		structureID := args[0]
@@ -272,17 +275,18 @@ var structureJobCmd = &cobra.Command{
 			return err
 		}
 
-		if jobInfo {
-			jID, err := o.CallGetJob()
-			if err != nil {
-				return err
-			}
-			j, err := c.ForemanStructureJobGet(extractID(jID))
-			if err != nil {
-				return err
-			}
-			outputDetail(j, `Site           {{.Site}}
-Structure      {{.Structure}}
+		jID, err := o.CallGetJob()
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanStructureJobGet(extractID(jID))
+		if err != nil {
+			return err
+		}
+
+		outputDetail(j, `Job:           {{.GetID | extractID}}
+Site:          {{.Site}}
+Structure:     {{.Structure}}
 State:         {{.State}}
 Status:        {{.Status}}
 Progress:      {{.Progress}}
@@ -292,43 +296,115 @@ Can Start:     {{.CanStart}}
 Updated:       {{.Updated}}
 Created:       {{.Created}}
 `)
-		} else if jobState {
-			jID, err := o.CallGetJob()
-			if err != nil {
-				return err
-			}
-			j, err := c.ForemanStructureJobGet(extractID(jID))
-			if err != nil {
-				return err
-			}
-			vars, err := j.CallJobRunnerVariables()
-			if err != nil {
-				return err
-			}
-			state, err := j.CallJobRunnerState()
-			if err != nil {
-				return err
-			}
-			outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables: {{.variables}}
+		return nil
+	},
+}
+
+var structureJobStateCmd = &cobra.Command{
+	Use:   "state",
+	Short: "Show Structure Job State",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+		jID, err := o.CallGetJob()
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanStructureJobGet(extractID(jID))
+		if err != nil {
+			return err
+		}
+		vars, err := j.CallJobRunnerVariables()
+		if err != nil {
+			return err
+		}
+		state, err := j.CallJobRunnerState()
+		if err != nil {
+			return err
+		}
+		outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables: {{.variables}}
 Script State: {{.state.state}}
 Script Line No: {{.state.cur_line}}
 -- Script --
-{{.state.script}}`)
-		} else {
-			var j int
-			if jobCreate {
-				j, err = o.CallDoCreate()
-			} else if jobDestroy {
-				j, err = o.CallDoDestroy()
-			} else if jobUtility != "" {
-				j, err = o.CallDoJob(jobUtility)
-			}
-			if err != nil {
-				return err
-			}
-			outputKV(map[string]interface{}{"job": j})
+{{.state.script}}
+`)
+		return nil
+	},
+}
+
+var structureJobDoCreateCmd = &cobra.Command{
+	Use:   "do-create",
+	Short: "Start Create Job for Structure",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
 		}
 
+		if _, err := o.CallDoCreate(); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
+var structureJobDoDestroyCmd = &cobra.Command{
+	Use:   "do-destroy",
+	Short: "Start Destroy Job for Structure",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+
+		if _, err := o.CallDoDestroy(); err != nil {
+			return err
+		}
+		return nil
+	},
+}
+
+var structureJobDoUtilityCmd = &cobra.Command{
+	Use:   "do-utility",
+	Short: "Start Utility Job for Structure",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 2 {
+			return errors.New("Requires a Structure Id and Utility Job Name Argument")
+		}
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		scriptName := args[1]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+
+		if _, err := o.CallDoJob(scriptName); err != nil {
+			return err
+		}
 		return nil
 	},
 }
@@ -373,12 +449,6 @@ func init() {
 	structureUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Structure with value")
 	structureUpdateCmd.Flags().StringVarP(&detailFoundation, "foundation", "f", "", "Update the Foundation of Structure with value")
 
-	structureJobCmd.Flags().BoolVarP(&jobInfo, "info", "i", false, "Show Running Job Info")
-	structureJobCmd.Flags().BoolVarP(&jobState, "state", "s", false, "Show Running Job State")
-	structureJobCmd.Flags().BoolVarP(&jobCreate, "do-create", "c", false, "Submit a Create job")
-	structureJobCmd.Flags().BoolVarP(&jobDestroy, "do-destroy", "d", false, "Submit a Destroy job")
-	structureJobCmd.Flags().StringVarP(&jobUtility, "utility", "u", "", "Submit Utility Job")
-
 	rootCmd.AddCommand(structureCmd)
 	structureCmd.AddCommand(structureListCmd)
 	structureCmd.AddCommand(structureGetCmd)
@@ -386,6 +456,13 @@ func init() {
 	structureCmd.AddCommand(structureUpdateCmd)
 	structureCmd.AddCommand(structureDeleteCmd)
 	structureCmd.AddCommand(structureConfigCmd)
+
 	structureCmd.AddCommand(structureJobCmd)
+	structureJobCmd.AddCommand(structureJobInfoCmd)
+	structureJobCmd.AddCommand(structureJobStateCmd)
+	structureJobCmd.AddCommand(structureJobDoCreateCmd)
+	structureJobCmd.AddCommand(structureJobDoDestroyCmd)
+	structureJobCmd.AddCommand(structureJobDoUtilityCmd)
+
 	structureCmd.AddCommand(structureJobLogCmd)
 }

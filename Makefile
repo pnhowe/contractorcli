@@ -1,4 +1,4 @@
-VERSION = 0.3
+VERSION = $(shell git tag -l | tail -n1)
 GIT_VERSION = $(shell git rev-list -1 HEAD)
 
 all: contractorcli

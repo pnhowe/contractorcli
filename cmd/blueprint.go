@@ -27,14 +27,7 @@ import (
 )
 
 var scriptFile string
-var detailAddParent string
-var detailDeleteParent string
-var detailAddFoundationBluePrint string
-var detailDeleteFoundationBluePrint string
-var detailAddType string
-var detailDeleteType string
-var detailAddIfaceName string
-var detailDeleteIfaceName string
+var detailAddParent, detailDeleteParent, detailAddFoundationBluePrint, detailDeleteFoundationBluePrint, detailAddType, detailDeleteType, detailAddIfaceName, detailDeleteIfaceName string
 
 func blueprintArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -147,7 +140,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		}
 
 		if detailAddParent != "" {
-			p, err := c.BlueprintStructureBluePrintGet(detailAddParent)
+			p, err := c.BlueprintFoundationBluePrintGet(detailAddParent)
 			if err != nil {
 				return err
 			}
@@ -156,7 +149,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		}
 
 		if detailDeleteParent != "" {
-			p, err := c.BlueprintStructureBluePrintGet(detailDeleteParent)
+			p, err := c.BlueprintFoundationBluePrintGet(detailDeleteParent)
 			if err != nil {
 				return err
 			}
@@ -253,7 +246,7 @@ var blueprintFoundationConfigCmd = &cobra.Command{
 			outputKV(o.ConfigValues)
 
 		} else if configDeleteName != "" {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintFoundationBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -272,7 +265,7 @@ var blueprintFoundationConfigCmd = &cobra.Command{
 			outputKV(r)
 
 		} else {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintFoundationBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -553,7 +546,7 @@ var blueprintStructureConfigCmd = &cobra.Command{
 			outputKV(o.ConfigValues)
 
 		} else if configDeleteName != "" {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintStructureBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -572,7 +565,7 @@ var blueprintStructureConfigCmd = &cobra.Command{
 			outputKV(r)
 
 		} else {
-			o, err := c.BlueprintBluePrintGet(blueprintID)
+			o, err := c.BlueprintStructureBluePrintGet(blueprintID)
 			if err != nil {
 				return err
 			}
@@ -799,38 +792,52 @@ var scriptEditCmd = &cobra.Command{
 
 		var newScript string
 
-		if scriptFile != "" {
-			var source *os.File
-			if scriptFile == "-" {
-				source = os.Stdin
+		for true {
+			if scriptFile != "" {
+				var source *os.File
+				if scriptFile == "-" {
+					source = os.Stdin
+				} else {
+					source, err = os.Open(scriptFile)
+					if err != nil {
+						return err
+					}
+				}
+				buf := make([]byte, 4096*1024)
+				len, err := source.Read(buf)
+				if err != nil {
+					return err
+				}
+				newScript = strings.TrimSpace(string(buf[:len]))
+
 			} else {
-				source, err = os.Open(scriptFile)
+				newScript, err = editBuffer(r.Script)
 				if err != nil {
 					return err
 				}
 			}
-			buf := make([]byte, 4096*1024)
-			len, err := source.Read(buf)
-			if err != nil {
-				return err
-			}
-			newScript = strings.TrimSpace(string(buf[:len]))
 
-		} else {
-			newScript, err = editBuffer(r.Script)
-			if err != nil {
-				return err
+			if newScript != r.Script {
+				r.Script = newScript
+				if err := r.Update([]string{"script"}); err != nil {
+					if scriptFile == "" && strings.HasPrefix(err.Error(), "Invalid Request: 'map[script:[Script is invalid") {
+						fmt.Printf("Error parsing the script:%s\n", err.Error())
+						fmt.Println("Return to Editor?(Y/N)")
+						var b []byte = make([]byte, 1)
+						os.Stdin.Read(b)
+						if b[0] == 'Y' || b[0] == 'y' {
+							continue
+						}
+						fmt.Println("Aborting")
+						break
+					}
+					return err
+				}
+				fmt.Println("Changes Saved")
+			} else {
+				fmt.Println("No Change Detected")
 			}
-		}
-
-		if newScript != r.Script {
-			r.Script = newScript
-			if err := r.Update([]string{"script"}); err != nil {
-				return err
-			}
-			fmt.Println("Changes Saved")
-		} else {
-			fmt.Println("No Change Detected")
+			break
 		}
 
 		return nil

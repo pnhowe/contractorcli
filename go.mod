@@ -13,5 +13,5 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.1
 	github.com/stromland/cobra-prompt v0.0.0-20181123224253-940a0a2bd0d3
-	github.com/t3kton/contractor_client/go v0.0.0-20200502235718-5ffd909faa2a
+	github.com/t3kton/contractor_client/go v0.0.0-20200504192029-576b25eb73e1
 )
