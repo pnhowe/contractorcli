@@ -286,7 +286,7 @@ var structureJobInfoCmd = &cobra.Command{
 
 		outputDetail(j, `Job:           {{.GetID | extractID}}
 Site:          {{.Site}}
-Structure:     {{.Structure}}
+Structure:     {{.Structure | extractID}}
 State:         {{.State}}
 Status:        {{.Status}}
 Progress:      {{.Progress}}

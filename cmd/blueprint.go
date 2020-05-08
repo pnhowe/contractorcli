@@ -43,6 +43,13 @@ func scriptArgCheck(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func pxeArgCheck(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Requires a PXE Name(Id) Name Argument")
+	}
+	return nil
+}
+
 var blueprintCmd = &cobra.Command{
 	Use:   "blueprint",
 	Short: "Work with blueprints",
@@ -844,6 +851,162 @@ var scriptEditCmd = &cobra.Command{
 	},
 }
 
+var pxeCmd = &cobra.Command{
+	Use:   "pxe",
+	Short: "Work with PXEs",
+}
+
+var pxeGetCmd = &cobra.Command{
+	Use:   "get",
+	Short: "Get PXE",
+	Args:  pxeArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		pxeID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.BlueprintPXEGet(pxeID)
+		if err != nil {
+			return err
+		}
+		outputDetail(r, `Name:                  {{.Name}}
+Created:               {{.Created}}
+Updated:               {{.Updated}}
+----  Script  ----
+{{.BootScript}}
+
+----  Template  ----
+{{.Template}
+`)
+		return nil
+	},
+}
+
+var pxeListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List PXEs",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c := getContractor()
+		defer c.Logout()
+
+		rl := []cinp.Object{}
+		for v := range c.BlueprintPXEList("", map[string]interface{}{}) {
+			rl = append(rl, v)
+		}
+		outputList(rl, "Id	Name	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Created}}	{{.Updated}}\n")
+
+		return nil
+	},
+}
+
+var pxeEditScriptCmd = &cobra.Command{
+	Use:   "editscript",
+	Short: "Edit Script of PXE",
+	Args:  scriptArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		pxeID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.BlueprintPXEGet(pxeID)
+		if err != nil {
+			return err
+		}
+
+		var newScript string
+
+		if scriptFile != "" {
+			var source *os.File
+			if scriptFile == "-" {
+				source = os.Stdin
+			} else {
+				source, err = os.Open(scriptFile)
+				if err != nil {
+					return err
+				}
+			}
+			buf := make([]byte, 4096*1024)
+			len, err := source.Read(buf)
+			if err != nil {
+				return err
+			}
+			newScript = strings.TrimSpace(string(buf[:len]))
+
+		} else {
+			newScript, err = editBuffer(r.BootScript)
+			if err != nil {
+				return err
+			}
+		}
+
+		if newScript != r.BootScript {
+			r.BootScript = newScript
+			if err := r.Update([]string{"boot_script"}); err != nil {
+				return err
+			}
+			fmt.Println("Changes Saved")
+		} else {
+			fmt.Println("No Change Detected")
+		}
+
+		return nil
+	},
+}
+
+var pxeEditTemplateCmd = &cobra.Command{
+	Use:   "edittemplate",
+	Short: "Edit Template of PXE",
+	Args:  scriptArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		pxeID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.BlueprintPXEGet(pxeID)
+		if err != nil {
+			return err
+		}
+
+		var newTemplate string
+
+		if scriptFile != "" {
+			var source *os.File
+			if scriptFile == "-" {
+				source = os.Stdin
+			} else {
+				source, err = os.Open(scriptFile)
+				if err != nil {
+					return err
+				}
+			}
+			buf := make([]byte, 4096*1024)
+			len, err := source.Read(buf)
+			if err != nil {
+				return err
+			}
+			newTemplate = strings.TrimSpace(string(buf[:len]))
+
+		} else {
+			newTemplate, err = editBuffer(r.Template)
+			if err != nil {
+				return err
+			}
+		}
+
+		if newTemplate != r.Template {
+			r.Template = newTemplate
+			if err := r.Update([]string{"template"}); err != nil {
+				return err
+			}
+			fmt.Println("Changes Saved")
+		} else {
+			fmt.Println("No Change Detected")
+		}
+
+		return nil
+	},
+}
+
 func init() {
 	blueprintFoundationConfigCmd.Flags().BoolVarP(&configFull, "full", "f", false, "Display the Full/Compiled config")
 	blueprintFoundationConfigCmd.Flags().StringVarP(&configSetName, "set-name", "n", "", "Set Config Value Key Name, if set-value is not specified, the value will be set to ''")
@@ -883,6 +1046,10 @@ func init() {
 
 	scriptEditCmd.Flags().StringVarP(&scriptFile, "file", "f", "", "File to supply the script, use '-' for stdin or omit for interactive editor")
 
+	pxeEditScriptCmd.Flags().StringVarP(&scriptFile, "file", "f", "", "File to supply the script, use '-' for stdin or omit for interactive editor")
+
+	pxeEditTemplateCmd.Flags().StringVarP(&scriptFile, "file", "f", "", "File to supply the template, use '-' for stdin or omit for interactive editor")
+
 	rootCmd.AddCommand(blueprintCmd)
 	blueprintCmd.AddCommand(blueprintFoundationCmd)
 	blueprintFoundationCmd.AddCommand(blueprintFoundationListCmd)
@@ -916,4 +1083,9 @@ func init() {
 	scriptCmd.AddCommand(scriptDeleteCmd)
 	scriptCmd.AddCommand(scriptEditCmd)
 
+	blueprintCmd.AddCommand(pxeCmd)
+	pxeCmd.AddCommand(pxeGetCmd)
+	pxeCmd.AddCommand(pxeListCmd)
+	pxeCmd.AddCommand(pxeEditScriptCmd)
+	pxeCmd.AddCommand(pxeEditTemplateCmd)
 }

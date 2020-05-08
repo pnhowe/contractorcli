@@ -143,77 +143,153 @@ var foundationJobCmd = &cobra.Command{
 	Short: "Work with Foundation Jobs",
 }
 
-// 	Args:  foundationArgCheck,
-// 	RunE: func(cmd *cobra.Command, args []string) error {
-// 		foundationID := args[0]
-// 		c := getContractor()
-// 		defer c.Logout()
-//
-// 		o, err := c.BuildingFoundationGet(foundationID)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		if jobInfo {
-// 			jID, err := o.CallGetJob()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			j, err := c.ForemanFoundationJobGet(extractID(jID))
-// 			if err != nil {
-// 				return err
-// 			}
-// 			outputDetail(j, `Site           {{.Site | extractID}}
-// Foundation     {{.Foundation | extractID}}
-// State:         {{.State}}
-// Status:        {{.Status}}
-// Progress:      {{.Progress}}
-// Message:       {{.Message}}
-// Script Name:   {{.ScriptName}}
-// Can Start:     {{.CanStart}}
-// Updated:       {{.Updated}}
-// Created:       {{.Created}}
-// `)
-// 		} else if jobState {
-// 			jID, err := o.CallGetJob()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			j, err := c.ForemanFoundationJobGet(extractID(jID))
-// 			if err != nil {
-// 				return err
-// 			}
-// 			vars, err := j.CallJobRunnerVariables()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			state, err := j.CallJobRunnerState()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables: {{.variables}}
-// Script State: {{.state.state}}
-// Script Line No: {{.state.cur_line}}
-// -- Script --
-// {{.state.script}}`)
-// 		} else {
-// 			var j int
-// 			if jobCreate {
-// 				j, err = o.CallDoCreate()
-// 			} else if jobDestroy {
-// 				j, err = o.CallDoDestroy()
-// 			} else if jobUtility != "" {
-// 				j, err = o.CallDoJob(jobUtility)
-// 			}
-// 			if err != nil {
-// 				return err
-// 			}
-// 			outputKV(map[string]interface{}{"job": j})
-// 		}
-//
-// 		return nil
-// 	},
-// }
+var foundationJobInfoCmd = &cobra.Command{
+	Use:   "info",
+	Short: "Show Foundation Job Info",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		jID, err := o.CallGetJob()
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanFoundationJobGet(extractID(jID))
+		if err != nil {
+			return err
+		}
+
+		outputDetail(j, `Job:           {{.GetID | extractID}}
+Site:          {{.Site}}
+Foundation:    {{.Foundation | extractID}}
+State:         {{.State}}
+Status:        {{.Status}}
+Progress:      {{.Progress}}
+Message:       {{.Message}}
+Script Name:   {{.ScriptName}}
+Can Start:     {{.CanStart}}
+Updated:       {{.Updated}}
+Created:       {{.Created}}
+`)
+		return nil
+	},
+}
+
+var foundationJobStateCmd = &cobra.Command{
+	Use:   "state",
+	Short: "Show Foundation Job State",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+		jID, err := o.CallGetJob()
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanFoundationJobGet(extractID(jID))
+		if err != nil {
+			return err
+		}
+		vars, err := j.CallJobRunnerVariables()
+		if err != nil {
+			return err
+		}
+		state, err := j.CallJobRunnerState()
+		if err != nil {
+			return err
+		}
+		outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables: {{.variables}}
+Script State: {{.state.state}}
+Script Line No: {{.state.cur_line}}
+-- Script --
+{{.state.script}}
+`)
+		return nil
+	},
+}
+
+var foundationJobDoCreateCmd = &cobra.Command{
+	Use:   "do-create",
+	Short: "Start Create Job for Foundation",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		if _, err := o.CallDoCreate(); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
+var foundationJobDoDestroyCmd = &cobra.Command{
+	Use:   "do-destroy",
+	Short: "Start Destroy Job for Foundation",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		if _, err := o.CallDoDestroy(); err != nil {
+			return err
+		}
+		return nil
+	},
+}
+
+var foundationJobDoUtilityCmd = &cobra.Command{
+	Use:   "do-utility",
+	Short: "Start Utility Job for Foundation",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 2 {
+			return errors.New("Requires a Foundation Id(Locator) and Utility Job Name Argument")
+		}
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		scriptName := args[1]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		if _, err := o.CallDoJob(scriptName); err != nil {
+			return err
+		}
+		return nil
+	},
+}
 
 var foundationJobLogCmd = &cobra.Command{
 	Use:   "joblog",
@@ -230,7 +306,7 @@ var foundationJobLogCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.ForemanJobLogList("foundation", map[string]interface{}{"structure": o.GetID()}) {
+		for v := range c.ForemanJobLogList("foundation", map[string]interface{}{"foundation": o.GetID()}) {
 			rl = append(rl, v)
 		}
 		outputList(rl, "Script Name	Created By	Started At	Finished At	Cancled By	Cancled At	Created	Updated\n", "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
@@ -247,11 +323,11 @@ func init() {
 	foundationCmd.AddCommand(foundationDeleteCmd)
 
 	foundationCmd.AddCommand(foundationJobCmd)
-	// foundationJobCmd.AddCommand(foundationJobInfoCmd)
-	// foundationJobCmd.AddCommand(foundationJobStateCmd)
-	// foundationJobCmd.AddCommand(foundationJobDoCreateCmd)
-	// foundationJobCmd.AddCommand(foundationJobDoDestroyCmd)
-	// foundationJobCmd.AddCommand(foundationJobDoUtilityCmd)
+	foundationJobCmd.AddCommand(foundationJobInfoCmd)
+	foundationJobCmd.AddCommand(foundationJobStateCmd)
+	foundationJobCmd.AddCommand(foundationJobDoCreateCmd)
+	foundationJobCmd.AddCommand(foundationJobDoDestroyCmd)
+	foundationJobCmd.AddCommand(foundationJobDoUtilityCmd)
 
 	foundationCmd.AddCommand(foundationJobLogCmd)
 }

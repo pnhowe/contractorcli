@@ -134,6 +134,10 @@ github.com/t3kton/contractor_client/go v0.0.0-20200504160825-e5097a51086d h1:ChR
 github.com/t3kton/contractor_client/go v0.0.0-20200504160825-e5097a51086d/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
 github.com/t3kton/contractor_client/go v0.0.0-20200504192029-576b25eb73e1 h1:G/TpjecO2rnj+vLnIbuokkJ+11GHn8Uy61aJgu0RWYo=
 github.com/t3kton/contractor_client/go v0.0.0-20200504192029-576b25eb73e1/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
+github.com/t3kton/contractor_client/go v0.0.0-20200508123206-3e915f4b19ed h1:ZhbUC6oBepjUhPyxW2hByjFVmFx1b+4SBAEtodrwDKw=
+github.com/t3kton/contractor_client/go v0.0.0-20200508123206-3e915f4b19ed/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
+github.com/t3kton/contractor_client/go v0.0.0-20200508124134-13e0d747bd4d h1:Xi0XZXpBRxUUSOSTdCvcWtgCBQj/sw7HUOn895k7x9o=
+github.com/t3kton/contractor_client/go v0.0.0-20200508124134-13e0d747bd4d/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=

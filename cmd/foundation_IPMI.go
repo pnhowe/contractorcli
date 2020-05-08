@@ -20,7 +20,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailIPMIUsername, detailIPMIPassword, detailIPMIIP string
+var detailIPMIUsername, detailIPMIPassword, detailIPMIIP, detailIPMISOL string
 
 var foundationIPMICmd = &cobra.Command{
 	Use:   "ipmi",
@@ -40,21 +40,22 @@ var foundationIPMIGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(r, `Locator:         {{.Locator}}
 IPMI Username:   {{.IpmiUsername}}
 IPMI Password:   {{.IpmiPassword}}
 IPMI Ip Address: {{.IpmiIPAddress}}
-Plot:           {{.Plot | extractID}}
-Type:           {{.Type}}
-Site:           {{.Site | extractID}}
-Blueprint:      {{.Blueprint | extractID}}
-Id Map:         {{.IDMap}}
-Class List:     {{.ClassList}}
-State:          {{.State}}
-Located At:     {{.LocatedAt}}
-Built At:       {{.BuiltAt}}
-Created:        {{.Created}}
-Updated:        {{.Updated}}
+IPMI SOL Port:   {{.IpmiSolPort}}
+Plot:            {{.Plot | extractID}}
+Type:            {{.Type}}
+Site:            {{.Site | extractID}}
+Blueprint:       {{.Blueprint | extractID}}
+Id Map:          {{.IDMap}}
+Class List:      {{.ClassList}}
+State:           {{.State}}
+Located At:      {{.LocatedAt}}
+Built At:        {{.BuiltAt}}
+Created:         {{.Created}}
+Updated:         {{.Updated}}
 `)
 
 		return nil
@@ -73,6 +74,7 @@ var foundationIPMICreateCmd = &cobra.Command{
 		o.IpmiUsername = detailIPMIUsername
 		o.IpmiPassword = detailIPMIPassword
 		o.IpmiIPAddress = detailIPMIIP
+		o.IpmiSolPort = detailIPMISOL
 
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
@@ -138,6 +140,11 @@ var foundationIPMIUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "ipmi_ip_address")
 		}
 
+		if detailIPMISOL != "" {
+			o.IpmiSolPort = detailIPMISOL
+			fieldList = append(fieldList, "ipmi_sol_port")
+		}
+
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
 			if err != nil {
@@ -183,6 +190,7 @@ func init() {
 	foundationIPMICreateCmd.Flags().StringVarP(&detailIPMIUsername, "ipmi-username", "u", "", "IPMI Username of New IPMI Foundation")
 	foundationIPMICreateCmd.Flags().StringVarP(&detailIPMIPassword, "ipmi-password", "a", "", "IPMI Password of New IPMI Foundation")
 	foundationIPMICreateCmd.Flags().StringVarP(&detailIPMIIP, "ipmi-ip", "i", "", "IPMI Host Ip Address of New IPMI Foundation")
+	foundationIPMICreateCmd.Flags().StringVarP(&detailIPMISOL, "ipmi-sol", "o", "", "IPMI SOL Port (console/ttyS1/etc) of New IPMI Foundation")
 
 	foundationIPMIUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationIPMIUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
@@ -190,6 +198,7 @@ func init() {
 	foundationIPMIUpdateCmd.Flags().StringVarP(&detailIPMIUsername, "ipmi-username", "u", "", "Update the IPMI Username of the IPMI Foundation")
 	foundationIPMIUpdateCmd.Flags().StringVarP(&detailIPMIPassword, "ipmi-password", "a", "", "Update the IPMI Password of the IPMI Foundation")
 	foundationIPMIUpdateCmd.Flags().StringVarP(&detailIPMIIP, "ipmi-ip", "i", "", "Update the IPMI Host Ip Address of the IPMI Foundation")
+	foundationIPMIUpdateCmd.Flags().StringVarP(&detailIPMISOL, "ipmi-sol", "o", "", "Update the IPMI SOL Port (console/ttyS1/etc) of the IPMI Foundation")
 
 	foundationCmd.AddCommand(foundationIPMICmd)
 	foundationIPMICmd.AddCommand(foundationIPMIGetCmd)
