@@ -876,7 +876,7 @@ Updated:               {{.Updated}}
 {{.BootScript}}
 
 ----  Template  ----
-{{.Template}
+{{.Template}}
 `)
 		return nil
 	},
