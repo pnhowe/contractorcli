@@ -27,12 +27,10 @@ import (
 
 	contractor "github.com/t3kton/contractor_client/go"
 
-	"github.com/c-bata/go-prompt"
 	cinp "github.com/cinp/go"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/stromland/cobra-prompt"
 )
 
 var cfgFile string
@@ -47,24 +45,6 @@ var rootCmd = &cobra.Command{
 of contractor without having to write your own small app, or use the API`,
 	SilenceUsage:  true,
 	SilenceErrors: false,
-}
-
-var shellCmd = &cobra.Command{
-	Use:   "shell",
-	Short: "Start Interactive Shell",
-	Run: func(cmd *cobra.Command, args []string) {
-		rootCmd.RemoveCommand(cmd)
-		shell := &cobraprompt.CobraPrompt{
-			RootCmd:        rootCmd,
-			ResetFlagsFlag: true,
-			GoPromptOptions: []prompt.Option{
-				prompt.OptionTitle("contractor"),
-				prompt.OptionPrefix("contractor> "),
-				prompt.OptionMaxSuggestion(10),
-			},
-		}
-		shell.Run()
-	},
 }
 
 var versionCmd = &cobra.Command{
@@ -90,7 +70,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
 	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
 
-	rootCmd.AddCommand(shellCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
