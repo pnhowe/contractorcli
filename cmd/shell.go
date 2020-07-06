@@ -16,31 +16,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import (
-	"os"
+/*
+TODO: watch https://github.com/c-bata/go-prompt/issues/94 for updates on simplifying history load
 
+*/
+
+import (
+	"github.com/c-bata/go-prompt"
 	"github.com/spf13/cobra"
+	"github.com/stromland/cobra-prompt"
 )
 
-// bashCompletionCmd represents the completion command
-var bashCompletionCmd = &cobra.Command{
-	Use:   "bash_completion",
-	Short: "Generates bash completion scripts",
-	Long: `To load completion run
-
-. <(contractorcli bash_completion)
-
-To configure your bash shell to load completions for each session add to your bashrc
-
-# ~/.bashrc or ~/.profile
-
-. <(contractorcli bash_completion)
-`,
+var shellCmd = &cobra.Command{
+	Use:   "shell",
+	Short: "Start Interactive Shell",
 	Run: func(cmd *cobra.Command, args []string) {
-		rootCmd.GenBashCompletion(os.Stdout)
+		rootCmd.RemoveCommand(cmd)
+		shell := &cobraprompt.CobraPrompt{
+			RootCmd:        rootCmd,
+			ResetFlagsFlag: true,
+			GoPromptOptions: []prompt.Option{
+				prompt.OptionTitle("contractor"),
+				prompt.OptionPrefix("contractor> "),
+				prompt.OptionMaxSuggestion(10),
+			},
+		}
+		shell.Run()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(bashCompletionCmd)
+	rootCmd.AddCommand(shellCmd)
 }
