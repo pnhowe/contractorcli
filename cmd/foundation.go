@@ -30,11 +30,19 @@ type foundationTypeEntry struct {
 
 var fundationTypes = map[string]foundationTypeEntry{}
 
-var detailLocator, detailPlot, detailComplex string
+var detailLocator, detailPlot, detailComplex, detailPhysicalLocation, detailLinkName, detailMac, detailNetwork string
+var detailIsProvisioning bool
 
 func foundationArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("Requires a Foundation Id(Locator) Argument")
+	}
+	return nil
+}
+
+func foundationInterfaceArgCheck(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Requires a Foundation Interface Id Argument")
 	}
 	return nil
 }
@@ -86,7 +94,13 @@ Located At:    {{.LocatedAt}}
 Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
+	Interfaces
 `)
+		rl := []cinp.Object{}
+		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()}) {
+			rl = append(rl, v)
+		}
+		outputList(rl, "id	Name	Physical Location	MAC	Is Provisioning	Network	Link Name	PXE	Created	Update\n", "{{.GetID | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -127,6 +141,129 @@ var foundationDeleteCmd = &cobra.Command{
 		defer c.Logout()
 
 		r, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+		if err := r.Delete(); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
+var foundationInterfaceCmd = &cobra.Command{
+	Use:   "interface",
+	Short: "Work with Foundation Interfaces",
+}
+
+var foundationInterfaceCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create New Foundation Interface",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		o := c.UtilitiesRealNetworkInterfaceNew()
+		o.Foundation = r.GetID()
+		o.Name = detailName
+		o.PhysicalLocation = detailPhysicalLocation
+		o.IsProvisioning = detailIsProvisioning
+		o.LinkName = detailLinkName
+		o.Mac = detailMac
+
+		if detailNetwork != "" {
+			r, err := c.UtilitiesNetworkGet(detailNetwork)
+			if err != nil {
+				return err
+			}
+			o.Network = r.GetID()
+		}
+
+		if err := o.Create(); err != nil {
+			return err
+		}
+
+		outputKV(map[string]interface{}{"id": o.GetID()})
+
+		return nil
+	},
+}
+
+var foundationInterfaceUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update Foundation Interface",
+	Args:  foundationInterfaceArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fieldList := []string{}
+		interfaceID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
+		if err != nil {
+			return err
+		}
+
+		if detailName != "" {
+			o.Name = detailName
+			fieldList = append(fieldList, "name")
+		}
+
+		if detailPhysicalLocation != "" {
+			o.PhysicalLocation = detailPhysicalLocation
+			fieldList = append(fieldList, "physical_location")
+		}
+
+		// if detailIsProvisioning != "" {
+		// 	o.IsProvisioning = detailIsProvisioning
+		// 	fieldList = append(fieldList, "is_provisioning")
+		// }
+
+		if detailLinkName != "" {
+			o.LinkName = detailLinkName
+			fieldList = append(fieldList, "link_name")
+		}
+
+		if detailMac != "" {
+			o.Mac = detailMac
+			fieldList = append(fieldList, "mac")
+		}
+
+		if detailNetwork != "" {
+			r, err := c.UtilitiesNetworkGet(detailNetwork)
+			if err != nil {
+				return err
+			}
+			o.Network = r.GetID()
+			fieldList = append(fieldList, "network")
+		}
+
+		if err := o.Update(fieldList); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
+var foundationInterfaceDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete Foundation Interface",
+	Args:  foundationInterfaceArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		interfaceID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
 		if err != nil {
 			return err
 		}
@@ -316,11 +453,30 @@ var foundationJobLogCmd = &cobra.Command{
 }
 
 func init() {
+	foundationInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")
+	foundationInterfaceCreateCmd.Flags().StringVarP(&detailPhysicalLocation, "physical", "y", "", "Physical Location of the new Interface")
+	foundationInterfaceCreateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Network id to attach the new Interface to")
+	foundationInterfaceCreateCmd.Flags().BoolVarP(&detailIsProvisioning, "provisioning", "p", false, "New Interface is the provisioning interface")
+	foundationInterfaceCreateCmd.Flags().StringVarP(&detailLinkName, "linkname", "l", "", "Link Name of the new Interface")
+	foundationInterfaceCreateCmd.Flags().StringVarP(&detailMac, "mac", "m", "", "MAC of the new Interface")
+
+	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name of the Interface")
+	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailPhysicalLocation, "physical", "y", "", "Update the Physical Location of the Interface")
+	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Update Network id the Interface is attached to")
+	//foundationInterfaceUpdateCmd.Flags().BoolVarP(&detailIsProvisioning, "provisioning", "p", false, "New Interface is the provisioning interface")
+	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailLinkName, "linkname", "l", "", "Update the Link Name of the Interface")
+	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailMac, "mac", "m", "", "Update the MAC of the Interface")
+
 	rootCmd.AddCommand(foundationCmd)
 	foundationCmd.AddCommand(foundationListCmd)
 	foundationCmd.AddCommand(foundationGetCmd)
 	foundationCmd.AddCommand(foundationTypesCmd)
 	foundationCmd.AddCommand(foundationDeleteCmd)
+
+	foundationCmd.AddCommand(foundationInterfaceCmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfaceCreateCmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfaceUpdateCmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfaceDeleteCmd)
 
 	foundationCmd.AddCommand(foundationJobCmd)
 	foundationJobCmd.AddCommand(foundationJobInfoCmd)
