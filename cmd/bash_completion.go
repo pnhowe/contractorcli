@@ -26,15 +26,20 @@ import (
 var bashCompletionCmd = &cobra.Command{
 	Use:   "bash_completion",
 	Short: "Generates bash completion scripts",
-	Long: `To load completion run
+	Long: `To load completion run:
 
-. <(contractorcli bash_completion)
+  . <(contractorcli bash_completion)
 
-To configure your bash shell to load completions for each session add to your bashrc
+To configure your bash shell to load completions for each session add to your ~/.bashrc or ~/.profile:
 
-# ~/.bashrc or ~/.profile
+  . <(contractorcli bash_completion)
 
-. <(contractorcli bash_completion)
+or to make it global for all users on the machine, create the file /etc/bash_completion.d/contractorcli
+and put in it:
+
+  if [[ -e /usr/bin/contractorcli ]]; then
+    . <(/usr/bin/contractorcli bash_completion)
+  fi
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		rootCmd.GenBashCompletion(os.Stdout)
