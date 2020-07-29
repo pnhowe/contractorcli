@@ -236,6 +236,8 @@ github.com/stromland/cobra-prompt v0.0.0-20181123224253-940a0a2bd0d3 h1:OuM7BVIB
 github.com/stromland/cobra-prompt v0.0.0-20181123224253-940a0a2bd0d3/go.mod h1:5Ga13ycXHPnvxBIV5JNA3smhUwnk9W3E7dTcBSe2NNw=
 github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
+github.com/t3kton/contractor_client v0.1.10 h1:XNm8s+wAPnqHpjMWKYUP/tDlSGnhND6U5bZ/DwMW9NY=
+github.com/t3kton/contractor_client v0.1.10/go.mod h1:rAabWDGedcZW7kY3s/XePHiVVXbDxAUYh/5+BxLTuZc=
 github.com/t3kton/contractor_client/go v0.0.0-20200504160825-e5097a51086d h1:ChRppcEK3jpheB3DFegIjtFPtC+sDpRKi+7P8DuB5fE=
 github.com/t3kton/contractor_client/go v0.0.0-20200504160825-e5097a51086d/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
 github.com/t3kton/contractor_client/go v0.0.0-20200504192029-576b25eb73e1 h1:G/TpjecO2rnj+vLnIbuokkJ+11GHn8Uy61aJgu0RWYo=
