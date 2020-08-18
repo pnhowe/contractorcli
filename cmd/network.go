@@ -24,7 +24,7 @@ import (
 )
 
 var detailAddressBlock string
-var detailVlan int
+var detailVlan, detailMTU int
 
 func networkArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -77,6 +77,7 @@ var networkGetCmd = &cobra.Command{
 		}
 		outputDetail(r, `Name:          {{.Name}}
 Site:          {{.Site | extractID}}
+MTU:           {{.Mtu}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
@@ -99,6 +100,7 @@ var networkCreateCmd = &cobra.Command{
 
 		o := c.UtilitiesNetworkNew()
 		o.Name = detailName
+		o.Mtu = detailMTU
 
 		if detailSite != "" {
 			r, err := c.SiteSiteGet(detailSite)
@@ -145,6 +147,11 @@ var networkUpdateCmd = &cobra.Command{
 			}
 			o.Site = r.GetID()
 			fieldList = append(fieldList, "site")
+		}
+
+		if detailMTU != 0 {
+			o.Mtu = detailMTU
+			fieldList = append(fieldList, "mtu")
 		}
 
 		if err := o.Update(fieldList); err != nil {
@@ -269,9 +276,11 @@ var networkAddressBlockDeleteCmd = &cobra.Command{
 func init() {
 	networkCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Network")
 	networkCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Network")
+	networkCreateCmd.Flags().IntVarP(&detailMTU, "mtu", "m", 0, "MTU of New Network")
 
 	networkUpdateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name of the Network with value")
 	networkUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of the Network with value")
+	networkUpdateCmd.Flags().IntVarP(&detailMTU, "mtu", "m", 0, "Update the MTU of the Network with the value")
 
 	networkAddressBlockCreateCmd.Flags().StringVarP(&detailAddressBlock, "addrfessblock", "a", "", "AddressBlock to Link to")
 	networkAddressBlockCreateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", 0, "VLan the Addressblock is tagged as")

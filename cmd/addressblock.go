@@ -18,13 +18,14 @@ limitations under the License.
 
 import (
 	"errors"
+	"fmt"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
-var detailSubnet string
-var detailPrefix, detailGatewayOffset int
+var detailSubnet, detailReason string
+var detailPrefix, detailGatewayOffset, detailOffset int
 
 func addressblockArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -207,7 +208,7 @@ var addressblockUsageCmd = &cobra.Command{
 			return err
 		}
 
-		outputDetail(u, `Total:          {{.total}}
+		outputDetail(u, `Total:         {{.total}}
 Static:        {{.static}}
 Reserved:      {{.reserved}}
 Dynammic:      {{.dynamic}}
@@ -248,6 +249,71 @@ var addressblockAllocationCmd = &cobra.Command{
 	},
 }
 
+var addressblockReserveCmd = &cobra.Command{
+	Use:   "reserve",
+	Short: "Reserve and ip/offset in an Address Block",
+	Args:  addressblockArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		addressblockID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		if detailOffset == 0 {
+			return fmt.Errorf("Offset required")
+		}
+
+		if detailReason == "" {
+			return fmt.Errorf("Reason Required")
+		}
+
+		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		if err != nil {
+			return err
+		}
+
+		o := c.UtilitiesReservedAddressNew()
+		o.AddressBlock = r.GetID()
+		o.Offset = detailOffset
+		o.Reason = detailReason
+
+		if err := o.Create(); err != nil {
+			return err
+		}
+
+		outputKV(map[string]interface{}{"id": o.GetID()})
+
+		return nil
+	},
+}
+
+var addressblockDeReserveCmd = &cobra.Command{
+	Use:   "dereserve",
+	Short: "Dereserve a Reserved Ip From an Address Block",
+	Args:  addressblockArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		addressblockID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		if detailOffset == 0 {
+			return fmt.Errorf("Offset required")
+		}
+
+		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		if err != nil {
+			return err
+		}
+		for v := range c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+			if v.Offset == detailOffset {
+				v.Delete()
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Offset not found")
+	},
+}
+
 func init() {
 	addressblockCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the New AddressBlock")
 	addressblockCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of the New AddressBlock")
@@ -261,6 +327,11 @@ func init() {
 	addressblockUpdateCmd.Flags().IntVarP(&detailPrefix, "prefix", "p", 0, "Update the Prefix of the AddressBlock")
 	addressblockUpdateCmd.Flags().IntVarP(&detailGatewayOffset, "gateway", "g", 0, "Update the Gateway Offset of the AddressBlock")
 
+	addressblockReserveCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset for the New Reservation")
+	addressblockReserveCmd.Flags().StringVarP(&detailReason, "reason", "r", "", "Reason for the New Reservation")
+
+	addressblockDeReserveCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset of the Reservation to Remove")
+
 	rootCmd.AddCommand(addressblockCmd)
 	addressblockCmd.AddCommand(addressblockListCmd)
 	addressblockCmd.AddCommand(addressblockGetCmd)
@@ -269,4 +340,6 @@ func init() {
 	addressblockCmd.AddCommand(addressblockDeleteCmd)
 	addressblockCmd.AddCommand(addressblockUsageCmd)
 	addressblockCmd.AddCommand(addressblockAllocationCmd)
+	addressblockCmd.AddCommand(addressblockReserveCmd)
+	addressblockCmd.AddCommand(addressblockDeReserveCmd)
 }
