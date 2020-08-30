@@ -58,7 +58,7 @@ var addressblockListCmd = &cobra.Command{
 
 var addressblockGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get AddressBlocks",
+	Short: "Get AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addressblockID := args[0]
@@ -85,7 +85,7 @@ Updated:       {{.Updated}}
 
 var addressblockCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create New AddressBlocks",
+	Short: "Create New AddressBlock",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c := getContractor()
 		defer c.Logout()
@@ -118,7 +118,7 @@ var addressblockCreateCmd = &cobra.Command{
 
 var addressblockUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update AddressBlocks",
+	Short: "Update AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
@@ -170,7 +170,7 @@ var addressblockUpdateCmd = &cobra.Command{
 
 var addressblockDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete AddressBlocks",
+	Short: "Delete AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addressblockID := args[0]

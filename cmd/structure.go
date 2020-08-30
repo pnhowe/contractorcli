@@ -18,14 +18,16 @@ limitations under the License.
 
 import (
 	"errors"
+	"strings"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
 var configSetName, configSetValue, configDeleteName string
-var configFull bool
-var detailHostname, detailSite, detailBlueprint, detailFoundation string
+var configFull, detailIsPrimary bool
+var detailHostname, detailSite, detailBlueprint, detailFoundation, detailInterfaceName string
+var detaiOffset int
 
 func structureArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -256,6 +258,101 @@ var structureConfigCmd = &cobra.Command{
 	},
 }
 
+var structureAddressCmd = &cobra.Command{
+	Use:   "address",
+	Short: "Work with Structure Ip Addresses",
+}
+
+var structureAddressListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all Ip Addresses attached to a structure",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+
+		rl := []cinp.Object{}
+		for v := range c.UtilitiesAddressList("structure", map[string]interface{}{"structure": o.GetID()}) {
+			rl = append(rl, v)
+		}
+		outputList(rl, "ID	Interface	Address	Address Block	Offset	Created	Updated\n", "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Updated}}	{{.Created}}\n")
+
+		return nil
+	},
+}
+
+var structureAddressNextCmd = &cobra.Command{
+	Use:   "next",
+	Short: "Assign Next available IP address in Address Block to structure",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+
+		a, err := c.UtilitiesAddressBlockGet(detailAddressBlock)
+		if err != nil {
+			return err
+		}
+
+		addrID, err := a.CallNextAddress(strings.Replace(o.GetID(), "/api/v1/Building/Structure", "/api/v1/Utilities/Networked", 1), detailInterfaceName, detailIsPrimary)
+		if err != nil {
+			return err
+		}
+
+		outputKV(map[string]interface{}{"id": addrID})
+
+		return nil
+	},
+}
+
+var structureAddressAddCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add an IP address to structure",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		structureID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		s, err := c.BuildingStructureGet(structureID)
+		if err != nil {
+			return err
+		}
+
+		a, err := c.UtilitiesAddressBlockGet(detailAddressBlock)
+		if err != nil {
+			return err
+		}
+
+		o := c.UtilitiesAddressNew()
+		o.AddressBlock = a.GetID()
+		o.Offset = detailOffset
+		o.Networked = strings.Replace(s.GetID(), "/api/v1/Building/Structure", "/api/v1/Utilities/Networked", 1)
+		o.InterfaceName = detailInterfaceName
+		o.IsPrimary = detailIsPrimary
+
+		if err := o.Create(); err != nil {
+			return err
+		}
+
+		outputKV(map[string]interface{}{"id": o.GetID()})
+
+		return nil
+	},
+}
+
 var structureJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Structure Jobs",
@@ -449,6 +546,15 @@ func init() {
 	structureUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Structure with value")
 	structureUpdateCmd.Flags().StringVarP(&detailFoundation, "foundation", "f", "", "Update the Foundation of Structure with value")
 
+	structureAddressNextCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "Address Block to get an IP From")
+	structureAddressNextCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
+	structureAddressNextCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
+
+	structureAddressAddCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "Address Block to get an IP From")
+	structureAddressAddCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
+	structureAddressAddCmd.Flags().IntVarP(&detaiOffset, "offset", "o", 0, "Offset inside the Address Block to use")
+	structureAddressAddCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
+
 	rootCmd.AddCommand(structureCmd)
 	structureCmd.AddCommand(structureListCmd)
 	structureCmd.AddCommand(structureGetCmd)
@@ -456,6 +562,11 @@ func init() {
 	structureCmd.AddCommand(structureUpdateCmd)
 	structureCmd.AddCommand(structureDeleteCmd)
 	structureCmd.AddCommand(structureConfigCmd)
+
+	structureCmd.AddCommand(structureAddressCmd)
+	structureAddressCmd.AddCommand(structureAddressListCmd)
+	structureAddressCmd.AddCommand(structureAddressNextCmd)
+	structureAddressCmd.AddCommand(structureAddressAddCmd)
 
 	structureCmd.AddCommand(structureJobCmd)
 	structureJobCmd.AddCommand(structureJobInfoCmd)
