@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var complexVirtualBoxCmd = &cobra.Command{
@@ -78,7 +79,7 @@ var complexVirtualBoxCreateCmd = &cobra.Command{
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := c.BuildingStructureGet(strconv.Itoa(v))
 			if err != nil {
 				return err
 			}
@@ -141,7 +142,7 @@ var complexVirtualBoxUpdateCmd = &cobra.Command{
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := c.BuildingStructureGet(strconv.Itoa(v))
 				if err != nil {
 					return err
 				}
@@ -165,14 +166,14 @@ func init() {
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 80, "Built Percentage of New VirtualBox Complex\n(Percentage of Built Members at which the complex is considered built)")
-	complexVirtualBoxCreateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Members of the new VirtualBox Complex, specify for each member")
+	complexVirtualBoxCreateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Members of the new VirtualBox Complex, specify for each member")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "VirtualBox Username of New VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "VirtualBox Password of New VirtualBox Complex")
 
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of VirtualBox Complex with value")
 	complexVirtualBoxUpdateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 0, "Update the Built Percentage of VirtualBox Complex with value")
-	complexVirtualBoxUpdateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Update the Members of the VirtualBox Complex, specify for each member")
+	complexVirtualBoxUpdateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Update the Members of the VirtualBox Complex, specify for each member")
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Update the VirtualBox Username of the VirtualBox Complex with value")
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the VirtualBox Password of the VirtualBox Complex with value")
 

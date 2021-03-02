@@ -45,8 +45,6 @@ Description:         {{.Description}}
 Type:                {{.Type}}
 State:               {{.State}}
 Site:                {{.Site | extractID}}
-BuiltPercentage:     {{.BuiltPercentage}}
-Members:             {{.Members}}
 AzureSubscriptionID: {{.AzureSubscriptionID}}
 AzureLocation:       {{.AzureLocation}}
 AzureResourceGroup:  {{.AzureResourceGroup}}
@@ -71,7 +69,6 @@ var complexAzureCreateCmd = &cobra.Command{
 		o := c.AzureAzureComplexNew()
 		o.Name = detailName
 		o.Description = detailDescription
-		o.BuiltPercentage = detailBuiltPercentage
 		o.AzureSubscriptionID = detailSubscriptionID
 		o.AzureLocation = detailLocation
 		o.AzureResourceGroup = detailResourceGroup
@@ -85,14 +82,6 @@ var complexAzureCreateCmd = &cobra.Command{
 				return err
 			}
 			o.Site = r.GetID()
-		}
-
-		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
-			if err != nil {
-				return err
-			}
-			o.Members = append(o.Members, s.GetID())
 		}
 
 		if err := o.Create(); err != nil {
@@ -123,11 +112,6 @@ var complexAzureUpdateCmd = &cobra.Command{
 		if detailDescription != "" {
 			o.Description = detailDescription
 			fieldList = append(fieldList, "description")
-		}
-
-		if detailBuiltPercentage != 0 {
-			o.BuiltPercentage = detailBuiltPercentage
-			fieldList = append(fieldList, "built_percentage")
 		}
 
 		if detailSubscriptionID != "" {
@@ -169,17 +153,6 @@ var complexAzureUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "site")
 		}
 
-		if len(detailMembers) > 0 {
-			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
-				if err != nil {
-					return err
-				}
-				o.Members = append(o.Members, s.GetID())
-			}
-			fieldList = append(fieldList, "members")
-		}
-
 		if err := o.Update(fieldList); err != nil {
 			return err
 		}
@@ -194,15 +167,11 @@ func init() {
 	complexAzureCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New Azure Complex")
 	complexAzureCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Azure Complex")
 	complexAzureCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Azure Complex")
-	complexAzureCreateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 80, "Built Percentage of New Azure Complex\n(Percentage of Built Members at which the complex is considered built)")
-	complexAzureCreateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Members of the new Azure Complex, specify for each member")
 	complexAzureCreateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Azure Username of New Azure Complex")
 	complexAzureCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Azure Password of New Azure Complex")
 
 	complexAzureUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexAzureUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Azure Complex with value")
-	complexAzureUpdateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 0, "Update the Built Percentage of Azure Complex with value")
-	complexAzureUpdateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Update the Members of the Azure Complex, specify for each member")
 	complexAzureUpdateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Update the Azure Username of the Azure Complex with value")
 	complexAzureUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the Azure Password of the Azure Complex with value")
 

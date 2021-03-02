@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var complexProxmoxCmd = &cobra.Command{
@@ -78,7 +79,7 @@ var complexProxmoxCreateCmd = &cobra.Command{
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := c.BuildingStructureGet(strconv.Itoa(v))
 			if err != nil {
 				return err
 			}
@@ -141,7 +142,7 @@ var complexProxmoxUpdateCmd = &cobra.Command{
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := c.BuildingStructureGet(strconv.Itoa(v))
 				if err != nil {
 					return err
 				}
@@ -165,14 +166,14 @@ func init() {
 	complexProxmoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Proxmox Complex")
 	complexProxmoxCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Proxmox Complex")
 	complexProxmoxCreateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 80, "Built Percentage of New Proxmox Complex\n(Percentage of Built Members at which the complex is considered built)")
-	complexProxmoxCreateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Members of the new Proxmox Complex, specify for each member")
+	complexProxmoxCreateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Members of the new Proxmox Complex, specify for each member")
 	complexProxmoxCreateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Proxmox Username of New Proxmox Complex")
 	complexProxmoxCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Proxmox Password of New Proxmox Complex")
 
 	complexProxmoxUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexProxmoxUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Proxmox Complex with value")
 	complexProxmoxUpdateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 0, "Update the Built Percentage of Proxmox Complex with value")
-	complexProxmoxUpdateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Update the Members of the Proxmox Complex, specify for each member")
+	complexProxmoxUpdateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Update the Members of the Proxmox Complex, specify for each member")
 	complexProxmoxUpdateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Update the Proxmox Username of the Proxmox Complex with value")
 	complexProxmoxUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the Proxmox Password of the Proxmox Complex with value")
 

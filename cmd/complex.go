@@ -31,7 +31,7 @@ type complexTypeEntry struct {
 var complexTypes = map[string]complexTypeEntry{}
 
 var detailBuiltPercentage int
-var detailMembers []string
+var detailMembers []int
 var detailUsername, detailPassword string
 
 func complexArgCheck(cmd *cobra.Command, args []string) error {

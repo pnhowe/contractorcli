@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var complexManualCmd = &cobra.Command{
@@ -74,7 +75,7 @@ var complexManualCreateCmd = &cobra.Command{
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := c.BuildingStructureGet(strconv.Itoa(v))
 			if err != nil {
 				return err
 			}
@@ -127,7 +128,7 @@ var complexManualUpdateCmd = &cobra.Command{
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := c.BuildingStructureGet(strconv.Itoa(v))
 				if err != nil {
 					return err
 				}
@@ -151,12 +152,12 @@ func init() {
 	complexManualCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Manual Complex")
 	complexManualCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Manual Complex")
 	complexManualCreateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 80, "Built Percentage of New Manual Complex\n(Percentage of Built Members at which the complex is considered built)")
-	complexManualCreateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Members of the new Manual Complex, specify for each member")
+	complexManualCreateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Members of the new Manual Complex, specify for each member")
 
 	complexManualUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexManualUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Manual Complex with value")
 	complexManualUpdateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 0, "Update the Built Percentage of Manual Complex with value")
-	complexManualUpdateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Update the Members of the Manual Complex, specify for each member")
+	complexManualUpdateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Update the Members of the Manual Complex, specify for each member")
 
 	complexCmd.AddCommand(complexManualCmd)
 	complexManualCmd.AddCommand(complexManualGetCmd)

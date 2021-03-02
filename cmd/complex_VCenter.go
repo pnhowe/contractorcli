@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var detailHost, detailDatacenter, detailCluster string
@@ -85,7 +86,7 @@ var complexVCenterCreateCmd = &cobra.Command{
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := c.BuildingStructureGet(strconv.Itoa(v))
 			if err != nil {
 				return err
 			}
@@ -166,7 +167,7 @@ var complexVCenterUpdateCmd = &cobra.Command{
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := c.BuildingStructureGet(strconv.Itoa(v))
 				if err != nil {
 					return err
 				}
@@ -199,7 +200,7 @@ func init() {
 	complexVCenterCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VCenter Complex")
 	complexVCenterCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New VCenter Complex")
 	complexVCenterCreateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 80, "Built Percentage of New VCenter Complex\n(Percentage of Built Members at which the complex is considered built)")
-	complexVCenterCreateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Members of the new VCenter Complex, specify for each member")
+	complexVCenterCreateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Members of the new VCenter Complex, specify for each member")
 	complexVCenterCreateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "VCenter Username of New VCenter Complex")
 	complexVCenterCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "VCenter Password of New VCenter Complex")
 	complexVCenterCreateCmd.Flags().StringVarP(&detailDatacenter, "datacenter", "a", "", "VCenter DataCenter of New VCenter Complex")
@@ -209,7 +210,7 @@ func init() {
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of VCenter Complex with value")
 	complexVCenterUpdateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 0, "Update the Built Percentage of VCenter Complex with value")
-	complexVCenterUpdateCmd.Flags().StringArrayVarP(&detailMembers, "members", "m", []string{}, "Update the Members of the VCenter Complex, specify for each member")
+	complexVCenterUpdateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Update the Members of the VCenter Complex, specify for each member")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Update the VCenter Username of the VCenter Complex with value")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the VCenter Password of the VCenter Complex with value")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailDatacenter, "datacenter", "a", "", "Update the VCenter DataCenter of New VCenter Complex with value")

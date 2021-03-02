@@ -84,7 +84,7 @@ var foundationVCenterCreateCmd = &cobra.Command{
 		}
 
 		if detailComplex != "" {
-			r, err := c.VcenterVCenterFoundationGet(detailComplex)
+			r, err := c.VcenterVCenterComplexGet(detailComplex)
 			if err != nil {
 				return err
 			}
