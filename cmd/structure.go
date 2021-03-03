@@ -27,7 +27,6 @@ import (
 var configSetName, configSetValue, configDeleteName string
 var configFull, detailIsPrimary bool
 var detailHostname, detailSite, detailBlueprint, detailFoundation, detailInterfaceName string
-var detaiOffset int
 
 func structureArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -552,7 +551,7 @@ func init() {
 
 	structureAddressAddCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "Address Block to get an IP From")
 	structureAddressAddCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
-	structureAddressAddCmd.Flags().IntVarP(&detaiOffset, "offset", "o", 0, "Offset inside the Address Block to use")
+	structureAddressAddCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 	structureAddressAddCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
 
 	rootCmd.AddCommand(structureCmd)
