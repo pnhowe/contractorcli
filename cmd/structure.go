@@ -280,7 +280,7 @@ var structureAddressListCmd = &cobra.Command{
 		for v := range c.UtilitiesAddressList("structure", map[string]interface{}{"structure": o.GetID()}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "ID	Interface	Address	Address Block	Offset	Created	Updated\n", "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Updated}}	{{.Created}}\n")
+		outputList(rl, "ID	Interface	Address	Address Is Primary	Block	Offset	Created	Updated\n", "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
 
 		return nil
 	},
