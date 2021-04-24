@@ -51,7 +51,7 @@ var structureListCmd = &cobra.Command{
 		for v := range c.BuildingStructureList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Site	Hostname	Foundation	Blueprint	Created	Updated\n", "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Hostname", "Foundation", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -280,7 +280,7 @@ var structureAddressListCmd = &cobra.Command{
 		for v := range c.UtilitiesAddressList("structure", map[string]interface{}{"structure": o.GetID()}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "ID	Interface	Address	Address Is Primary	Block	Offset	Created	Updated\n", "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
+		outputList(rl, []string{"Id", "Interface", "Address", "Address Block", "Offset", "Is Primary", "Created", "Updated"}, "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Offset}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
 
 		return nil
 	},
@@ -523,7 +523,7 @@ var structureJobLogCmd = &cobra.Command{
 		for v := range c.ForemanJobLogList("structure", map[string]interface{}{"structure": o.GetID()}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Script Name	Created By	Started At	Finished At	Cancled By	Cancled At	Created	Updated\n", "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
+		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Canceled By", "Cancled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
 
 		return nil
 	},

@@ -50,7 +50,7 @@ var addressblockListCmd = &cobra.Command{
 		for v := range c.UtilitiesAddressBlockList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Name	Site	SubNet	Prefix	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Subnet}}	{{.Prefix}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Site", "SubNet", "Prefix", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Subnet}}	{{.Prefix}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -243,7 +243,7 @@ var addressblockAllocationCmd = &cobra.Command{
 			rl = append(rl, v)
 		}
 
-		outputList(rl, "Id	Offset	Ip Address	Type\n", "{{.GetID | extractID}}	{{.IPAddress}}	{{.Offset}}	{{.Type}}\n")
+		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type"}, "{{.GetID | extractID}}	{{.IPAddress}}	{{.Offset}}	{{.Type}}\n")
 
 		return nil
 	},

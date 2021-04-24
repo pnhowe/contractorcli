@@ -9,4 +9,7 @@ contractorcli: main.go cmd/* go.mod go.sum
 clean:
 	${RM} contractorcli
 
+version:
+	echo $(VERSION)
+
 .PHONY: clean

@@ -99,7 +99,7 @@ var blueprintFoundationListCmd = &cobra.Command{
 		for v := range c.BlueprintFoundationBluePrintList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Name	Description	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -409,7 +409,7 @@ var blueprintStructureListCmd = &cobra.Command{
 		for v := range c.BlueprintStructureBluePrintList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Name	Description	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -707,7 +707,7 @@ var scriptListCmd = &cobra.Command{
 		for v := range c.BlueprintScriptList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Name	Description	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -893,7 +893,7 @@ var pxeListCmd = &cobra.Command{
 		for v := range c.BlueprintPXEList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Name	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},

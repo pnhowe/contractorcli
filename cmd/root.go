@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -26,6 +27,8 @@ import (
 	"text/template"
 
 	contractor "github.com/t3kton/contractor_client/go"
+
+	"github.com/olekukonko/tablewriter"
 
 	cinp "github.com/cinp/go"
 	homedir "github.com/mitchellh/go-homedir"
@@ -184,7 +187,7 @@ func editBuffer(value string) (string, error) {
 	return strings.TrimSpace(string(buf[:len])), nil
 }
 
-func outputList(valueList []cinp.Object, header string, itemTemplate string) {
+func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 	if asJSON {
 		buff, err := json.MarshalIndent(valueList, "", " ")
 		if err != nil {
@@ -193,6 +196,9 @@ func outputList(valueList []cinp.Object, header string, itemTemplate string) {
 		}
 		os.Stdout.Write(buff)
 	} else {
+		var rederbuff bytes.Buffer
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader(header)
 		t := template.New("output")
 		t.Funcs(template.FuncMap{"extractID": extractID})
 		t, err := t.Parse(itemTemplate)
@@ -200,14 +206,15 @@ func outputList(valueList []cinp.Object, header string, itemTemplate string) {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		os.Stdout.WriteString(header)
 		for _, value := range valueList {
-			err = t.Execute(os.Stdout, value)
+			err = t.Execute(&rederbuff, value)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+			table.Append(strings.Split(rederbuff.String(), "\t"))
 		}
+		table.Render()
 	}
 }
 

@@ -51,7 +51,7 @@ var jobFoundationListCmd = &cobra.Command{
 		for v := range c.ForemanFoundationJobList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Foundation	State	Progress	Message	Script	Updated	Created\n", "{{.GetID | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Progress}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Foundation", "State", "Progress", "Message", "Script", "Updated", "Created"}, "{{.GetID | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Progress}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -190,7 +190,7 @@ var jobStructureListCmd = &cobra.Command{
 		for v := range c.ForemanStructureJobList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Structure	State	Progress	Message	Script	Updated	Created\n", "{{.GetID | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Progress}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Structure", "State", "Progress", "Message", "Script", "Updated", "Created"}, "{{.GetID | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Progress}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},

@@ -57,7 +57,7 @@ var complexListCmd = &cobra.Command{
 		for v := range c.BuildingComplexList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "id	Site	Name	State	Type	Created	Updated\n", "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Name}}	{{.State}}	{{.Type}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Name", "State", "Type", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Name}}	{{.State}}	{{.Type}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},

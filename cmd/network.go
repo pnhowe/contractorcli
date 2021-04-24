@@ -56,7 +56,7 @@ var networkListCmd = &cobra.Command{
 		for v := range c.UtilitiesNetworkList("", map[string]interface{}{}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "Id	Name	Site	Created	Updated\n", "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Site", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -85,7 +85,7 @@ Updated:       {{.Updated}}
 		for v := range c.UtilitiesNetworkAddressBlockList("network", map[string]interface{}{"network": r.GetID()}) {
 			rl = append(rl, v)
 		}
-		outputList(rl, "link id	Address Block	vlan id vlan	Created	Update\n", "{{.GetID | extractID}}	{{.AddressBlock | extractID}}	{{.Vlan}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"link id", "Address Block", "vlan id", "Created", "Update"}, "{{.GetID | extractID}}	{{.AddressBlock | extractID}}	{{.Vlan}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
