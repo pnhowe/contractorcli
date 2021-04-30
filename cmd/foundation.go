@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"errors"
+	"fmt"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
@@ -94,14 +95,7 @@ Located At:    {{.LocatedAt}}
 Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
-	Interfaces
 `)
-		rl := []cinp.Object{}
-		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()}) {
-			rl = append(rl, v)
-		}
-		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
-
 		return nil
 	},
 }
@@ -155,6 +149,30 @@ var foundationDeleteCmd = &cobra.Command{
 var foundationInterfaceCmd = &cobra.Command{
 	Use:   "interface",
 	Short: "Work with Foundation Interfaces",
+}
+
+var foundationInterfaceListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all Interfaces attached to a foundation",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		rl := []cinp.Object{}
+		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()}) {
+			rl = append(rl, v)
+		}
+		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
+
+		return nil
+	},
 }
 
 var foundationInterfaceCreateCmd = &cobra.Command{
@@ -247,6 +265,32 @@ var foundationInterfaceUpdateCmd = &cobra.Command{
 		}
 
 		if err := o.Update(fieldList); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
+var foundationInterfacePXECmd = &cobra.Command{
+	Use:   "pxe",
+	Short: "SetFoundation Interface PXE",
+	Args:  foundationInterfaceArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		interfaceID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
+		if err != nil {
+			return err
+		}
+
+		if detailName != "" {
+			o.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailName)
+		}
+
+		if err := o.Update([]string{"pxe"}); err != nil {
 			return err
 		}
 
@@ -467,6 +511,8 @@ func init() {
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailLinkName, "linkname", "l", "", "Update the Link Name of the Interface")
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailMac, "mac", "m", "", "Update the MAC of the Interface")
 
+	foundationInterfacePXECmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name PXE to set")
+
 	rootCmd.AddCommand(foundationCmd)
 	foundationCmd.AddCommand(foundationListCmd)
 	foundationCmd.AddCommand(foundationGetCmd)
@@ -474,9 +520,11 @@ func init() {
 	foundationCmd.AddCommand(foundationDeleteCmd)
 
 	foundationCmd.AddCommand(foundationInterfaceCmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfaceListCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceCreateCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceUpdateCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceDeleteCmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfacePXECmd)
 
 	foundationCmd.AddCommand(foundationJobCmd)
 	foundationJobCmd.AddCommand(foundationJobInfoCmd)
