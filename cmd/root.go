@@ -207,6 +207,7 @@ func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 			os.Exit(1)
 		}
 		for _, value := range valueList {
+			rederbuff.Reset()
 			err = t.Execute(&rederbuff, value)
 			if err != nil {
 				fmt.Println(err)

@@ -35,6 +35,13 @@ func structureArgCheck(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func structureAddressArgCheck(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Requires a Address Id Argument")
+	}
+	return nil
+}
+
 var structureCmd = &cobra.Command{
 	Use:   "structure",
 	Short: "Work with Structures",
@@ -352,6 +359,39 @@ var structureAddressAddCmd = &cobra.Command{
 	},
 }
 
+var structureAddressUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update an IP address to structure",
+	Args:  structureAddressArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fieldList := []string{}
+		addressID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.UtilitiesAddressGet(addressID)
+		if err != nil {
+			return err
+		}
+
+		if detailOffset != 0 {
+			o.Offset = detailOffset
+			fieldList = append(fieldList, "offset")
+		}
+
+		if detailInterfaceName != "" {
+			o.InterfaceName = detailInterfaceName
+			fieldList = append(fieldList, "interface_name")
+		}
+
+		if err := o.Update(fieldList); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
 var structureJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Structure Jobs",
@@ -554,6 +594,9 @@ func init() {
 	structureAddressAddCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 	structureAddressAddCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
 
+	structureAddressUpdateCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
+	structureAddressUpdateCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
+
 	rootCmd.AddCommand(structureCmd)
 	structureCmd.AddCommand(structureListCmd)
 	structureCmd.AddCommand(structureGetCmd)
@@ -566,6 +609,7 @@ func init() {
 	structureAddressCmd.AddCommand(structureAddressListCmd)
 	structureAddressCmd.AddCommand(structureAddressNextCmd)
 	structureAddressCmd.AddCommand(structureAddressAddCmd)
+	structureAddressCmd.AddCommand(structureAddressUpdateCmd)
 
 	structureCmd.AddCommand(structureJobCmd)
 	structureJobCmd.AddCommand(structureJobInfoCmd)

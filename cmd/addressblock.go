@@ -19,6 +19,7 @@ limitations under the License.
 import (
 	"errors"
 	"fmt"
+	"sort"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
@@ -243,7 +244,11 @@ var addressblockAllocationCmd = &cobra.Command{
 			rl = append(rl, v)
 		}
 
-		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type"}, "{{.GetID | extractID}}	{{.IPAddress}}	{{.Offset}}	{{.Type}}\n")
+		sort.Slice(rl, func(i, j int) bool {
+			return (*rl[i].AsMap(false))["offset"].(int) < (*rl[j].AsMap(false))["offset"].(int)
+		})
+
+		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type", "Networked"}, "{{.GetID | extractID}}	{{.Offset}}	{{.IPAddress}}	{{.Type}}\n")
 
 		return nil
 	},
