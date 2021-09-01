@@ -282,7 +282,7 @@ func init() {
 	networkUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of the Network with value")
 	networkUpdateCmd.Flags().IntVarP(&detailMTU, "mtu", "m", 0, "Update the MTU of the Network with the value")
 
-	networkAddressBlockCreateCmd.Flags().StringVarP(&detailAddressBlock, "addrfessblock", "a", "", "AddressBlock to Link to")
+	networkAddressBlockCreateCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "AddressBlock to Link to")
 	networkAddressBlockCreateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", 0, "VLan the Addressblock is tagged as")
 
 	networkAddressBlockUpdateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", -1, "VLan the Addressblock is tagged as")

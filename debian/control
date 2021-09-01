@@ -1,0 +1,12 @@
+Source: contractorcli
+Section: multiverse/t3kton
+Priority: optional
+Maintainer: Peter Howe <pnhowe@gmail.com>
+Build-Depends: debhelper (>= 7), golang-1.13, lsb-release
+Standards-Version: 3.8.3
+
+Package: contractorcli
+Architecture: all
+Depends: ${misc:Depends}
+Description: Contractorcli
+  Contractorcli
