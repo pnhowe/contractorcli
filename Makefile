@@ -26,7 +26,7 @@ dpkg-blueprints:
 	echo ubuntu-focal-base
 
 dpkg-requires:
-	echo dpkg-dev debhelper golang-1.13
+	echo dpkg-dev debhelper golang-1.13 golang
 
 dpkg:
 	dpkg-buildpackage -b -us -uc
