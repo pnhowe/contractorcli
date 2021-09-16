@@ -20,6 +20,7 @@ set -e
 
 case "$1" in
     configure)
+        mkdir -p /etc/bash_completion.d/
         /usr/bin/contractorcli bash_completion > /etc/bash_completion.d/contractorcli
 
     ;;
