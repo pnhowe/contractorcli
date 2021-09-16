@@ -1,4 +1,4 @@
-VERSION = $(shell git tag -l | tail -n1)
+VERSION := $(shell head -n 1 debian/changelog | awk '{match( $$0, /\(.+?\)/); print substr( $$0, RSTART+1, RLENGTH-2 ) }' | cut -d- -f1 )
 GIT_VERSION = $(shell git rev-list -1 HEAD)
 
 all: contractorcli

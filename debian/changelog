@@ -1,3 +1,9 @@
+contractorcli (0.10.0-1) focal; urgency=medium
+
+  * Added Packet (Equinix Metal) support
+
+ -- Peter Howe <pnhowe@gmail.com>  Thu, 16 Sep 2021 11:27:44 -0600
+
 contractorcli (0.1.1-1) focal; urgency=medium
 
   * Initial release.
