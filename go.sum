@@ -229,6 +229,8 @@ github.com/t3kton/contractor_client/go v0.0.0-20200813222500-2e168d21f18c h1:6DJ
 github.com/t3kton/contractor_client/go v0.0.0-20200813222500-2e168d21f18c/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
 github.com/t3kton/contractor_client/go v0.0.0-20210901210008-fddcadc051a4 h1:pspaSJ0qIKXREcdmv0qZnFiZRZDsRcrZaQ6+KN/Zwho=
 github.com/t3kton/contractor_client/go v0.0.0-20210901210008-fddcadc051a4/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
+github.com/t3kton/contractor_client/go v0.0.0-20210928205046-9275b9cb4332 h1:3kKpMSWkYLM0wjczFxlXtf8GO80domzn/l1YOk7tKZs=
+github.com/t3kton/contractor_client/go v0.0.0-20210928205046-9275b9cb4332/go.mod h1:P/5DAVq3wlTJo/tE9oTjy5CZvOIqwYCRmv1pneuIFlg=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
