@@ -1,3 +1,10 @@
+contractorcli (0.11.0-1) focal; urgency=medium
+
+  * Added dynamic ip reservations
+  * Added cartographer
+
+ -- Peter Howe <pnhowe@gmail.com>  Wed, 06 Oct 2021 08:07:22 -0600
+
 contractorcli (0.10.0-1) focal; urgency=medium
 
   * Added Packet (Equinix Metal) support

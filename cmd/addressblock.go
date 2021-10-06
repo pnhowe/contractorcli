@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailSubnet, detailReason string
+var detailSubnet, detailReason, detailPXE string
 var detailPrefix, detailGatewayOffset, detailOffset int
 
 func addressblockArgCheck(cmd *cobra.Command, args []string) error {
@@ -248,7 +248,7 @@ var addressblockAllocationCmd = &cobra.Command{
 			return (*rl[i].AsMap(false))["offset"].(int) < (*rl[j].AsMap(false))["offset"].(int)
 		})
 
-		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type", "Networked"}, "{{.GetID | extractID}}	{{.Offset}}	{{.IPAddress}}	{{.Type}}\n")
+		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type"}, "{{.GetID | extractID}}	{{.Offset}}	{{.IPAddress}}	{{.Type}}\n")
 
 		return nil
 	},
@@ -319,6 +319,73 @@ var addressblockDeReserveCmd = &cobra.Command{
 	},
 }
 
+var addressblockDynamicCmd = &cobra.Command{
+	Use:   "dynamic",
+	Short: "Assign an ip/offset in an Address Block as Dynamic",
+	Args:  addressblockArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		addressblockID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		if detailOffset == 0 {
+			return fmt.Errorf("Offset required")
+		}
+
+		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		if err != nil {
+			return err
+		}
+
+		o := c.UtilitiesDynamicAddressNew()
+		o.AddressBlock = r.GetID()
+		o.Offset = detailOffset
+		if detailPXE != "" {
+			r2, err := c.BlueprintPXEGet(detailPXE)
+			if err != nil {
+				return err
+			}
+			o.Pxe = r2.GetID()
+		}
+
+		if err := o.Create(); err != nil {
+			return err
+		}
+
+		outputKV(map[string]interface{}{"id": o.GetID()})
+
+		return nil
+	},
+}
+
+var addressblockDeDynamicCmd = &cobra.Command{
+	Use:   "dedynamic",
+	Short: "De-assign an ip/offset in an Address Block as Dynamic",
+	Args:  addressblockArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		addressblockID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		if detailOffset == 0 {
+			return fmt.Errorf("Offset required")
+		}
+
+		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		if err != nil {
+			return err
+		}
+		for v := range c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+			if v.Offset == detailOffset {
+				v.Delete()
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Offset not found")
+	},
+}
+
 func init() {
 	addressblockCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the New AddressBlock")
 	addressblockCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of the New AddressBlock")
@@ -337,6 +404,11 @@ func init() {
 
 	addressblockDeReserveCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset of the Reservation to Remove")
 
+	addressblockDynamicCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset for the New Dynamic Ip")
+	addressblockDynamicCmd.Flags().StringVarP(&detailPXE, "pxe", "p", "", "PXE for the New Dynamic Ip")
+
+	addressblockDeDynamicCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset of the Dynamic Ip to Remove")
+
 	rootCmd.AddCommand(addressblockCmd)
 	addressblockCmd.AddCommand(addressblockListCmd)
 	addressblockCmd.AddCommand(addressblockGetCmd)
@@ -347,4 +419,6 @@ func init() {
 	addressblockCmd.AddCommand(addressblockAllocationCmd)
 	addressblockCmd.AddCommand(addressblockReserveCmd)
 	addressblockCmd.AddCommand(addressblockDeReserveCmd)
+	addressblockCmd.AddCommand(addressblockDynamicCmd)
+	addressblockCmd.AddCommand(addressblockDeDynamicCmd)
 }

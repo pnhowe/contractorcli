@@ -19,6 +19,7 @@ limitations under the License.
 import (
 	"errors"
 	"fmt"
+	"sort"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
@@ -169,6 +170,11 @@ var foundationInterfaceListCmd = &cobra.Command{
 		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()}) {
 			rl = append(rl, v)
 		}
+
+		sort.Slice(rl, func(i, j int) bool {
+			return (*rl[i].AsMap(false))["name"].(int) < (*rl[j].AsMap(false))["name"].(int)
+		})
+
 		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
