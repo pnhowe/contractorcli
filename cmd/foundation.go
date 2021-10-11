@@ -32,7 +32,7 @@ type foundationTypeEntry struct {
 
 var fundationTypes = map[string]foundationTypeEntry{}
 
-var detailLocator, detailPlot, detailComplex, detailPhysicalLocation, detailLinkName, detailMac, detailNetwork string
+var detailLocator, detailPlot, detailComplex, detailPhysicalLocation, detailLinkName, detailMac, detailNetwork, detailPxeName string
 var detailIsProvisioning bool
 
 func foundationArgCheck(cmd *cobra.Command, args []string) error {
@@ -292,9 +292,7 @@ var foundationInterfacePXECmd = &cobra.Command{
 			return err
 		}
 
-		if detailName != "" {
-			o.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailName)
-		}
+		o.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
 
 		if err := o.Update([]string{"pxe"}); err != nil {
 			return err
@@ -502,6 +500,35 @@ var foundationJobLogCmd = &cobra.Command{
 	},
 }
 
+var foundationBootToCmd = &cobra.Command{
+	Use:   "bootto",
+	Short: "Set Default Interface PXE",
+	Args:  foundationArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		o, err := c.BuildingFoundationGet(foundationID)
+		if err != nil {
+			return err
+		}
+
+		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": o.GetID()}) {
+			if v.IsProvisioning {
+				v.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
+
+				if err := v.Update([]string{"pxe"}); err != nil {
+					return err
+				}
+			}
+
+		}
+
+		return nil
+	},
+}
+
 func init() {
 	foundationInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")
 	foundationInterfaceCreateCmd.Flags().StringVarP(&detailPhysicalLocation, "physical", "y", "", "Physical Location of the new Interface")
@@ -517,13 +544,16 @@ func init() {
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailLinkName, "linkname", "l", "", "Update the Link Name of the Interface")
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailMac, "mac", "m", "", "Update the MAC of the Interface")
 
-	foundationInterfacePXECmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name PXE to set")
+	foundationInterfacePXECmd.Flags().StringVarP(&detailPxeName, "name", "n", "normal-boot", "Update the Name PXE to set")
+
+	foundationBootToCmd.Flags().StringVarP(&detailPxeName, "name", "n", "normal-boot", "PXE to boot to")
 
 	rootCmd.AddCommand(foundationCmd)
 	foundationCmd.AddCommand(foundationListCmd)
 	foundationCmd.AddCommand(foundationGetCmd)
 	foundationCmd.AddCommand(foundationTypesCmd)
 	foundationCmd.AddCommand(foundationDeleteCmd)
+	foundationCmd.AddCommand(foundationBootToCmd)
 
 	foundationCmd.AddCommand(foundationInterfaceCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceListCmd)
