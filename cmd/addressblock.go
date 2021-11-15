@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"sort"
 
+	contractor "github.com/t3kton/contractor_client/go"
+
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
@@ -245,7 +247,7 @@ var addressblockAllocationCmd = &cobra.Command{
 		}
 
 		sort.Slice(rl, func(i, j int) bool {
-			return (*rl[i].AsMap(false))["offset"].(int) < (*rl[j].AsMap(false))["offset"].(int)
+			return rl[i].(*contractor.UtilitiesDynamicAddress).Offset < rl[j].(*contractor.UtilitiesDynamicAddress).Offset
 		})
 
 		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type"}, "{{.GetID | extractID}}	{{.Offset}}	{{.IPAddress}}	{{.Type}}\n")

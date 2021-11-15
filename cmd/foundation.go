@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"sort"
 
+	contractor "github.com/t3kton/contractor_client/go"
+
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +46,7 @@ func foundationArgCheck(cmd *cobra.Command, args []string) error {
 
 func foundationInterfaceArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Foundation Interface Id Argument")
+		return errors.New("Requires a Structure Interface Id Argument")
 	}
 	return nil
 }
@@ -172,11 +174,40 @@ var foundationInterfaceListCmd = &cobra.Command{
 		}
 
 		sort.Slice(rl, func(i, j int) bool {
-			return (*rl[i].AsMap(false))["name"].(int) < (*rl[j].AsMap(false))["name"].(int)
+			return rl[i].(*contractor.UtilitiesRealNetworkInterface).ID < rl[i].(*contractor.UtilitiesRealNetworkInterface).ID
 		})
 
 		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
 
+		return nil
+	},
+}
+
+var foundationInterfaceGetCmd = &cobra.Command{
+	Use:   "get",
+	Short: "Get Foundation Interface",
+	Args:  foundationInterfaceArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		interfaceID := args[0]
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
+		if err != nil {
+			return err
+		}
+		outputDetail(r, `Name:             {{.Name}}
+Type:             {{.Type}}
+Network:          {{.Network | extractID}}
+Foundation:       {{.Foundation | extractID}}
+Mac:              {{.Mac}}
+IsProvisioning:   {{.IsProvisioning}}
+PhysicalLocation: {{.PhysicalLocation}}
+LinkName:         {{.LinkName}}
+Pxe:              {{.Pxe}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -557,6 +588,7 @@ func init() {
 
 	foundationCmd.AddCommand(foundationInterfaceCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceListCmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfaceGetCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceCreateCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceUpdateCmd)
 	foundationInterfaceCmd.AddCommand(foundationInterfaceDeleteCmd)

@@ -1,3 +1,9 @@
+contractorcli (0.13.0-1) focal; urgency=medium
+
+  * Added interface managment for Abstract and Aggergated
+
+ -- Peter Howe <pnhowe@gmail.com>  Mon, 15 Nov 2021 12:07:59 -0700
+
 contractorcli (0.12.0-1) focal; urgency=medium
 
   * Added foundation bootto 
