@@ -608,7 +608,7 @@ var structureInterfaceListCmd = &cobra.Command{
 			return rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID < rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID
 		})
 
-		outputList(rl, []string{"Id", "Name", "Network", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.Network | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Type", "Network", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.Type}}	{{.Network | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -780,7 +780,6 @@ var structureAggInterfaceGetCmd = &cobra.Command{
 			return err
 		}
 		outputDetail(r, `Name:             {{.Name}}
-Type:             {{.Type}}
 Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface}}
