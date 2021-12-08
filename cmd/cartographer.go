@@ -43,7 +43,11 @@ var cartographerListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.SurveyCartographerList("", map[string]interface{}{}) {
+		vchan, err := c.SurveyCartographerList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Identifier", "Message", "Foundation", "Last Checkin", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Message}}	{{.Foundation | extractID}}	{{.LastCheckin}}	{{.Created}}	{{.Updated}}\n")

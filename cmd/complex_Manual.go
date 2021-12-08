@@ -18,7 +18,6 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 var complexManualCmd = &cobra.Command{
@@ -75,7 +74,7 @@ var complexManualCreateCmd = &cobra.Command{
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(strconv.Itoa(v))
+			s, err := c.BuildingStructureGet(v)
 			if err != nil {
 				return err
 			}
@@ -128,7 +127,7 @@ var complexManualUpdateCmd = &cobra.Command{
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(strconv.Itoa(v))
+				s, err := c.BuildingStructureGet(v)
 				if err != nil {
 					return err
 				}

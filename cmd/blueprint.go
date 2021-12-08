@@ -96,7 +96,11 @@ var blueprintFoundationListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BlueprintFoundationBluePrintList("", map[string]interface{}{}) {
+		vchan, err := c.BlueprintFoundationBluePrintList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
@@ -355,7 +359,11 @@ var blueprintFoundationScriptUnlinkCmd = &cobra.Command{
 			return fmt.Errorf("No Script link to Blueprint with that name")
 		}
 
-		for link := range c.BlueprintBluePrintScriptList("blueprint", map[string]interface{}{"blueprint": strings.Replace(r.GetID(), "/api/v1/BluePrint/FoundationBluePrint", "/api/v1/BluePrint/BluePrint", 1)}) {
+		vchan, err := c.BlueprintBluePrintScriptList("blueprint", map[string]interface{}{"blueprint": strings.Replace(r.GetID(), "/api/v1/BluePrint/FoundationBluePrint", "/api/v1/BluePrint/BluePrint", 1)})
+		if err != nil {
+			return err
+		}
+		for link := range vchan {
 			if link.Name == scriptName {
 				if err := link.Delete(); err != nil {
 					return err
@@ -406,7 +414,11 @@ var blueprintStructureListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BlueprintStructureBluePrintList("", map[string]interface{}{}) {
+		vchan, err := c.BlueprintStructureBluePrintList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
@@ -655,7 +667,11 @@ var blueprintStructureScriptUnlinkCmd = &cobra.Command{
 			return fmt.Errorf("No Script link to Blueprint with that name")
 		}
 
-		for link := range c.BlueprintBluePrintScriptList("blueprint", map[string]interface{}{"blueprint": strings.Replace(r.GetID(), "/api/v1/BluePrint/StructureBluePrint", "/api/v1/BluePrint/BluePrint", 1)}) {
+		vchan, err := c.BlueprintBluePrintScriptList("blueprint", map[string]interface{}{"blueprint": strings.Replace(r.GetID(), "/api/v1/BluePrint/StructureBluePrint", "/api/v1/BluePrint/BluePrint", 1)})
+		if err != nil {
+			return err
+		}
+		for link := range vchan {
 			if link.Name == scriptName {
 				if err := link.Delete(); err != nil {
 					return err
@@ -704,7 +720,11 @@ var scriptListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BlueprintScriptList("", map[string]interface{}{}) {
+		vchan, err := c.BlueprintScriptList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
@@ -890,7 +910,11 @@ var pxeListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BlueprintPXEList("", map[string]interface{}{}) {
+		vchan, err := c.BlueprintPXEList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Created}}	{{.Updated}}\n")

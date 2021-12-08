@@ -18,10 +18,10 @@ limitations under the License.
 
 import (
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
-var detailHost, detailDatacenter, detailCluster string
+var detailDatacenter, detailCluster string
+var detailHost int
 
 var complexVCenterCmd = &cobra.Command{
 	Use:   "vcenter",
@@ -86,14 +86,14 @@ var complexVCenterCreateCmd = &cobra.Command{
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(strconv.Itoa(v))
+			s, err := c.BuildingStructureGet(v)
 			if err != nil {
 				return err
 			}
 			o.Members = append(o.Members, s.GetID())
 		}
 
-		if detailHost != "" {
+		if detailHost != 0 {
 			r, err := c.BuildingStructureGet(detailHost)
 			if err != nil {
 				return err
@@ -167,7 +167,7 @@ var complexVCenterUpdateCmd = &cobra.Command{
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(strconv.Itoa(v))
+				s, err := c.BuildingStructureGet(v)
 				if err != nil {
 					return err
 				}
@@ -176,7 +176,7 @@ var complexVCenterUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "members")
 		}
 
-		if detailHost != "" {
+		if detailHost != 0 {
 			r, err := c.BuildingStructureGet(detailHost)
 			if err != nil {
 				return err
@@ -205,7 +205,7 @@ func init() {
 	complexVCenterCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "VCenter Password of New VCenter Complex")
 	complexVCenterCreateCmd.Flags().StringVarP(&detailDatacenter, "datacenter", "a", "", "VCenter DataCenter of New VCenter Complex")
 	complexVCenterCreateCmd.Flags().StringVarP(&detailCluster, "cluster", "c", "", "VCenter Cluster of New VCenter Complex")
-	complexVCenterCreateCmd.Flags().StringVarP(&detailHost, "host", "o", "", "VCenter Host(structure id) of New VCenter Complex")
+	complexVCenterCreateCmd.Flags().IntVarP(&detailHost, "host", "o", 0, "VCenter Host(structure id) of New VCenter Complex")
 
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of VCenter Complex with value")
@@ -215,7 +215,7 @@ func init() {
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the VCenter Password of the VCenter Complex with value")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailDatacenter, "datacenter", "a", "", "Update the VCenter DataCenter of New VCenter Complex with value")
 	complexVCenterUpdateCmd.Flags().StringVarP(&detailCluster, "cluster", "c", "", "Update the VCenter Cluster of the VCenter Complex with value")
-	complexVCenterUpdateCmd.Flags().StringVarP(&detailHost, "host", "o", "", "Update the VCenter Host(structure id) of New VCenter Complex with value")
+	complexVCenterUpdateCmd.Flags().IntVarP(&detailHost, "host", "o", 0, "Update the VCenter Host(structure id) of New VCenter Complex with value")
 
 	complexCmd.AddCommand(complexVCenterCmd)
 	complexVCenterCmd.AddCommand(complexVCenterGetCmd)

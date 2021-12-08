@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 
 	contractor "github.com/t3kton/contractor_client/go"
 
@@ -50,7 +51,11 @@ var addressblockListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesAddressBlockList("", map[string]interface{}{}) {
+		vchan, err := c.UtilitiesAddressBlockList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Site", "SubNet", "Prefix", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Subnet}}	{{.Prefix}}	{{.Created}}	{{.Updated}}\n")
@@ -64,7 +69,10 @@ var addressblockGetCmd = &cobra.Command{
 	Short: "Get AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -125,7 +133,10 @@ var addressblockUpdateCmd = &cobra.Command{
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -176,7 +187,10 @@ var addressblockDeleteCmd = &cobra.Command{
 	Short: "Delete AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -197,7 +211,10 @@ var addressblockUsageCmd = &cobra.Command{
 	Short: "Display the usage for an AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -226,7 +243,10 @@ var addressblockAllocationCmd = &cobra.Command{
 	Short: "Display the usage for an AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -236,13 +256,25 @@ var addressblockAllocationCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+		vchan, err := c.UtilitiesAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
-		for v := range c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+		vchan2, err := c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan2 {
 			rl = append(rl, v)
 		}
-		for v := range c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+		vchan3, err := c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan3 {
 			rl = append(rl, v)
 		}
 
@@ -261,7 +293,10 @@ var addressblockReserveCmd = &cobra.Command{
 	Short: "Reserve and ip/offset in an Address Block",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -298,7 +333,10 @@ var addressblockDeReserveCmd = &cobra.Command{
 	Short: "Dereserve a Reserved Ip From an Address Block",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -310,7 +348,11 @@ var addressblockDeReserveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		for v := range c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+		vchan, err := c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			if v.Offset == detailOffset {
 				v.Delete()
 				return nil
@@ -326,7 +368,10 @@ var addressblockDynamicCmd = &cobra.Command{
 	Short: "Assign an ip/offset in an Address Block as Dynamic",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -365,7 +410,10 @@ var addressblockDeDynamicCmd = &cobra.Command{
 	Short: "De-assign an ip/offset in an Address Block as Dynamic",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		addressblockID := args[0]
+		addressblockID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -377,7 +425,11 @@ var addressblockDeDynamicCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		for v := range c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()}) {
+		vchan, err := c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			if v.Offset == detailOffset {
 				v.Delete()
 				return nil

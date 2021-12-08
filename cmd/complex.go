@@ -54,7 +54,11 @@ var complexListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BuildingComplexList("", map[string]interface{}{}) {
+		vchan, err := c.BuildingComplexList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Site", "Name", "State", "Type", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Name}}	{{.State}}	{{.Type}}	{{.Created}}	{{.Updated}}\n")

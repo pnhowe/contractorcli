@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -126,6 +127,15 @@ func extractID(value string) string {
 		return ""
 	}
 	return strings.Split(value, ":")[1]
+}
+
+func extractIDInt(value string) (int, error) {
+	value = extractID(value)
+	result, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, err
+	}
+	return result, nil
 }
 
 func editBuffer(value string) (string, error) {

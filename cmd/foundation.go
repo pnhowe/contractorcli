@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 
 	contractor "github.com/t3kton/contractor_client/go"
 
@@ -34,8 +35,9 @@ type foundationTypeEntry struct {
 
 var fundationTypes = map[string]foundationTypeEntry{}
 
-var detailLocator, detailPlot, detailComplex, detailPhysicalLocation, detailLinkName, detailMac, detailNetwork, detailPxeName string
+var detailLocator, detailPlot, detailComplex, detailPhysicalLocation, detailLinkName, detailMac, detailPxeName string
 var detailIsProvisioning bool
+var detailNetwork int
 
 func foundationArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -64,7 +66,11 @@ var foundationListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BuildingFoundationList("", map[string]interface{}{}) {
+		vchan, err := c.BuildingFoundationList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Site", "Locator", "Structure", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Locator}}	{{.Structure | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
@@ -169,7 +175,11 @@ var foundationInterfaceListCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()}) {
+		vchan, err := c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 
@@ -188,7 +198,10 @@ var foundationInterfaceGetCmd = &cobra.Command{
 	Short: "Get Foundation Interface",
 	Args:  foundationInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -234,7 +247,7 @@ var foundationInterfaceCreateCmd = &cobra.Command{
 		o.LinkName = detailLinkName
 		o.Mac = detailMac
 
-		if detailNetwork != "" {
+		if detailNetwork != 0 {
 			r, err := c.UtilitiesNetworkGet(detailNetwork)
 			if err != nil {
 				return err
@@ -258,7 +271,10 @@ var foundationInterfaceUpdateCmd = &cobra.Command{
 	Args:  foundationInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -292,7 +308,7 @@ var foundationInterfaceUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "mac")
 		}
 
-		if detailNetwork != "" {
+		if detailNetwork != 0 {
 			r, err := c.UtilitiesNetworkGet(detailNetwork)
 			if err != nil {
 				return err
@@ -314,7 +330,10 @@ var foundationInterfacePXECmd = &cobra.Command{
 	Short: "SetFoundation Interface PXE",
 	Args:  foundationInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -338,7 +357,10 @@ var foundationInterfaceDeleteCmd = &cobra.Command{
 	Short: "Delete Foundation Interface",
 	Args:  foundationInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -377,7 +399,11 @@ var foundationJobInfoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		j, err := c.ForemanFoundationJobGet(extractID(jID))
+		jIDi, err := extractIDInt(jID)
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanFoundationJobGet(jIDi)
 		if err != nil {
 			return err
 		}
@@ -415,7 +441,11 @@ var foundationJobStateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		j, err := c.ForemanFoundationJobGet(extractID(jID))
+		jIDi, err := extractIDInt(jID)
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanFoundationJobGet(jIDi)
 		if err != nil {
 			return err
 		}
@@ -522,7 +552,11 @@ var foundationJobLogCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.ForemanJobLogList("foundation", map[string]interface{}{"foundation": o.GetID()}) {
+		vchan, err := c.ForemanJobLogList("foundation", map[string]interface{}{"foundation": o.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Cancled By", "Cancled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
@@ -545,7 +579,11 @@ var foundationBootToCmd = &cobra.Command{
 			return err
 		}
 
-		for v := range c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": o.GetID()}) {
+		vchan, err := c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": o.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			if v.IsProvisioning {
 				v.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
 
@@ -563,14 +601,14 @@ var foundationBootToCmd = &cobra.Command{
 func init() {
 	foundationInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")
 	foundationInterfaceCreateCmd.Flags().StringVarP(&detailPhysicalLocation, "physical", "y", "", "Physical Location of the new Interface")
-	foundationInterfaceCreateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Network id to attach the new Interface to")
+	foundationInterfaceCreateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Network id to attach the new Interface to")
 	foundationInterfaceCreateCmd.Flags().BoolVarP(&detailIsProvisioning, "provisioning", "p", false, "New Interface is the provisioning interface")
 	foundationInterfaceCreateCmd.Flags().StringVarP(&detailLinkName, "linkname", "l", "", "Link Name of the new Interface")
 	foundationInterfaceCreateCmd.Flags().StringVarP(&detailMac, "mac", "m", "", "MAC of the new Interface")
 
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name of the Interface")
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailPhysicalLocation, "physical", "y", "", "Update the Physical Location of the Interface")
-	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Update Network id the Interface is attached to")
+	foundationInterfaceUpdateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Update Network id the Interface is attached to")
 	//foundationInterfaceUpdateCmd.Flags().BoolVarP(&detailIsProvisioning, "provisioning", "p", false, "New Interface is the provisioning interface")
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailLinkName, "linkname", "l", "", "Update the Link Name of the Interface")
 	foundationInterfaceUpdateCmd.Flags().StringVarP(&detailMac, "mac", "m", "", "Update the MAC of the Interface")

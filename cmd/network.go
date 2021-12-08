@@ -18,13 +18,13 @@ limitations under the License.
 
 import (
 	"errors"
+	"strconv"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
-var detailAddressBlock string
-var detailVlan, detailMTU int
+var detailAddressBlock, detailVlan, detailMTU int
 
 func networkArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -53,7 +53,11 @@ var networkListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesNetworkList("", map[string]interface{}{}) {
+		vchan, err := c.UtilitiesNetworkList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Site", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Created}}	{{.Updated}}\n")
@@ -67,7 +71,10 @@ var networkGetCmd = &cobra.Command{
 	Short: "Get Network",
 	Args:  networkArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		networkID := args[0]
+		networkID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -82,7 +89,11 @@ Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesNetworkAddressBlockList("network", map[string]interface{}{"network": r.GetID()}) {
+		vchan, err := c.UtilitiesNetworkAddressBlockList("network", map[string]interface{}{"network": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"link id", "Address Block", "vlan id", "Created", "Update"}, "{{.GetID | extractID}}	{{.AddressBlock | extractID}}	{{.Vlan}}	{{.Created}}	{{.Updated}}\n")
@@ -126,7 +137,10 @@ var networkUpdateCmd = &cobra.Command{
 	Args:  networkArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		networkID := args[0]
+		networkID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -167,7 +181,10 @@ var networkDeleteCmd = &cobra.Command{
 	Short: "Delete Network",
 	Args:  networkArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		networkID := args[0]
+		networkID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -193,7 +210,10 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 	Short: "Create New Network AddressBlock Link",
 	Args:  networkArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		networkID := args[0]
+		networkID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -206,7 +226,7 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 		o.Network = r.GetID()
 		o.Vlan = detailVlan
 
-		if detailAddressBlock != "" {
+		if detailAddressBlock != 0 {
 			r, err := c.UtilitiesAddressBlockGet(detailAddressBlock)
 			if err != nil {
 				return err
@@ -230,7 +250,10 @@ var networkAddressBlockUpdateCmd = &cobra.Command{
 	Args:  networkAddressBlockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		linkID := args[0]
+		linkID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -257,7 +280,10 @@ var networkAddressBlockDeleteCmd = &cobra.Command{
 	Short: "Delete Network AddressBlock Link",
 	Args:  networkAddressBlockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		linkID := args[0]
+		linkID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -282,7 +308,7 @@ func init() {
 	networkUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of the Network with value")
 	networkUpdateCmd.Flags().IntVarP(&detailMTU, "mtu", "m", 0, "Update the MTU of the Network with the value")
 
-	networkAddressBlockCreateCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "AddressBlock to Link to")
+	networkAddressBlockCreateCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "AddressBlock to Link to")
 	networkAddressBlockCreateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", 0, "VLan the Addressblock is tagged as")
 
 	networkAddressBlockUpdateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", -1, "VLan the Addressblock is tagged as")

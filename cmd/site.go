@@ -23,7 +23,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailName, detailDescription, detailParent, detailZone string
+var detailName, detailDescription, detailParent string
+var detailZone int
 
 func siteArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -45,7 +46,11 @@ var siteListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.SiteSiteList("", map[string]interface{}{}) {
+		vchan, err := c.SiteSiteList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
@@ -98,7 +103,7 @@ var siteCreateCmd = &cobra.Command{
 			o.Parent = r.GetID()
 		}
 
-		if detailZone != "" {
+		if detailZone != 0 {
 			r, err := c.DirectoryZoneGet(detailZone)
 			if err != nil {
 				return err
@@ -145,7 +150,7 @@ var siteUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "parent")
 		}
 
-		if detailZone != "" {
+		if detailZone != 0 {
 			r, err := c.DirectoryZoneGet(detailZone)
 			if err != nil {
 				return err
@@ -242,11 +247,11 @@ func init() {
 	siteCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Site")
 	siteCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Site")
 	siteCreateCmd.Flags().StringVarP(&detailParent, "parent", "p", "", "Parent of New Site")
-	siteCreateCmd.Flags().StringVarP(&detailZone, "zone", "z", "", "Zone of New Site")
+	siteCreateCmd.Flags().IntVarP(&detailZone, "zone", "z", 0, "Zone of New Site")
 
 	siteUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Site with value")
 	siteUpdateCmd.Flags().StringVarP(&detailParent, "parent", "p", "", "Update the Parent of Site with value")
-	siteUpdateCmd.Flags().StringVarP(&detailZone, "zone", "z", "", "Update the Zone of Site with value")
+	siteUpdateCmd.Flags().IntVarP(&detailZone, "zone", "z", 0, "Update the Zone of Site with value")
 
 	rootCmd.AddCommand(siteCmd)
 	siteCmd.AddCommand(siteListCmd)

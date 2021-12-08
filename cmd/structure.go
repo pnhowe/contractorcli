@@ -19,6 +19,7 @@ limitations under the License.
 import (
 	"errors"
 	"sort"
+	"strconv"
 	"strings"
 
 	contractor "github.com/t3kton/contractor_client/go"
@@ -66,7 +67,11 @@ var structureListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.BuildingStructureList("", map[string]interface{}{}) {
+		vchan, err := c.BuildingStructureList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Site", "Hostname", "Foundation", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
@@ -80,7 +85,10 @@ var structureGetCmd = &cobra.Command{
 	Short: "Get Structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -154,7 +162,10 @@ var structureUpdateCmd = &cobra.Command{
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -208,7 +219,10 @@ var structureDeleteCmd = &cobra.Command{
 	Short: "Delete Structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -229,7 +243,10 @@ var structureConfigCmd = &cobra.Command{
 	Short: "Work With Structure Config",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -285,7 +302,10 @@ var structureAddressListCmd = &cobra.Command{
 	Short: "List all Ip Addresses attached to a structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -295,7 +315,11 @@ var structureAddressListCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesAddressList("structure", map[string]interface{}{"structure": o.GetID()}) {
+		vchan, err := c.UtilitiesAddressList("structure", map[string]interface{}{"structure": o.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Interface", "Address", "Address Block", "Offset", "Is Primary", "Created", "Updated"}, "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Offset}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
@@ -309,7 +333,10 @@ var structureAddressNextCmd = &cobra.Command{
 	Short: "Assign Next available IP address in Address Block to structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -339,7 +366,10 @@ var structureAddressAddCmd = &cobra.Command{
 	Short: "Add an IP address to structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -376,7 +406,10 @@ var structureAddressUpdateCmd = &cobra.Command{
 	Args:  structureAddressArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		addressID := args[0]
+		addressID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -413,7 +446,10 @@ var structureJobInfoCmd = &cobra.Command{
 	Short: "Show Structure Job Info",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -426,7 +462,11 @@ var structureJobInfoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		j, err := c.ForemanStructureJobGet(extractID(jID))
+		jIDi, err := extractIDInt(jID)
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanStructureJobGet(jIDi)
 		if err != nil {
 			return err
 		}
@@ -452,7 +492,10 @@ var structureJobStateCmd = &cobra.Command{
 	Short: "Show Structure Job State",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -464,7 +507,11 @@ var structureJobStateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		j, err := c.ForemanStructureJobGet(extractID(jID))
+		jIDi, err := extractIDInt(jID)
+		if err != nil {
+			return err
+		}
+		j, err := c.ForemanStructureJobGet(jIDi)
 		if err != nil {
 			return err
 		}
@@ -491,7 +538,10 @@ var structureJobDoCreateCmd = &cobra.Command{
 	Short: "Start Create Job for Structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -513,7 +563,10 @@ var structureJobDoDestroyCmd = &cobra.Command{
 	Short: "Start Destroy Job for Structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -539,7 +592,10 @@ var structureJobDoUtilityCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		scriptName := args[1]
 		c := getContractor()
 		defer c.Logout()
@@ -561,7 +617,10 @@ var structureJobLogCmd = &cobra.Command{
 	Short: "Job Log List for a Structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -571,7 +630,11 @@ var structureJobLogCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.ForemanJobLogList("structure", map[string]interface{}{"structure": o.GetID()}) {
+		vchan, err := c.ForemanJobLogList("structure", map[string]interface{}{"structure": o.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Canceled By", "Cancled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
@@ -590,7 +653,10 @@ var structureInterfaceListCmd = &cobra.Command{
 	Short: "List all Interfaces attached to a structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -600,7 +666,11 @@ var structureInterfaceListCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesAbstractNetworkInterfaceList("structure", map[string]interface{}{"structure": r.GetID()}) {
+		vchan, err := c.UtilitiesAbstractNetworkInterfaceList("structure", map[string]interface{}{"structure": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 
@@ -619,7 +689,10 @@ var structureInterfaceGetCmd = &cobra.Command{
 	Short: "Get Structure Interface",
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -643,7 +716,10 @@ var structureInterfaceCreateCmd = &cobra.Command{
 	Short: "Create New Structure Interface",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -656,7 +732,7 @@ var structureInterfaceCreateCmd = &cobra.Command{
 		o.Structure = r.GetID()
 		o.Name = detailName
 
-		if detailNetwork != "" {
+		if detailNetwork != 0 {
 			r, err := c.UtilitiesNetworkGet(detailNetwork)
 			if err != nil {
 				return err
@@ -680,7 +756,10 @@ var structureInterfaceUpdateCmd = &cobra.Command{
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fieldList := []string{}
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -694,7 +773,7 @@ var structureInterfaceUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "name")
 		}
 
-		if detailNetwork != "" {
+		if detailNetwork != 0 {
 			r, err := c.UtilitiesNetworkGet(detailNetwork)
 			if err != nil {
 				return err
@@ -716,7 +795,10 @@ var structureInterfaceDeleteCmd = &cobra.Command{
 	Short: "Delete Structure Interface",
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		interfaceID := args[0]
+		interfaceID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -742,7 +824,10 @@ var structureAggInterfaceListCmd = &cobra.Command{
 	Short: "List all Aggregated Interfaces attached to a structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -752,7 +837,11 @@ var structureAggInterfaceListCmd = &cobra.Command{
 		}
 
 		rl := []cinp.Object{}
-		for v := range c.UtilitiesAggregatedNetworkInterfaceList("structure", map[string]interface{}{"structure": r.GetID()}) {
+		vchan, err := c.UtilitiesAggregatedNetworkInterfaceList("structure", map[string]interface{}{"structure": r.GetID()})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 
@@ -796,7 +885,10 @@ var structureAggInterfaceCreateCmd = &cobra.Command{
 	Short: "Create New Structure Aggregated Interface",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		structureID := args[0]
+		structureID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -809,7 +901,7 @@ var structureAggInterfaceCreateCmd = &cobra.Command{
 		o.Structure = r.GetID()
 		o.Name = detailName
 
-		if detailNetwork != "" {
+		if detailNetwork != 0 {
 			r, err := c.UtilitiesNetworkGet(detailNetwork)
 			if err != nil {
 				return err
@@ -850,7 +942,7 @@ var structureAggInterfaceUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "name")
 		}
 
-		if detailNetwork != "" {
+		if detailNetwork != 0 {
 			r, err := c.UtilitiesNetworkGet(detailNetwork)
 			if err != nil {
 				return err
@@ -914,11 +1006,11 @@ func init() {
 	structureUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Structure with value")
 	structureUpdateCmd.Flags().StringVarP(&detailFoundation, "foundation", "f", "", "Update the Foundation of Structure with value")
 
-	structureAddressNextCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "Address Block to get an IP From")
+	structureAddressNextCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "Address Block to get an IP From")
 	structureAddressNextCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
 	structureAddressNextCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
 
-	structureAddressAddCmd.Flags().StringVarP(&detailAddressBlock, "addressblock", "a", "", "Address Block to get an IP From")
+	structureAddressAddCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "Address Block to get an IP From")
 	structureAddressAddCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
 	structureAddressAddCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 	structureAddressAddCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
@@ -927,18 +1019,18 @@ func init() {
 	structureAddressUpdateCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 
 	structureInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")
-	structureInterfaceCreateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Network id to attach the new Interface to")
+	structureInterfaceCreateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Network id to attach the new Interface to")
 
 	structureInterfaceUpdateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name of the Interface")
-	structureInterfaceUpdateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Update Network id the Interface is attached to")
+	structureInterfaceUpdateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Update Network id the Interface is attached to")
 
 	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")
-	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Network id to attach the new Interface to")
+	structureAggInterfaceCreateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Network id to attach the new Interface to")
 	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailPrimary, "primary", "p", "", "Interface name to use as the primary interface")
 	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailSecondary, "secondary", "s", "", "Interface names to use as the secondaries, delimited by ','")
 
 	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name of the Interface")
-	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailNetwork, "network", "t", "", "Update Network id the Interface is attached to")
+	structureAggInterfaceUpdateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Update Network id the Interface is attached to")
 	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailPrimary, "primary", "p", "", "Interface name to use as the primary interface")
 	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailSecondary, "secondary", "s", "", "Interface names to use as the secondaries, delimited by ','")
 

@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"errors"
+	"strconv"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
@@ -48,7 +49,11 @@ var jobFoundationListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.ForemanFoundationJobList("", map[string]interface{}{}) {
+		vchan, err := c.ForemanFoundationJobList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Foundation", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetID | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
@@ -62,7 +67,10 @@ var jobFoundationGetCmd = &cobra.Command{
 	Short: "Get Foundation Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -91,7 +99,10 @@ var jobFoundationPauseCmd = &cobra.Command{
 	Short: "Pause Foundation Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -113,7 +124,10 @@ var jobFoundationResumeCmd = &cobra.Command{
 	Short: "Resume Foundation Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -135,7 +149,10 @@ var jobFoundationRestCmd = &cobra.Command{
 	Short: "Reset Foundation Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -157,7 +174,10 @@ var jobFoundationRollbackCmd = &cobra.Command{
 	Short: "Rollback Foundation Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -187,7 +207,11 @@ var jobStructureListCmd = &cobra.Command{
 		defer c.Logout()
 
 		rl := []cinp.Object{}
-		for v := range c.ForemanStructureJobList("", map[string]interface{}{}) {
+		vchan, err := c.ForemanStructureJobList("", map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
 			rl = append(rl, v)
 		}
 		outputList(rl, []string{"Id", "Structure", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetID | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
@@ -201,7 +225,10 @@ var jobStructureGetCmd = &cobra.Command{
 	Short: "Get Structure Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -230,7 +257,10 @@ var jobStructurePauseCmd = &cobra.Command{
 	Short: "Pause Structure Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -252,7 +282,10 @@ var jobStructureResumeCmd = &cobra.Command{
 	Short: "Resume Structure Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -274,7 +307,10 @@ var jobStructureRestCmd = &cobra.Command{
 	Short: "Reset Structure Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
@@ -296,7 +332,10 @@ var jobStructureRollbackCmd = &cobra.Command{
 	Short: "Rollback Structure Job",
 	Args:  jobArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		jobID := args[0]
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
 		c := getContractor()
 		defer c.Logout()
 
