@@ -74,7 +74,7 @@ var structureListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Site", "Hostname", "Foundation", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Hostname", "Foundation", "State", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},

@@ -20,7 +20,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.0
 	github.com/stromland/cobra-prompt v0.0.0-20181123224253-940a0a2bd0d3
-	github.com/t3kton/contractor_client/go v0.0.0-20210928205046-9275b9cb4332
+	github.com/t3kton/contractor_client/go v0.0.0-20220108194450-3fff81489c94
 	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect

@@ -1,3 +1,9 @@
+contractorcli (0.14.0-1) focal; urgency=medium
+
+  * Foundation and Structure lists have status
+
+ -- Peter Howe <pnhowe@gmail.com>  Sat, 08 Jan 2022 13:18:51 -0700
+
 contractorcli (0.13.1-1) focal; urgency=medium
 
   * Added interface managment for Abstract and Aggergated
