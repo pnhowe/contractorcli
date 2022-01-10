@@ -129,6 +129,18 @@ func extractID(value string) string {
 	return strings.Split(value, ":")[1]
 }
 
+func extractIDList(values []string) string {
+	if len(values) == 0 {
+		return ""
+	}
+	workList := []string{}
+
+	for _, value := range values {
+		workList = append(workList, strings.Split(value, ":")[1])
+	}
+	return strings.Join(workList, ",")
+}
+
 func extractIDInt(value string) (int, error) {
 	value = extractID(value)
 	result, err := strconv.Atoi(value)
@@ -210,7 +222,7 @@ func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader(header)
 		t := template.New("output")
-		t.Funcs(template.FuncMap{"extractID": extractID})
+		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList})
 		t, err := t.Parse(itemTemplate)
 		if err != nil {
 			fmt.Println(err)
@@ -239,7 +251,7 @@ func outputDetail(value interface{}, detailTemplate string) {
 		os.Stdout.Write(buff)
 	} else {
 		t := template.New("output")
-		t.Funcs(template.FuncMap{"extractID": extractID})
+		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList})
 		t, err := t.Parse(detailTemplate)
 		if err != nil {
 			fmt.Println(err)

@@ -1,3 +1,9 @@
+contractorcli (0.15.0-1) focal; urgency=medium
+
+  * Network Interface work
+
+ -- Peter Howe <pnhowe@gmail.com>  Mon, 10 Jan 2022 14:47:15 -0700
+
 contractorcli (0.14.0-1) focal; urgency=medium
 
   * Foundation and Structure lists have status

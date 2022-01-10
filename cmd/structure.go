@@ -31,7 +31,8 @@ import (
 var configSetName, configSetValue, configDeleteName string
 var configFull, detailIsPrimary bool
 var detailHostname, detailSite, detailBlueprint, detailFoundation, detailInterfaceName string
-var detailPrimary, detailSecondary string
+var detailPrimary int
+var detailSecondary string
 
 func structureArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
@@ -849,7 +850,7 @@ var structureAggInterfaceListCmd = &cobra.Command{
 			return rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID < rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID
 		})
 
-		outputList(rl, []string{"Id", "Name", "Network", "Primary Interface", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.PrimaryInterface}}	{{.Network | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Network", "Primary Interface", "Secondary Interface(s)", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.Network | extractID}}	{{.PrimaryInterface | extractID}}	{{.SecondaryInterfaces | extractIDList}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -871,8 +872,8 @@ var structureAggInterfaceGetCmd = &cobra.Command{
 		outputDetail(r, `Name:             {{.Name}}
 Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
-Primary:          {{.PrimaryInterface}}
-Secondaries:      {{.SecondaryInterfaces}}
+Primary:          {{.PrimaryInterface | extractID}}
+Secondaries:      {{.SecondaryInterfaces | extractIDList}}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)
@@ -909,8 +910,18 @@ var structureAggInterfaceCreateCmd = &cobra.Command{
 			o.Network = r.GetID()
 		}
 
-		o.PrimaryInterface = detailPrimary
-		o.SecondaryInterfaces = strings.Split(detailSecondary, ",")
+		ri := c.UtilitiesNetworkInterfaceNewWithID(detailPrimary)
+		o.PrimaryInterface = ri.GetID()
+
+		o.SecondaryInterfaces = []string{}
+		for _, id := range strings.Split(detailSecondary, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				return err
+			}
+			ri = c.UtilitiesNetworkInterfaceNewWithID(i)
+			o.SecondaryInterfaces = append(o.SecondaryInterfaces, ri.GetID())
+		}
 
 		if err := o.Create(); err != nil {
 			return err
@@ -951,13 +962,18 @@ var structureAggInterfaceUpdateCmd = &cobra.Command{
 			fieldList = append(fieldList, "network")
 		}
 
-		if detailPrimary != "" {
-			o.PrimaryInterface = detailPrimary
+		if detailPrimary != 0 {
+			ri := c.UtilitiesNetworkInterfaceNewWithID(detailPrimary)
+			o.PrimaryInterface = ri.GetID()
 			fieldList = append(fieldList, "primary_interface")
 		}
 
 		if detailSecondary != "" {
-			o.SecondaryInterfaces = strings.Split(detailSecondary, ",")
+			o.SecondaryInterfaces = []string{}
+			for id := range strings.Split(detailSecondary, ",") {
+				ri := c.UtilitiesNetworkInterfaceNewWithID(id)
+				o.SecondaryInterfaces = append(o.SecondaryInterfaces, ri.GetID())
+			}
 			fieldList = append(fieldList, "secondary_interfaces")
 		}
 
@@ -1026,12 +1042,12 @@ func init() {
 
 	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")
 	structureAggInterfaceCreateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Network id to attach the new Interface to")
-	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailPrimary, "primary", "p", "", "Interface name to use as the primary interface")
+	structureAggInterfaceCreateCmd.Flags().IntVarP(&detailPrimary, "primary", "p", 0, "Interface name to use as the primary interface")
 	structureAggInterfaceCreateCmd.Flags().StringVarP(&detailSecondary, "secondary", "s", "", "Interface names to use as the secondaries, delimited by ','")
 
 	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Update the Name of the Interface")
 	structureAggInterfaceUpdateCmd.Flags().IntVarP(&detailNetwork, "network", "t", 0, "Update Network id the Interface is attached to")
-	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailPrimary, "primary", "p", "", "Interface name to use as the primary interface")
+	structureAggInterfaceUpdateCmd.Flags().IntVarP(&detailPrimary, "primary", "p", 0, "Interface name to use as the primary interface")
 	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailSecondary, "secondary", "s", "", "Interface names to use as the secondaries, delimited by ','")
 
 	rootCmd.AddCommand(structureCmd)
