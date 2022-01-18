@@ -437,6 +437,30 @@ var structureAddressUpdateCmd = &cobra.Command{
 	},
 }
 
+var structureAddressDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete IP address from structure",
+	Args:  structureAddressArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		addressID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
+		c := getContractor()
+		defer c.Logout()
+
+		r, err := c.UtilitiesAddressGet(addressID)
+		if err != nil {
+			return err
+		}
+		if err := r.Delete(); err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
 var structureJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Structure Jobs",
@@ -477,7 +501,6 @@ Site:          {{.Site}}
 Structure:     {{.Structure | extractID}}
 State:         {{.State}}
 Status:        {{.Status}}
-Progress:      {{.Progress}}
 Message:       {{.Message}}
 Script Name:   {{.ScriptName}}
 Can Start:     {{.CanStart}}
@@ -874,6 +897,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
+Paramaters:       {{.Paramaters}}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)
@@ -1063,6 +1087,7 @@ func init() {
 	structureAddressCmd.AddCommand(structureAddressNextCmd)
 	structureAddressCmd.AddCommand(structureAddressAddCmd)
 	structureAddressCmd.AddCommand(structureAddressUpdateCmd)
+	structureAddressCmd.AddCommand(structureAddressDeleteCmd)
 
 	structureCmd.AddCommand(structureJobCmd)
 	structureJobCmd.AddCommand(structureJobInfoCmd)

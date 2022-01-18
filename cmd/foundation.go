@@ -413,7 +413,6 @@ Site:          {{.Site}}
 Foundation:    {{.Foundation | extractID}}
 State:         {{.State}}
 Status:        {{.Status}}
-Progress:      {{.Progress}}
 Message:       {{.Message}}
 Script Name:   {{.ScriptName}}
 Can Start:     {{.CanStart}}
