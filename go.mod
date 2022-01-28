@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/c-bata/go-prompt v0.2.3
-	github.com/cinp/go v0.9.1
+	github.com/cinp/go v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
