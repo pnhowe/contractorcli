@@ -487,6 +487,10 @@ var structureJobInfoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		if jID == "" {
+			outputDetail("", "No Job\n")
+			return nil
+		}
 		jIDi, err := extractIDInt(jID)
 		if err != nil {
 			return err
