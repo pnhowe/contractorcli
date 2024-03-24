@@ -24,7 +24,7 @@ TODO: watch https://github.com/c-bata/go-prompt/issues/94 for updates on simplif
 import (
 	"github.com/c-bata/go-prompt"
 	"github.com/spf13/cobra"
-	"github.com/stromland/cobra-prompt"
+	cobraprompt "github.com/stromland/cobra-prompt"
 )
 
 var shellCmd = &cobra.Command{
@@ -33,8 +33,7 @@ var shellCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		rootCmd.RemoveCommand(cmd)
 		shell := &cobraprompt.CobraPrompt{
-			RootCmd:        rootCmd,
-			ResetFlagsFlag: true,
+			RootCmd: rootCmd,
 			GoPromptOptions: []prompt.Option{
 				prompt.OptionTitle("contractor"),
 				prompt.OptionPrefix("contractor> "),
