@@ -20,8 +20,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailIPMIUsername, detailIPMIPassword, detailIPMIIP, detailIPMISOL string
-
 var foundationIPMICmd = &cobra.Command{
 	Use:   "ipmi",
 	Short: "Work with IPMI Foundations",
@@ -33,14 +31,15 @@ var foundationIPMIGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.IpmiIPMIFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.IpmiIPMIFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:         {{.Locator}}
+		outputDetail(o, `Id:              {{.GetURI | extractID}}
+Locator:         {{.Locator}}
 IPMI Username:   {{.IpmiUsername}}
 IPMI Password:   {{.IpmiPassword}}
 IPMI Ip Address: {{.IpmiIPAddress}}
@@ -66,45 +65,63 @@ var foundationIPMICreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New IPMI Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
 
-		o := c.IpmiIPMIFoundationNew()
-		o.Locator = detailLocator
-		o.IpmiUsername = detailIPMIUsername
-		o.IpmiPassword = detailIPMIPassword
-		o.IpmiIPAddress = detailIPMIIP
-		o.IpmiSolPort = detailIPMISOL
+		ctx := cmd.Context()
+
+		o := contractorClient.IpmiIPMIFoundationNew()
+		o.Locator = &detailLocator
+		o.IpmiUsername = &detailIPMIUsername
+		o.IpmiPassword = &detailIPMIPassword
+		o.IpmiIPAddress = &detailIPMIIP
+		o.IpmiSolPort = &detailIPMISOL
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailPlot != "" {
-			r, err := c.SurveyPlotGet(detailPlot)
+			r, err := contractorClient.SurveyPlotGet(ctx, detailPlot)
 			if err != nil {
 				return err
 			}
-			o.Plot = r.GetID()
+			(*o.Plot) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:              {{.GetURI | extractID}}
+Locator:         {{.Locator}}
+IPMI Username:   {{.IpmiUsername}}
+IPMI Password:   {{.IpmiPassword}}
+IPMI Ip Address: {{.IpmiIPAddress}}
+IPMI SOL Port:   {{.IpmiSolPort}}
+Plot:            {{.Plot | extractID}}
+Type:            {{.Type}}
+Site:            {{.Site | extractID}}
+Blueprint:       {{.Blueprint | extractID}}
+Id Map:          {{.IDMap}}
+Class List:      {{.ClassList}}
+State:           {{.State}}
+Located At:      {{.LocatedAt}}
+Built At:        {{.BuiltAt}}
+Created:         {{.Created}}
+Updated:         {{.Updated}}
+`)
 
 		return nil
 	},
@@ -115,66 +132,75 @@ var foundationIPMIUpdateCmd = &cobra.Command{
 	Short: "Update IPMI Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.IpmiIPMIFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.IpmiIPMIFoundationNewWithID(foundationID)
+
+		if detailIPMIUsername != "" {
+			o.IpmiUsername = &detailIPMIUsername
+		}
+
+		if detailIPMIPassword != "" {
+			o.IpmiPassword = &detailIPMIPassword
+		}
+
+		if detailIPMIIP != "" {
+			o.IpmiIPAddress = &detailIPMIIP
+		}
+
+		if detailIPMISOL != "" {
+			o.IpmiSolPort = &detailIPMISOL
+		}
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailPlot != "" {
+			r, err := contractorClient.SurveyPlotGet(ctx, detailPlot)
+			if err != nil {
+				return err
+			}
+			(*o.Plot) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailIPMIUsername != "" {
-			o.IpmiUsername = detailIPMIUsername
-			fieldList = append(fieldList, "ipmi_username")
-		}
-
-		if detailIPMIPassword != "" {
-			o.IpmiPassword = detailIPMIPassword
-			fieldList = append(fieldList, "ipmi_password")
-		}
-
-		if detailIPMIIP != "" {
-			o.IpmiIPAddress = detailIPMIIP
-			fieldList = append(fieldList, "ipmi_ip_address")
-		}
-
-		if detailIPMISOL != "" {
-			o.IpmiSolPort = detailIPMISOL
-			fieldList = append(fieldList, "ipmi_sol_port")
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailPlot != "" {
-			r, err := c.SurveyPlotGet(detailPlot)
-			if err != nil {
-				return err
-			}
-			o.Plot = r.GetID()
-			fieldList = append(fieldList, "plot")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:              {{.GetURI | extractID}}
+		Locator:         {{.Locator}}
+		IPMI Username:   {{.IpmiUsername}}
+		IPMI Password:   {{.IpmiPassword}}
+		IPMI Ip Address: {{.IpmiIPAddress}}
+		IPMI SOL Port:   {{.IpmiSolPort}}
+		Plot:            {{.Plot | extractID}}
+		Type:            {{.Type}}
+		Site:            {{.Site | extractID}}
+		Blueprint:       {{.Blueprint | extractID}}
+		Id Map:          {{.IDMap}}
+		Class List:      {{.ClassList}}
+		State:           {{.State}}
+		Located At:      {{.LocatedAt}}
+		Built At:        {{.BuiltAt}}
+		Created:         {{.Created}}
+		Updated:         {{.Updated}}
+		`)
 
 		return nil
 	},
@@ -201,7 +227,5 @@ func init() {
 	foundationIPMIUpdateCmd.Flags().StringVarP(&detailIPMISOL, "ipmi-sol", "o", "", "Update the IPMI SOL Port (console/ttyS1/etc) of the IPMI Foundation")
 
 	foundationCmd.AddCommand(foundationIPMICmd)
-	foundationIPMICmd.AddCommand(foundationIPMIGetCmd)
-	foundationIPMICmd.AddCommand(foundationIPMICreateCmd)
-	foundationIPMICmd.AddCommand(foundationIPMIUpdateCmd)
+	foundationIPMICmd.AddCommand(foundationIPMIGetCmd, foundationIPMICreateCmd, foundationIPMIUpdateCmd)
 }

@@ -28,29 +28,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configSetName, configSetValue, configDeleteName string
-var configFull, detailIsPrimary bool
-var detailHostname, detailSite, detailBlueprint, detailFoundation, detailInterfaceName string
-var detailPrimary int
-var detailSecondary string
-
 func structureArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Structure Id Argument")
+		return errors.New("requires a Structure Id argument")
 	}
 	return nil
 }
 
 func structureAddressArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Address Id Argument")
+		return errors.New("requires a Address Id argument")
 	}
 	return nil
 }
 
 func structureInterfaceArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Structure Interface Id Argument")
+		return errors.New("requires a Structure Interface Id argument")
 	}
 	return nil
 }
@@ -64,18 +58,17 @@ var structureListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Structures",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.BuildingStructureList("", map[string]interface{}{})
+		vchan, err := contractorClient.BuildingStructureList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Site", "Hostname", "Foundation", "State", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Hostname", "Foundation", "State", "Blueprint", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Site | extractID}}	{{.Hostname}}	{{.Foundation | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -90,14 +83,14 @@ var structureGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.BuildingStructureGet(structureID)
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Hostname:      {{.Hostname}}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Hostname:      {{.Hostname}}
 Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
 Foundation:    {{.Foundation | extractID}}
@@ -117,42 +110,52 @@ var structureCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Structure",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.BuildingStructureNew()
-		o.Hostname = detailHostname
+		o := contractorClient.BuildingStructureNew()
+		o.Hostname = &detailHostname
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintStructureBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintStructureBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailFoundation != "" {
-			r, err := c.BuildingFoundationGet(detailFoundation)
+			r, err := contractorClient.BuildingFoundationGet(ctx, detailFoundation)
 			if err != nil {
 				return err
 			}
-			o.Foundation = r.GetID()
+			(*o.Foundation) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Hostname:      {{.Hostname}}
+Site:          {{.Site | extractID}}
+Blueprint:     {{.Blueprint | extractID}}
+Foundation:    {{.Foundation | extractID}}
+Config UUID:   {{.ConfigUUID}}
+Config Values: {{.ConfigValues}}
+State:         {{.State}}
+Built At:      {{.BuiltAt}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -162,54 +165,60 @@ var structureUpdateCmd = &cobra.Command{
 	Short: "Update Structure",
 	Args:  structureArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		structureID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o := contractorClient.BuildingStructureNewWithID(structureID)
+
+		if detailHostname != "" {
+			o.Hostname = &detailHostname
+		}
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintStructureBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailFoundation != "" {
+			r, err := contractorClient.BuildingFoundationGet(ctx, detailFoundation)
+			if err != nil {
+				return err
+			}
+			(*o.Foundation) = r.GetURI()
+		}
+
+		o, err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailHostname != "" {
-			o.Hostname = detailHostname
-			fieldList = append(fieldList, "hostname")
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintStructureBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailFoundation != "" {
-			r, err := c.BuildingFoundationGet(detailFoundation)
-			if err != nil {
-				return err
-			}
-			o.Foundation = r.GetID()
-			fieldList = append(fieldList, "foundation")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Hostname:      {{.Hostname}}
+Site:          {{.Site | extractID}}
+Blueprint:     {{.Blueprint | extractID}}
+Foundation:    {{.Foundation | extractID}}
+Config UUID:   {{.ConfigUUID}}
+Config Values: {{.ConfigValues}}
+State:         {{.State}}
+Built At:      {{.BuiltAt}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -224,14 +233,14 @@ var structureDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -248,45 +257,55 @@ var structureConfigCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
+
+		ctx := cmd.Context()
 
 		if configSetName != "" {
-			o, err := c.BuildingStructureGet(structureID)
+			r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 			if err != nil {
 				return err
 			}
-			o.ConfigValues[configSetName] = configSetValue
-			if err := o.Update([]string{"config_values"}); err != nil {
+
+			o := contractorClient.BuildingStructureNewWithID(structureID)
+			o.ConfigValues = r.ConfigValues
+			(*o.ConfigValues)[configSetName] = configSetValue
+
+			o, err = o.Update(ctx)
+			if err != nil {
 				return err
 			}
-			outputKV(o.ConfigValues)
+			outputKV(*o.ConfigValues)
 
 		} else if configDeleteName != "" {
-			o, err := c.BuildingStructureGet(structureID)
+			r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 			if err != nil {
 				return err
 			}
-			delete(o.ConfigValues, configDeleteName)
-			if err := o.Update([]string{"config_values"}); err != nil {
+
+			o := contractorClient.BuildingStructureNewWithID(structureID)
+			o.ConfigValues = r.ConfigValues
+			delete(*o.ConfigValues, configDeleteName)
+
+			o, err = o.Update(ctx)
+			if err != nil {
 				return err
 			}
-			outputKV(o.ConfigValues)
+			outputKV(*o.ConfigValues)
 
 		} else if configFull {
-			o := c.BuildingStructureNewWithID(structureID)
-			r, err := o.CallGetConfig()
+			o := contractorClient.BuildingStructureNewWithID(structureID)
+			r, err := o.CallGetConfig(ctx)
 			if err != nil {
 				return err
 			}
 			outputKV(r)
 
 		} else {
-			o, err := c.BuildingStructureGet(structureID)
+			o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 			if err != nil {
 				return err
 			}
-			outputKV(o.ConfigValues)
+			outputKV(*o.ConfigValues)
 		}
 
 		return nil
@@ -307,23 +326,23 @@ var structureAddressListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesAddressList("structure", map[string]interface{}{"structure": o.GetID()})
+		vchan, err := contractorClient.UtilitiesAddressList(ctx, "structure", map[string]interface{}{"structure": o.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Interface", "Address", "Address Block", "Offset", "Is Primary", "Created", "Updated"}, "{{.GetID | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Offset}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
+		outputList(rl, []string{"Id", "Interface", "Address", "Address Block", "Offset", "Is Primary", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Offset}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
 
 		return nil
 	},
@@ -338,26 +357,45 @@ var structureAddressNextCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		a, err := c.UtilitiesAddressBlockGet(detailAddressBlock)
+		a, err := contractorClient.UtilitiesAddressBlockGet(ctx, detailAddressBlock)
 		if err != nil {
 			return err
 		}
 
-		addrID, err := a.CallNextAddress(strings.Replace(o.GetID(), "/api/v1/Building/Structure", "/api/v1/Utilities/Networked", 1), detailInterfaceName, detailIsPrimary)
+		addressURI, err := a.CallNextAddress(ctx, strings.Replace(r.GetURI(), "/api/v1/Building/Structure", "/api/v1/Utilities/Networked", 1), detailInterfaceName, detailIsPrimary)
 		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": addrID})
+		o, err := contractorClient.UtilitiesAddressGetURI(ctx, addressURI)
+		if err != nil {
+			return err
+		}
 
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+AddressBlock:  {{.AddressBlock | extractID}}
+Offset:        {{.Offset}}
+Networked:     {{.Networked | extractID}}
+InterfaceName: {{.InterfaceName}}
+AliasIndex:    {{.AliasIndex}}
+Pointer:       {{.Pointer}}
+IsPrimary:     {{.IsPrimary}}
+Type:          {{.Type}}
+IPAddress:     {{.IPAddress}}
+Subnet:        {{.Subnet}}
+Netmask:       {{.Netmask}}
+Prefix:        {{.Prefix}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -371,32 +409,47 @@ var structureAddressAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		s, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		s, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		a, err := c.UtilitiesAddressBlockGet(detailAddressBlock)
+		a, err := contractorClient.UtilitiesAddressBlockGet(ctx, detailAddressBlock)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesAddressNew()
-		o.AddressBlock = a.GetID()
-		o.Offset = detailOffset
-		o.Networked = strings.Replace(s.GetID(), "/api/v1/Building/Structure", "/api/v1/Utilities/Networked", 1)
-		o.InterfaceName = detailInterfaceName
-		o.IsPrimary = detailIsPrimary
+		o := contractorClient.UtilitiesAddressNew()
+		(*o.AddressBlock) = a.GetURI()
+		o.Offset = &detailOffset
+		(*o.Networked) = strings.Replace(s.GetURI(), "/api/v1/Building/Structure", "/api/v1/Utilities/Networked", 1)
+		o.InterfaceName = &detailInterfaceName
+		o.IsPrimary = &detailIsPrimary
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+AddressBlock:  {{.AddressBlock | extractId}}
+Offset:        {{.Offset}}
+Networked:     {{.Networked | extractID}}
+InterfaceName: {{.InterfaceName}}
+AliasIndex:    {{.AliasIndex}}
+Pointer:       {{.Pointer}}
+IsPrimary:     {{.IsPrimary}}
+Type:          {{.Type}}
+IPAddress:     {{.IPAddress}}
+Subnet:        {{.Subnet}}
+Netmask:       {{.Netmask}}
+Prefix:        {{.Prefix}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -406,32 +459,44 @@ var structureAddressUpdateCmd = &cobra.Command{
 	Short: "Update an IP address to structure",
 	Args:  structureAddressArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		addressID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesAddressGet(addressID)
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesAddressNewWithID(addressID)
+
+		if detailOffset != 0 {
+			o.Offset = &detailOffset
+		}
+
+		if detailInterfaceName != "" {
+			o.InterfaceName = &detailInterfaceName
+		}
+
+		o, err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailOffset != 0 {
-			o.Offset = detailOffset
-			fieldList = append(fieldList, "offset")
-		}
-
-		if detailInterfaceName != "" {
-			o.InterfaceName = detailInterfaceName
-			fieldList = append(fieldList, "interface_name")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+AddressBlock:  {{.AddressBlock | extractId}}
+Offset:        {{.Offset}}
+Networked:     {{.Networked | extractID}}
+InterfaceName: {{.InterfaceName}}
+AliasIndex:    {{.AliasIndex}}
+Pointer:       {{.Pointer}}
+IsPrimary:     {{.IsPrimary}}
+Type:          {{.Type}}
+IPAddress:     {{.IPAddress}}
+Subnet:        {{.Subnet}}
+Netmask:       {{.Netmask}}
+Prefix:        {{.Prefix}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -446,14 +511,14 @@ var structureAddressDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesAddressGet(addressID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesAddressGet(ctx, addressID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -475,32 +540,30 @@ var structureJobInfoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		jID, err := o.CallGetJob()
+		jobURI, err := o.CallGetJob(ctx)
 		if err != nil {
 			return err
 		}
-		if jID == "" {
+
+		if jobURI == "" {
 			outputDetail("", "No Job\n")
 			return nil
 		}
-		jIDi, err := extractIDInt(jID)
-		if err != nil {
-			return err
-		}
-		j, err := c.ForemanStructureJobGet(jIDi)
+
+		j, err := contractorClient.ForemanStructureJobGetURI(ctx, jobURI)
 		if err != nil {
 			return err
 		}
 
-		outputDetail(j, `Job:           {{.GetID | extractID}}
+		outputDetail(j, `Job:           {{.GetURI | extractID}}
 Site:          {{.Site}}
 Structure:     {{.Structure | extractID}}
 State:         {{.State}}
@@ -524,30 +587,34 @@ var structureJobStateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
-		jID, err := o.CallGetJob()
+		jobURI, err := o.CallGetJob(ctx)
 		if err != nil {
 			return err
 		}
-		jIDi, err := extractIDInt(jID)
+
+		if jobURI == "" {
+			outputDetail("", "No Job\n")
+			return nil
+		}
+
+		j, err := contractorClient.ForemanStructureJobGetURI(ctx, jobURI)
 		if err != nil {
 			return err
 		}
-		j, err := c.ForemanStructureJobGet(jIDi)
+
+		vars, err := j.CallJobRunnerVariables(ctx)
 		if err != nil {
 			return err
 		}
-		vars, err := j.CallJobRunnerVariables()
-		if err != nil {
-			return err
-		}
-		state, err := j.CallJobRunnerState()
+
+		state, err := j.CallJobRunnerState(ctx)
 		if err != nil {
 			return err
 		}
@@ -570,15 +637,15 @@ var structureJobDoCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		if _, err := o.CallDoCreate(); err != nil {
+		if _, err := o.CallDoCreate(ctx); err != nil {
 			return err
 		}
 
@@ -595,15 +662,15 @@ var structureJobDoDestroyCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		if _, err := o.CallDoDestroy(); err != nil {
+		if _, err := o.CallDoDestroy(ctx); err != nil {
 			return err
 		}
 		return nil
@@ -615,7 +682,7 @@ var structureJobDoUtilityCmd = &cobra.Command{
 	Short: "Start Utility Job for Structure",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			return errors.New("Requires a Structure Id and Utility Job Name Argument")
+			return errors.New("requires a Structure Id and Utility Job Name Argument")
 		}
 		return nil
 	},
@@ -625,15 +692,15 @@ var structureJobDoUtilityCmd = &cobra.Command{
 			return err
 		}
 		scriptName := args[1]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		if _, err := o.CallDoJob(scriptName); err != nil {
+		if _, err := o.CallDoJob(ctx, scriptName); err != nil {
 			return err
 		}
 		return nil
@@ -649,16 +716,16 @@ var structureJobLogCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.ForemanJobLogList("structure", map[string]interface{}{"structure": o.GetID()})
+		vchan, err := contractorClient.ForemanJobLogList(ctx, "structure", map[string]interface{}{"structure": o.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -685,16 +752,16 @@ var structureInterfaceListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesAbstractNetworkInterfaceList("structure", map[string]interface{}{"structure": r.GetID()})
+		vchan, err := contractorClient.UtilitiesAbstractNetworkInterfaceList(ctx, "structure", map[string]interface{}{"structure": r.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -703,10 +770,10 @@ var structureInterfaceListCmd = &cobra.Command{
 		}
 
 		sort.Slice(rl, func(i, j int) bool {
-			return rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID < rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID
+			return *(rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID) < *(rl[j].(*contractor.UtilitiesAbstractNetworkInterface).ID)
 		})
 
-		outputList(rl, []string{"Id", "Name", "Type", "Network", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.Type}}	{{.Network | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Type", "Network", "Created", "Update"}, "{{.GetURI | extractID}}	{{.Name}}	{{.Type}}	{{.Network | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -721,14 +788,15 @@ var structureInterfaceGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesAbstractNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesAbstractNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:             {{.Name}}
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
 Type:             {{.Type}}
 Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
@@ -748,32 +816,39 @@ var structureInterfaceCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesAbstractNetworkInterfaceNew()
-		o.Structure = r.GetID()
-		o.Name = detailName
+		o := contractorClient.UtilitiesAbstractNetworkInterfaceNew()
+		(*o.Structure) = r.GetURI()
+		o.Name = &detailName
 
 		if detailNetwork != 0 {
-			r, err := c.UtilitiesNetworkGet(detailNetwork)
+			r, err := contractorClient.UtilitiesNetworkGet(ctx, detailNetwork)
 			if err != nil {
 				return err
 			}
-			o.Network = r.GetID()
+			(*o.Network) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Type:             {{.Type}}
+Network:          {{.Network | extractID}}
+Structure:        {{.Structure | extractID}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -783,36 +858,40 @@ var structureInterfaceUpdateCmd = &cobra.Command{
 	Short: "Update Structure Interface",
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		interfaceID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesAbstractNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesAbstractNetworkInterfaceNewWithID(interfaceID)
+
+		if detailName != "" {
+			o.Name = &detailName
+		}
+
+		if detailNetwork != 0 {
+			r, err := contractorClient.UtilitiesNetworkGet(ctx, detailNetwork)
+			if err != nil {
+				return err
+			}
+			(*o.Network) = r.GetURI()
+		}
+
+		o, err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailName != "" {
-			o.Name = detailName
-			fieldList = append(fieldList, "name")
-		}
-
-		if detailNetwork != 0 {
-			r, err := c.UtilitiesNetworkGet(detailNetwork)
-			if err != nil {
-				return err
-			}
-			o.Network = r.GetID()
-			fieldList = append(fieldList, "network")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Type:             {{.Type}}
+Network:          {{.Network | extractID}}
+Structure:        {{.Structure | extractID}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 
 		return nil
 	},
@@ -827,14 +906,14 @@ var structureInterfaceDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesAbstractNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesAbstractNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -856,16 +935,16 @@ var structureAggInterfaceListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesAggregatedNetworkInterfaceList("structure", map[string]interface{}{"structure": r.GetID()})
+		vchan, err := contractorClient.UtilitiesAggregatedNetworkInterfaceList(ctx, "structure", map[string]interface{}{"structure": o.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -874,10 +953,10 @@ var structureAggInterfaceListCmd = &cobra.Command{
 		}
 
 		sort.Slice(rl, func(i, j int) bool {
-			return rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID < rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID
+			return *(rl[i].(*contractor.UtilitiesAbstractNetworkInterface).ID) < *(rl[j].(*contractor.UtilitiesAbstractNetworkInterface).ID)
 		})
 
-		outputList(rl, []string{"Id", "Name", "Network", "Primary Interface", "Secondary Interface(s)", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.Network | extractID}}	{{.PrimaryInterface | extractID}}	{{.SecondaryInterfaces | extractIDList}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Network", "Primary Interface", "Secondary Interface(s)", "Created", "Update"}, "{{.GetURI | extractID}}	{{.Name}}	{{.Network | extractID}}	{{.PrimaryInterface | extractID}}	{{.SecondaryInterfaces | extractIDList}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -889,14 +968,15 @@ var structureAggInterfaceGetCmd = &cobra.Command{
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		interfaceID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesAggregatedNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesAggregatedNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:             {{.Name}}
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
 Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
@@ -918,45 +998,54 @@ var structureAggInterfaceCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingStructureGet(structureID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesAggregatedNetworkInterfaceNew()
-		o.Structure = r.GetID()
-		o.Name = detailName
+		o := contractorClient.UtilitiesAggregatedNetworkInterfaceNew()
+		(*o.Structure) = r.GetURI()
+		o.Name = &detailName
 
 		if detailNetwork != 0 {
-			r, err := c.UtilitiesNetworkGet(detailNetwork)
+			r, err := contractorClient.UtilitiesNetworkGet(ctx, detailNetwork)
 			if err != nil {
 				return err
 			}
-			o.Network = r.GetID()
+			(*o.Network) = r.GetURI()
 		}
 
-		ri := c.UtilitiesNetworkInterfaceNewWithID(detailPrimary)
-		o.PrimaryInterface = ri.GetID()
+		ri := contractorClient.UtilitiesNetworkInterfaceNewWithID(detailPrimary)
+		(*o.PrimaryInterface) = ri.GetURI()
 
-		o.SecondaryInterfaces = []string{}
+		o.SecondaryInterfaces = &[]string{}
 		for _, id := range strings.Split(detailSecondary, ",") {
 			i, err := strconv.Atoi(id)
 			if err != nil {
 				return err
 			}
-			ri = c.UtilitiesNetworkInterfaceNewWithID(i)
-			o.SecondaryInterfaces = append(o.SecondaryInterfaces, ri.GetID())
+			ri = contractorClient.UtilitiesNetworkInterfaceNewWithID(i)
+			(*o.SecondaryInterfaces) = append((*o.SecondaryInterfaces), ri.GetURI())
 		}
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Network:          {{.Network | extractID}}
+Structure:        {{.Structure | extractID}}
+Primary:          {{.PrimaryInterface | extractID}}
+Secondaries:      {{.SecondaryInterfaces | extractIDList}}
+Paramaters:       {{.Paramaters}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -966,48 +1055,52 @@ var structureAggInterfaceUpdateCmd = &cobra.Command{
 	Short: "Update Structure Aggregated Interface",
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		interfaceID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesAggregatedNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesAggregatedNetworkInterfaceNewWithID(interfaceID)
+
+		if detailName != "" {
+			o.Name = &detailName
+		}
+
+		if detailNetwork != 0 {
+			r, err := contractorClient.UtilitiesNetworkGet(ctx, detailNetwork)
+			if err != nil {
+				return err
+			}
+			(*o.Network) = r.GetURI()
+		}
+
+		if detailPrimary != 0 {
+			r := contractorClient.UtilitiesNetworkInterfaceNewWithID(detailPrimary)
+			(*o.PrimaryInterface) = r.GetURI()
+		}
+
+		if detailSecondary != "" {
+			o.SecondaryInterfaces = &[]string{}
+			for id := range strings.Split(detailSecondary, ",") {
+				ri := contractorClient.UtilitiesNetworkInterfaceNewWithID(id)
+				(*o.SecondaryInterfaces) = append((*o.SecondaryInterfaces), ri.GetURI())
+			}
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailName != "" {
-			o.Name = detailName
-			fieldList = append(fieldList, "name")
-		}
-
-		if detailNetwork != 0 {
-			r, err := c.UtilitiesNetworkGet(detailNetwork)
-			if err != nil {
-				return err
-			}
-			o.Network = r.GetID()
-			fieldList = append(fieldList, "network")
-		}
-
-		if detailPrimary != 0 {
-			ri := c.UtilitiesNetworkInterfaceNewWithID(detailPrimary)
-			o.PrimaryInterface = ri.GetID()
-			fieldList = append(fieldList, "primary_interface")
-		}
-
-		if detailSecondary != "" {
-			o.SecondaryInterfaces = []string{}
-			for id := range strings.Split(detailSecondary, ",") {
-				ri := c.UtilitiesNetworkInterfaceNewWithID(id)
-				o.SecondaryInterfaces = append(o.SecondaryInterfaces, ri.GetID())
-			}
-			fieldList = append(fieldList, "secondary_interfaces")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Network:          {{.Network | extractID}}
+Structure:        {{.Structure | extractID}}
+Primary:          {{.PrimaryInterface | extractID}}
+Secondaries:      {{.SecondaryInterfaces | extractIDList}}
+Paramaters:       {{.Paramaters}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 
 		return nil
 	},
@@ -1019,14 +1112,14 @@ var structureAggInterfaceDeleteCmd = &cobra.Command{
 	Args:  structureInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		interfaceID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesAggregatedNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesAggregatedNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -1079,40 +1172,19 @@ func init() {
 	structureAggInterfaceUpdateCmd.Flags().StringVarP(&detailSecondary, "secondary", "s", "", "Interface names to use as the secondaries, delimited by ','")
 
 	rootCmd.AddCommand(structureCmd)
-	structureCmd.AddCommand(structureListCmd)
-	structureCmd.AddCommand(structureGetCmd)
-	structureCmd.AddCommand(structureCreateCmd)
-	structureCmd.AddCommand(structureUpdateCmd)
-	structureCmd.AddCommand(structureDeleteCmd)
-	structureCmd.AddCommand(structureConfigCmd)
+	structureCmd.AddCommand(structureListCmd, structureGetCmd, structureCreateCmd, structureUpdateCmd, structureDeleteCmd, structureConfigCmd)
 
 	structureCmd.AddCommand(structureAddressCmd)
-	structureAddressCmd.AddCommand(structureAddressListCmd)
-	structureAddressCmd.AddCommand(structureAddressNextCmd)
-	structureAddressCmd.AddCommand(structureAddressAddCmd)
-	structureAddressCmd.AddCommand(structureAddressUpdateCmd)
-	structureAddressCmd.AddCommand(structureAddressDeleteCmd)
+	structureAddressCmd.AddCommand(structureAddressListCmd, structureAddressNextCmd, structureAddressAddCmd, structureAddressUpdateCmd, structureAddressDeleteCmd)
 
 	structureCmd.AddCommand(structureJobCmd)
-	structureJobCmd.AddCommand(structureJobInfoCmd)
-	structureJobCmd.AddCommand(structureJobStateCmd)
-	structureJobCmd.AddCommand(structureJobDoCreateCmd)
-	structureJobCmd.AddCommand(structureJobDoDestroyCmd)
-	structureJobCmd.AddCommand(structureJobDoUtilityCmd)
+	structureJobCmd.AddCommand(structureJobInfoCmd, structureJobStateCmd, structureJobDoCreateCmd, structureJobDoDestroyCmd, structureJobDoUtilityCmd)
 
 	structureCmd.AddCommand(structureJobLogCmd)
 
 	structureCmd.AddCommand(structureInterfaceCmd)
-	structureInterfaceCmd.AddCommand(structureInterfaceListCmd)
-	structureInterfaceCmd.AddCommand(structureInterfaceGetCmd)
-	structureInterfaceCmd.AddCommand(structureInterfaceCreateCmd)
-	structureInterfaceCmd.AddCommand(structureInterfaceUpdateCmd)
-	structureInterfaceCmd.AddCommand(structureInterfaceDeleteCmd)
+	structureInterfaceCmd.AddCommand(structureInterfaceListCmd, structureInterfaceGetCmd, structureInterfaceCreateCmd, structureInterfaceUpdateCmd, structureInterfaceDeleteCmd)
 
 	structureCmd.AddCommand(structureAggInterfaceCmd)
-	structureAggInterfaceCmd.AddCommand(structureAggInterfaceListCmd)
-	structureAggInterfaceCmd.AddCommand(structureAggInterfaceGetCmd)
-	structureAggInterfaceCmd.AddCommand(structureAggInterfaceCreateCmd)
-	structureAggInterfaceCmd.AddCommand(structureAggInterfaceUpdateCmd)
-	structureAggInterfaceCmd.AddCommand(structureAggInterfaceDeleteCmd)
+	structureAggInterfaceCmd.AddCommand(structureAggInterfaceListCmd, structureAggInterfaceGetCmd, structureAggInterfaceCreateCmd, structureAggInterfaceUpdateCmd, structureAggInterfaceDeleteCmd)
 }

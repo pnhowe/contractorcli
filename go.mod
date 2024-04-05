@@ -4,13 +4,13 @@ go 1.21
 
 require (
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/cinp/go v1.1.5
+	github.com/cinp/go v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stromland/cobra-prompt v0.5.0
-	github.com/t3kton/contractor_client/go v0.0.0-20240324040330-4f8ae11ff4d7
+	github.com/t3kton/contractor_client/go v0.0.0-20240404132203-bb77d09e1162
 )
 
 require (
@@ -32,7 +32,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

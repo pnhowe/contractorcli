@@ -24,18 +24,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailAddressBlock, detailVlan, detailMTU int
-
 func networkArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Network Id Argument")
+		return errors.New("requires a Network Id argument")
 	}
 	return nil
 }
 
 func networkAddressBlockArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Network AddressBlock Link Id Argument")
+		return errors.New("requires a Network AddressBlock Link Id argument")
 	}
 	return nil
 }
@@ -49,18 +47,17 @@ var networkListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Networks",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesNetworkList("", map[string]interface{}{})
+		vchan, err := contractorClient.UtilitiesNetworkList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Name", "Site", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Site", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -75,28 +72,29 @@ var networkGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesNetworkGet(networkID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesNetworkGet(ctx, networkID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:          {{.Name}}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
 Site:          {{.Site | extractID}}
 MTU:           {{.Mtu}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesNetworkAddressBlockList("network", map[string]interface{}{"network": r.GetID()})
+		vchan, err := contractorClient.UtilitiesNetworkAddressBlockList(ctx, "network", map[string]interface{}{"network": o.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"link id", "Address Block", "vlan id", "Created", "Update"}, "{{.GetID | extractID}}	{{.AddressBlock | extractID}}	{{.Vlan}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"link id", "Address Block", "vlan id", "Created", "Update"}, "{{.GetURI | extractID}}	{{.AddressBlock | extractID}}	{{.Vlan}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -106,26 +104,32 @@ var networkCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Network",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		o := contractorClient.UtilitiesNetworkNew()
+		o.Name = &detailName
+		o.Mtu = &detailMTU
 
-		o := c.UtilitiesNetworkNew()
-		o.Name = detailName
-		o.Mtu = detailMTU
+		ctx := cmd.Context()
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
+Site:          {{.Site | extractID}}
+MTU:           {{.Mtu}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -136,41 +140,43 @@ var networkUpdateCmd = &cobra.Command{
 	Short: "Update Network",
 	Args:  networkArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		networkID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesNetworkGet(networkID)
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesNetworkNewWithID(networkID)
+
+		if detailName != "" {
+			o.Name = &detailName
+		}
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailMTU != 0 {
+			o.Mtu = &detailMTU
+		}
+
+		o, err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailName != "" {
-			o.Name = detailName
-			fieldList = append(fieldList, "name")
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailMTU != 0 {
-			o.Mtu = detailMTU
-			fieldList = append(fieldList, "mtu")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
+Site:          {{.Site | extractID}}
+MTU:           {{.Mtu}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -185,14 +191,14 @@ var networkDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesNetworkGet(networkID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesNetworkGet(ctx, networkID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := r.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -214,31 +220,38 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesNetworkGet(networkID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesNetworkGet(ctx, networkID)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesNetworkAddressBlockNew()
-		o.Network = r.GetID()
-		o.Vlan = detailVlan
+		o := contractorClient.UtilitiesNetworkAddressBlockNew()
+		(*o.Network) = r.GetURI()
+		o.Vlan = &detailVlan
 
 		if detailAddressBlock != 0 {
-			r, err := c.UtilitiesAddressBlockGet(detailAddressBlock)
+			r, err := contractorClient.UtilitiesAddressBlockGet(ctx, detailAddressBlock)
 			if err != nil {
 				return err
 			}
-			o.AddressBlock = r.GetID()
+			(*o.AddressBlock) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Id:            {{.ID}}
+Network:       {{.Network | extractID}}
+Address Block: {{.AddressBlock | extractID}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -249,27 +262,31 @@ var networkAddressBlockUpdateCmd = &cobra.Command{
 	Short: "Update Network AddressBlock Link",
 	Args:  networkAddressBlockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		linkID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesNetworkAddressBlockGet(linkID)
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesNetworkAddressBlockNewWithID(linkID)
+
+		if detailVlan != -1 {
+			o.Vlan = &detailVlan
+		}
+
+		o, err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailVlan != -1 {
-			o.Vlan = detailVlan
-			fieldList = append(fieldList, "vlan")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Id:            {{.ID}}
+Network:       {{.Network | extractID}}
+Address Block: {{.AddressBlock | extractID}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -284,14 +301,14 @@ var networkAddressBlockDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesNetworkAddressBlockGet(linkID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesNetworkAddressBlockGet(ctx, linkID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -314,14 +331,8 @@ func init() {
 	networkAddressBlockUpdateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", -1, "VLan the Addressblock is tagged as")
 
 	rootCmd.AddCommand(networkCmd)
-	networkCmd.AddCommand(networkListCmd)
-	networkCmd.AddCommand(networkGetCmd)
-	networkCmd.AddCommand(networkCreateCmd)
-	networkCmd.AddCommand(networkUpdateCmd)
-	networkCmd.AddCommand(networkDeleteCmd)
+	networkCmd.AddCommand(networkListCmd, networkGetCmd, networkCreateCmd, networkUpdateCmd, networkDeleteCmd)
 
 	networkCmd.AddCommand(networkAddressBlockCmd)
-	networkAddressBlockCmd.AddCommand(networkAddressBlockCreateCmd)
-	networkAddressBlockCmd.AddCommand(networkAddressBlockUpdateCmd)
-	networkAddressBlockCmd.AddCommand(networkAddressBlockDeleteCmd)
+	networkAddressBlockCmd.AddCommand(networkAddressBlockCreateCmd, networkAddressBlockUpdateCmd, networkAddressBlockDeleteCmd)
 }

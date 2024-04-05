@@ -31,14 +31,15 @@ var foundationDockerGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.DockerDockerFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.DockerDockerFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
 Complex:        {{.DockerComplex | extractID}}
 Container Id:   {{.DockerID}}
 Type:           {{.Type}}
@@ -61,42 +62,55 @@ var foundationDockerCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Docker Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.DockerDockerFoundationNew()
-		o.Locator = detailLocator
+		o := contractorClient.DockerDockerFoundationNew()
+		o.Locator = &detailLocator
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailComplex != "" {
-			r, err := c.DockerDockerComplexGet(detailComplex)
+			r, err := contractorClient.DockerDockerComplexGet(ctx, detailComplex)
 			if err != nil {
 				return err
 			}
-			o.DockerComplex = r.GetID()
+			(*o.DockerComplex) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.DockerComplex | extractID}}
+Container Id:   {{.DockerID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -106,46 +120,56 @@ var foundationDockerUpdateCmd = &cobra.Command{
 	Short: "Update Docker Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.DockerDockerFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.DockerDockerFoundationNewWithID(foundationID)
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailComplex != "" {
+			r, err := contractorClient.DockerDockerComplexGet(ctx, detailComplex)
+			if err != nil {
+				return err
+			}
+			(*o.DockerComplex) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailComplex != "" {
-			r, err := c.DockerDockerComplexGet(detailComplex)
-			if err != nil {
-				return err
-			}
-			o.DockerComplex = r.GetID()
-			fieldList = append(fieldList, "docker_complex")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.DockerComplex | extractID}}
+Container Id:   {{.DockerID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -164,7 +188,5 @@ func init() {
 	foundationDockerUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the Docker Foundation")
 
 	foundationCmd.AddCommand(foundationDockerCmd)
-	foundationDockerCmd.AddCommand(foundationDockerGetCmd)
-	foundationDockerCmd.AddCommand(foundationDockerCreateCmd)
-	foundationDockerCmd.AddCommand(foundationDockerUpdateCmd)
+	foundationDockerCmd.AddCommand(foundationDockerGetCmd, foundationDockerCreateCmd, foundationDockerUpdateCmd)
 }

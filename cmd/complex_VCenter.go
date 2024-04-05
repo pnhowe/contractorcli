@@ -20,9 +20,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailDatacenter, detailCluster string
-var detailHost int
-
 var complexVCenterCmd = &cobra.Command{
 	Use:   "vcenter",
 	Short: "Work with VCenter Complexes",
@@ -34,14 +31,15 @@ var complexVCenterGetCmd = &cobra.Command{
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.VcenterVCenterComplexGet(complexID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.VcenterVCenterComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:               {{.Name}}
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
 Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
@@ -65,48 +63,62 @@ var complexVCenterCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New VCenter Complex",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.VcenterVCenterComplexNew()
-		o.Name = detailName
-		o.Description = detailDescription
-		o.BuiltPercentage = detailBuiltPercentage
-		o.VcenterUsername = detailUsername
-		o.VcenterPassword = detailPassword
-		o.VcenterDatacenter = detailDatacenter
-		o.VcenterCluster = detailCluster
+		o := contractorClient.VcenterVCenterComplexNew()
+		o.Name = &detailName
+		o.Description = &detailDescription
+		o.BuiltPercentage = &detailBuiltPercentage
+		o.VcenterUsername = &detailUsername
+		o.VcenterPassword = &detailPassword
+		o.VcenterDatacenter = &detailDatacenter
+		o.VcenterCluster = &detailCluster
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := contractorClient.BuildingStructureGet(ctx, v)
 			if err != nil {
 				return err
 			}
-			o.Members = append(o.Members, s.GetID())
+			(*o.Members) = append((*o.Members), s.GetURI())
 		}
 
 		if detailHost != 0 {
-			r, err := c.BuildingStructureGet(detailHost)
+			r, err := contractorClient.BuildingStructureGet(ctx, detailHost)
 			if err != nil {
 				return err
 			}
-			o.VcenterHost = r.GetID()
+			(*o.VcenterHost) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
+Description:        {{.Description}}
+Type:               {{.Type}}
+State:              {{.State}}
+Site:               {{.Site | extractID}}
+BuiltPercentage:    {{.BuiltPercentage}}
+Members:            {{.Members}}
+VCenter Host:       {{.VcenterHost}}
+VCenter Username:   {{.VcenterUsername}}
+VCenter Password:   {{.VcenterPassword}}
+VCenter DataCenter: {{.VcenterDatacenter}}
+VCenter Cluster:    {{.VcenterCluster}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -116,78 +128,83 @@ var complexVCenterUpdateCmd = &cobra.Command{
 	Short: "Update VCenter Complex",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.VcenterVCenterComplexGet(complexID)
-		if err != nil {
-			return err
-		}
+		ctx := cmd.Context()
+
+		o := contractorClient.VcenterVCenterComplexNewWithID(complexID)
 
 		if detailDescription != "" {
-			o.Description = detailDescription
-			fieldList = append(fieldList, "description")
+			o.Description = &detailDescription
 		}
 
 		if detailBuiltPercentage != 0 {
-			o.BuiltPercentage = detailBuiltPercentage
-			fieldList = append(fieldList, "built_percentage")
+			o.BuiltPercentage = &detailBuiltPercentage
 		}
 
 		if detailUsername != "" {
-			o.VcenterUsername = detailUsername
-			fieldList = append(fieldList, "vcenter_username")
+			o.VcenterUsername = &detailUsername
 		}
 
 		if detailPassword != "" {
-			o.VcenterPassword = detailPassword
-			fieldList = append(fieldList, "vcenter_password")
+			o.VcenterPassword = &detailPassword
 		}
 
 		if detailDatacenter != "" {
-			o.VcenterDatacenter = detailDatacenter
-			fieldList = append(fieldList, "vcenter_datacenter")
+			o.VcenterDatacenter = &detailDatacenter
 		}
 
 		if detailCluster != "" {
-			o.VcenterCluster = detailCluster
-			fieldList = append(fieldList, "vcenter_cluster")
+			o.VcenterCluster = &detailCluster
 		}
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
+			(*o.Site) = r.GetURI()
 		}
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := contractorClient.BuildingStructureGet(ctx, v)
 				if err != nil {
 					return err
 				}
-				o.Members = append(o.Members, s.GetID())
+				(*o.Members) = append((*o.Members), s.GetURI())
 			}
-			fieldList = append(fieldList, "members")
 		}
 
 		if detailHost != 0 {
-			r, err := c.BuildingStructureGet(detailHost)
+			r, err := contractorClient.BuildingStructureGet(ctx, detailHost)
 			if err != nil {
 				return err
 			}
-			o.VcenterHost = r.GetID()
-			fieldList = append(fieldList, "vcenter_host")
+			(*o.VcenterHost) = r.GetURI()
 		}
 
-		if err := o.Update(fieldList); err != nil {
+		o, err := o.Update(ctx)
+		if err != nil {
 			return err
 		}
+
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
+Description:        {{.Description}}
+Type:               {{.Type}}
+State:              {{.State}}
+Site:               {{.Site | extractID}}
+BuiltPercentage:    {{.BuiltPercentage}}
+Members:            {{.Members}}
+VCenter Host:       {{.VcenterHost}}
+VCenter Username:   {{.VcenterUsername}}
+VCenter Password:   {{.VcenterPassword}}
+VCenter DataCenter: {{.VcenterDatacenter}}
+VCenter Cluster:    {{.VcenterCluster}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 
 		return nil
 	},
@@ -218,7 +235,5 @@ func init() {
 	complexVCenterUpdateCmd.Flags().IntVarP(&detailHost, "host", "o", 0, "Update the VCenter Host(structure id) of New VCenter Complex with value")
 
 	complexCmd.AddCommand(complexVCenterCmd)
-	complexVCenterCmd.AddCommand(complexVCenterGetCmd)
-	complexVCenterCmd.AddCommand(complexVCenterCreateCmd)
-	complexVCenterCmd.AddCommand(complexVCenterUpdateCmd)
+	complexVCenterCmd.AddCommand(complexVCenterGetCmd, complexVCenterCreateCmd, complexVCenterUpdateCmd)
 }

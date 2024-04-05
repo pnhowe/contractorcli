@@ -20,8 +20,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailAMTUsername, detailAMTPassword, detailAMTIP string
-
 var foundationAMTCmd = &cobra.Command{
 	Use:   "amt",
 	Short: "Work with AMT Foundations",
@@ -33,14 +31,14 @@ var foundationAMTGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.AmtAMTFoundationGet(foundationID)
+		o, err := contractorClient.AmtAMTFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
 AMT Username:   {{.AmtUsername}}
 AMT Password:   {{.AmtPassword}}
 AMT Ip Address: {{.AmtIPAddress}}
@@ -65,44 +63,60 @@ var foundationAMTCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New AMT Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.AmtAMTFoundationNew()
-		o.Locator = detailLocator
-		o.AmtUsername = detailAMTUsername
-		o.AmtPassword = detailAMTPassword
-		o.AmtIPAddress = detailAMTIP
+		o := contractorClient.AmtAMTFoundationNew()
+		o.Locator = &detailLocator
+		o.AmtUsername = &detailAMTUsername
+		o.AmtPassword = &detailAMTPassword
+		o.AmtIPAddress = &detailAMTIP
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailPlot != "" {
-			r, err := c.SurveyPlotGet(detailPlot)
+			r, err := contractorClient.SurveyPlotGet(ctx, detailPlot)
 			if err != nil {
 				return err
 			}
-			o.Plot = r.GetID()
+			(*o.Plot) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+AMT Username:   {{.AmtUsername}}
+AMT Password:   {{.AmtPassword}}
+AMT Ip Address: {{.AmtIPAddress}}
+Plot:           {{.Plot | extractID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -113,61 +127,70 @@ var foundationAMTUpdateCmd = &cobra.Command{
 	Short: "Update AMT Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.AmtAMTFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.AmtAMTFoundationNewWithID(foundationID)
+
+		if detailAMTUsername != "" {
+			o.AmtUsername = &detailAMTUsername
+		}
+
+		if detailAMTPassword != "" {
+			o.AmtPassword = &detailAMTPassword
+		}
+
+		if detailAMTIP != "" {
+			o.AmtIPAddress = &detailAMTIP
+		}
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailPlot != "" {
+			r, err := contractorClient.SurveyPlotGet(ctx, detailPlot)
+			if err != nil {
+				return err
+			}
+			(*o.Plot) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailAMTUsername != "" {
-			o.AmtUsername = detailAMTUsername
-			fieldList = append(fieldList, "amt_username")
-		}
-
-		if detailAMTPassword != "" {
-			o.AmtPassword = detailAMTPassword
-			fieldList = append(fieldList, "amt_password")
-		}
-
-		if detailAMTIP != "" {
-			o.AmtIPAddress = detailAMTIP
-			fieldList = append(fieldList, "amt_ip_address")
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailPlot != "" {
-			r, err := c.SurveyPlotGet(detailPlot)
-			if err != nil {
-				return err
-			}
-			o.Plot = r.GetID()
-			fieldList = append(fieldList, "plot")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+AMT Username:   {{.AmtUsername}}
+AMT Password:   {{.AmtPassword}}
+AMT Ip Address: {{.AmtIPAddress}}
+Plot:           {{.Plot | extractID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -192,7 +215,5 @@ func init() {
 	foundationAMTUpdateCmd.Flags().StringVarP(&detailAMTIP, "amt-ip", "i", "", "Update the AMT Host Ip Address of the AMT Foundation")
 
 	foundationCmd.AddCommand(foundationAMTCmd)
-	foundationAMTCmd.AddCommand(foundationAMTGetCmd)
-	foundationAMTCmd.AddCommand(foundationAMTCreateCmd)
-	foundationAMTCmd.AddCommand(foundationAMTUpdateCmd)
+	foundationAMTCmd.AddCommand(foundationAMTGetCmd, foundationAMTCreateCmd, foundationAMTUpdateCmd)
 }

@@ -31,14 +31,15 @@ var foundationVCenterGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.VcenterVCenterFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.VcenterVCenterFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
 Complex:        {{.VcenterComplex | extractID}}
 VM UUID:        {{.VcenterUUID}}
 Type:           {{.Type}}
@@ -61,42 +62,55 @@ var foundationVCenterCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New VCenter Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.VcenterVCenterFoundationNew()
-		o.Locator = detailLocator
+		o := contractorClient.VcenterVCenterFoundationNew()
+		o.Locator = &detailLocator
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailComplex != "" {
-			r, err := c.VcenterVCenterComplexGet(detailComplex)
+			r, err := contractorClient.VcenterVCenterComplexGet(ctx, detailComplex)
 			if err != nil {
 				return err
 			}
-			o.VcenterComplex = r.GetID()
+			(*o.VcenterComplex) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.VcenterComplex | extractID}}
+VM UUID:        {{.VcenterUUID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -106,46 +120,56 @@ var foundationVCenterUpdateCmd = &cobra.Command{
 	Short: "Update VCenter Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.VcenterVCenterFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.VcenterVCenterFoundationNewWithID(foundationID)
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailComplex != "" {
+			r, err := contractorClient.VcenterVCenterComplexGet(ctx, detailComplex)
+			if err != nil {
+				return err
+			}
+			(*o.VcenterComplex) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailComplex != "" {
-			r, err := c.VcenterVCenterComplexGet(detailComplex)
-			if err != nil {
-				return err
-			}
-			o.VcenterComplex = r.GetID()
-			fieldList = append(fieldList, "vcenter_complex")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.VcenterComplex | extractID}}
+VM UUID:        {{.VcenterUUID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -164,7 +188,5 @@ func init() {
 	foundationVCenterUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the VCenter Foundation")
 
 	foundationCmd.AddCommand(foundationVCenterCmd)
-	foundationVCenterCmd.AddCommand(foundationVCenterGetCmd)
-	foundationVCenterCmd.AddCommand(foundationVCenterCreateCmd)
-	foundationVCenterCmd.AddCommand(foundationVCenterUpdateCmd)
+	foundationVCenterCmd.AddCommand(foundationVCenterGetCmd, foundationVCenterCreateCmd, foundationVCenterUpdateCmd)
 }

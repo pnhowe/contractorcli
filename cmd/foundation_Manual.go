@@ -31,14 +31,15 @@ var foundationManualGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ManualManualFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.ManualManualFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -59,33 +60,45 @@ var foundationManualCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Manual Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.ManualManualFoundationNew()
-		o.Locator = detailLocator
+		o := contractorClient.ManualManualFoundationNew()
+		o.Locator = &detailLocator
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -96,37 +109,47 @@ var foundationManualUpdateCmd = &cobra.Command{
 	Short: "Update Manual Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
-		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.ManualManualFoundationGet(foundationID)
+		foundationID := args[0]
+
+		ctx := cmd.Context()
+
+		o := contractorClient.ManualManualFoundationNewWithID(foundationID)
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -143,7 +166,5 @@ func init() {
 	foundationManualUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
 
 	foundationCmd.AddCommand(foundationManualCmd)
-	foundationManualCmd.AddCommand(foundationManualGetCmd)
-	foundationManualCmd.AddCommand(foundationManualCreateCmd)
-	foundationManualCmd.AddCommand(foundationManualUpdateCmd)
+	foundationManualCmd.AddCommand(foundationManualGetCmd, foundationManualCreateCmd, foundationManualUpdateCmd)
 }

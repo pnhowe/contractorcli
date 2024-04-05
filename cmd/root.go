@@ -20,16 +20,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"log/slog"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"text/template"
 
-	contractor "github.com/t3kton/contractor_client/go"
-
 	"github.com/olekukonko/tablewriter"
+	contractor "github.com/t3kton/contractor_client/go"
 
 	cinp "github.com/cinp/go"
 	homedir "github.com/mitchellh/go-homedir"
@@ -38,9 +36,10 @@ import (
 )
 
 var cfgFile string
-var asJSON bool
+var asJSON, debug bool
 var version = "development"
 var gitVersion = "none"
+var contractorClient *contractor.Contractor = nil
 
 var rootCmd = &cobra.Command{
 	Use:   "contractorcli",
@@ -69,16 +68,17 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(doInit)
+	cobra.OnFinalize(doFinalize)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
 	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "", false, "Debug Output(will interfere with JSON output)")
 
 	rootCmd.AddCommand(versionCmd)
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
+func doInit() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -107,19 +107,30 @@ func initConfig() {
 			fmt.Printf("Error reading config file: '%s'\n", err)
 			os.Exit(1)
 		}
-	} else {
-		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-}
+	/*else {
+		//fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}*/
 
-func getContractor() *contractor.Contractor {
-	c, err := contractor.NewContractor(viper.GetString("contractor.host"), viper.GetString("contractor.proxy"), viper.GetString("contractor.username"), viper.GetString("contractor.password"))
+	handlerOptions := &slog.HandlerOptions{}
+	if debug {
+		handlerOptions.Level = slog.LevelDebug
+	} else {
+		handlerOptions.Level = slog.LevelWarn
+	}
+	handler := slog.NewTextHandler(os.Stderr, handlerOptions)
+	log := slog.New(handler)
+
+	contractorClient, err = contractor.NewContractor(rootCmd.Context(), log, viper.GetString("contractor.host"), viper.GetString("contractor.proxy"), viper.GetString("contractor.username"), viper.GetString("contractor.password"))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
 
-	return c
+func doFinalize() {
+	contractorClient.Logout(rootCmd.Context())
+	contractorClient = nil
 }
 
 func extractID(value string) string {
@@ -141,15 +152,6 @@ func extractIDList(values []string) string {
 	return strings.Join(workList, ",")
 }
 
-func extractIDInt(value string) (int, error) {
-	value = extractID(value)
-	result, err := strconv.Atoi(value)
-	if err != nil {
-		return 0, err
-	}
-	return result, nil
-}
-
 func editBuffer(value string) (string, error) {
 	editor := os.Getenv("CONTRACTORCLI_EDITOR")
 	if editor == "" {
@@ -165,11 +167,11 @@ func editBuffer(value string) (string, error) {
 		editor = "/usr/bin/vi"
 		_, err := os.Stat(editor)
 		if err != nil {
-			return "", fmt.Errorf("Unable to detect or find an editor, set CONTRACTORCLI_EDITOR or EDITOR")
+			return "", fmt.Errorf("unable to detect or find an editor, set CONTRACTORCLI_EDITOR or EDITOR")
 		}
 	}
 
-	tmpfile, err := ioutil.TempFile("", "contractorcli")
+	tmpfile, err := os.CreateTemp("", "contractorcli")
 	if err != nil {
 		return "", err
 	}
@@ -217,6 +219,7 @@ func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 			os.Exit(1)
 		}
 		os.Stdout.Write(buff)
+		os.Stdout.Write([]byte("\n"))
 	} else {
 		var rederbuff bytes.Buffer
 		table := tablewriter.NewWriter(os.Stdout)
@@ -249,6 +252,7 @@ func outputDetail(value interface{}, detailTemplate string) {
 			os.Exit(1)
 		}
 		os.Stdout.Write(buff)
+		os.Stdout.Write([]byte("\n"))
 	} else {
 		t := template.New("output")
 		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList})

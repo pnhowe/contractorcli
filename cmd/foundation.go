@@ -35,20 +35,16 @@ type foundationTypeEntry struct {
 
 var fundationTypes = map[string]foundationTypeEntry{}
 
-var detailLocator, detailPlot, detailComplex, detailPhysicalLocation, detailLinkName, detailMac, detailPxeName string
-var detailIsProvisioning bool
-var detailNetwork int
-
 func foundationArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Foundation Id(Locator) Argument")
+		return errors.New("requires a Foundation Id(Locator) argument")
 	}
 	return nil
 }
 
 func foundationInterfaceArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Structure Interface Id Argument")
+		return errors.New("requires a Structure Interface Id argument")
 	}
 	return nil
 }
@@ -62,18 +58,17 @@ var foundationListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Foundations",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.BuildingFoundationList("", map[string]interface{}{})
+		vchan, err := contractorClient.BuildingFoundationList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Site", "Locator", "Structure", "State", "Blueprint", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Locator}}	{{.Structure | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Locator", "Structure", "State", "Blueprint", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Site | extractID}}	{{.Locator}}	{{.Structure | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -85,14 +80,15 @@ var foundationGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:       {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:       {{.Locator}}
 Type:          {{.Type}}
 Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
@@ -113,12 +109,11 @@ var foundationTypesCmd = &cobra.Command{
 	Use:   "types",
 	Short: "List Supported Types",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		typeList := []string{}
 		for k, v := range fundationTypes {
-			APIVersion, err := c.GetAPIVersion(v.URI)
+			APIVersion, err := contractorClient.GetAPIVersion(ctx, v.URI)
 			if err != nil {
 				// return err
 				continue // TODO: really should only do this if it is a 404
@@ -140,14 +135,14 @@ var foundationDeleteCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -163,19 +158,19 @@ var foundationInterfaceCmd = &cobra.Command{
 var foundationInterfaceListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all Interfaces attached to a foundation",
-	Args:  structureArgCheck,
+	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": r.GetID()})
+		vchan, err := contractorClient.UtilitiesRealNetworkInterfaceList(ctx, "foundation", map[string]interface{}{"foundation": o.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -184,10 +179,10 @@ var foundationInterfaceListCmd = &cobra.Command{
 		}
 
 		sort.Slice(rl, func(i, j int) bool {
-			return rl[i].(*contractor.UtilitiesRealNetworkInterface).ID < rl[i].(*contractor.UtilitiesRealNetworkInterface).ID
+			return *(rl[i].(*contractor.UtilitiesRealNetworkInterface).ID) < *(rl[j].(*contractor.UtilitiesRealNetworkInterface).ID)
 		})
 
-		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetID | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetURI | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -202,14 +197,15 @@ var foundationInterfaceGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesRealNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:             {{.Name}}
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
 Type:             {{.Type}}
 Network:          {{.Network | extractID}}
 Foundation:       {{.Foundation | extractID}}
@@ -231,35 +227,48 @@ var foundationInterfaceCreateCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesRealNetworkInterfaceNew()
-		o.Foundation = r.GetID()
-		o.Name = detailName
-		o.PhysicalLocation = detailPhysicalLocation
-		o.IsProvisioning = detailIsProvisioning
-		o.LinkName = detailLinkName
-		o.Mac = detailMac
+		o := contractorClient.UtilitiesRealNetworkInterfaceNew()
+		(*o.Foundation) = r.GetURI()
+		o.Name = &detailName
+		o.PhysicalLocation = &detailPhysicalLocation
+		o.IsProvisioning = &detailIsProvisioning
+		o.LinkName = &detailLinkName
+		o.Mac = &detailMac
 
 		if detailNetwork != 0 {
-			r, err := c.UtilitiesNetworkGet(detailNetwork)
+			r, err := contractorClient.UtilitiesNetworkGet(ctx, detailNetwork)
 			if err != nil {
 				return err
 			}
-			o.Network = r.GetID()
+			(*o.Network) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Type:             {{.Type}}
+Network:          {{.Network | extractID}}
+Foundation:       {{.Foundation | extractID}}
+Mac:              {{.Mac}}
+IsProvisioning:   {{.IsProvisioning}}
+PhysicalLocation: {{.PhysicalLocation}}
+LinkName:         {{.LinkName}}
+Pxe:              {{.Pxe}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 
 		return nil
 	},
@@ -270,56 +279,61 @@ var foundationInterfaceUpdateCmd = &cobra.Command{
 	Short: "Update Foundation Interface",
 	Args:  foundationInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		interfaceID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
-		if err != nil {
-			return err
-		}
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesRealNetworkInterfaceNewWithID(interfaceID)
 
 		if detailName != "" {
-			o.Name = detailName
-			fieldList = append(fieldList, "name")
+			o.Name = &detailName
 		}
 
 		if detailPhysicalLocation != "" {
-			o.PhysicalLocation = detailPhysicalLocation
-			fieldList = append(fieldList, "physical_location")
+			o.PhysicalLocation = &detailPhysicalLocation
 		}
 
 		// if detailIsProvisioning != "" {
 		// 	o.IsProvisioning = detailIsProvisioning
-		// 	fieldList = append(fieldList, "is_provisioning")
 		// }
 
 		if detailLinkName != "" {
-			o.LinkName = detailLinkName
-			fieldList = append(fieldList, "link_name")
+			o.LinkName = &detailLinkName
 		}
 
 		if detailMac != "" {
-			o.Mac = detailMac
-			fieldList = append(fieldList, "mac")
+			o.Mac = &detailMac
 		}
 
 		if detailNetwork != 0 {
-			r, err := c.UtilitiesNetworkGet(detailNetwork)
+			r, err := contractorClient.UtilitiesNetworkGet(ctx, detailNetwork)
 			if err != nil {
 				return err
 			}
-			o.Network = r.GetID()
-			fieldList = append(fieldList, "network")
+			(*o.Network) = r.GetURI()
 		}
 
-		if err := o.Update(fieldList); err != nil {
+		o, err = o.Update(ctx)
+		if err != nil {
 			return err
 		}
+
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Type:             {{.Type}}
+Network:          {{.Network | extractID}}
+Foundation:       {{.Foundation | extractID}}
+Mac:              {{.Mac}}
+IsProvisioning:   {{.IsProvisioning}}
+PhysicalLocation: {{.PhysicalLocation}}
+LinkName:         {{.LinkName}}
+Pxe:              {{.Pxe}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 
 		return nil
 	},
@@ -334,17 +348,14 @@ var foundationInterfacePXECmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		o := contractorClient.UtilitiesRealNetworkInterfaceNewWithID(interfaceID)
+		(*o.Pxe) = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
+
+		_, err = o.Update(ctx)
 		if err != nil {
-			return err
-		}
-
-		o.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
-
-		if err := o.Update([]string{"pxe"}); err != nil {
 			return err
 		}
 
@@ -361,14 +372,14 @@ var foundationInterfaceDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesRealNetworkInterfaceGet(interfaceID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesRealNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := r.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -387,32 +398,30 @@ var foundationJobInfoCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
-		jID, err := o.CallGetJob()
+		jobURI, err := o.CallGetJob(ctx)
 		if err != nil {
 			return err
 		}
-		if jID == "" {
+
+		if jobURI == "" {
 			outputDetail("", "No Job\n")
 			return nil
 		}
-		jIDi, err := extractIDInt(jID)
-		if err != nil {
-			return err
-		}
-		j, err := c.ForemanFoundationJobGet(jIDi)
+
+		j, err := contractorClient.ForemanStructureJobGetURI(ctx, jobURI)
 		if err != nil {
 			return err
 		}
 
-		outputDetail(j, `Job:           {{.GetID | extractID}}
+		outputDetail(j, `Job:           {{.GetURI | extractID}}
 Site:          {{.Site}}
 Foundation:    {{.Foundation | extractID}}
 State:         {{.State}}
@@ -433,30 +442,34 @@ var foundationJobStateCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		jID, err := o.CallGetJob()
+		jobURI, err := o.CallGetJob(ctx)
 		if err != nil {
 			return err
 		}
-		jIDi, err := extractIDInt(jID)
+
+		if jobURI == "" {
+			outputDetail("", "No Job\n")
+			return nil
+		}
+
+		j, err := contractorClient.ForemanStructureJobGetURI(ctx, jobURI)
 		if err != nil {
 			return err
 		}
-		j, err := c.ForemanFoundationJobGet(jIDi)
+
+		vars, err := j.CallJobRunnerVariables(ctx)
 		if err != nil {
 			return err
 		}
-		vars, err := j.CallJobRunnerVariables()
-		if err != nil {
-			return err
-		}
-		state, err := j.CallJobRunnerState()
+
+		state, err := j.CallJobRunnerState(ctx)
 		if err != nil {
 			return err
 		}
@@ -476,15 +489,15 @@ var foundationJobDoCreateCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
-		if _, err := o.CallDoCreate(); err != nil {
+		if _, err := o.CallDoCreate(ctx); err != nil {
 			return err
 		}
 
@@ -498,15 +511,15 @@ var foundationJobDoDestroyCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
-		if _, err := o.CallDoDestroy(); err != nil {
+		if _, err := o.CallDoDestroy(ctx); err != nil {
 			return err
 		}
 		return nil
@@ -518,22 +531,22 @@ var foundationJobDoUtilityCmd = &cobra.Command{
 	Short: "Start Utility Job for Foundation",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			return errors.New("Requires a Foundation Id(Locator) and Utility Job Name Argument")
+			return errors.New("requires a Foundation Id(Locator) and Utility Job Name argument")
 		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 		scriptName := args[1]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
-		if _, err := o.CallDoJob(scriptName); err != nil {
+		if _, err := o.CallDoJob(ctx, scriptName); err != nil {
 			return err
 		}
 		return nil
@@ -546,16 +559,16 @@ var foundationJobLogCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.ForemanJobLogList("foundation", map[string]interface{}{"foundation": o.GetID()})
+		vchan, err := contractorClient.ForemanJobLogList(ctx, "foundation", map[string]interface{}{"foundation": o.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -574,25 +587,28 @@ var foundationBootToCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.BuildingFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 
-		vchan, err := c.UtilitiesRealNetworkInterfaceList("foundation", map[string]interface{}{"foundation": o.GetID()})
+		vchan, err := contractorClient.UtilitiesRealNetworkInterfaceList(ctx, "foundation", map[string]interface{}{"foundation": o.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
-			if v.IsProvisioning {
-				v.Pxe = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
+			if *v.IsProvisioning {
+				v = contractorClient.UtilitiesRealNetworkInterfaceNewWithID(*v.ID)
+				(*v.Pxe) = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
 
-				if err := v.Update([]string{"pxe"}); err != nil {
+				_, err := v.Update(ctx)
+				if err != nil {
 					return err
 				}
+				break
 			}
 
 		}
@@ -621,26 +637,13 @@ func init() {
 	foundationBootToCmd.Flags().StringVarP(&detailPxeName, "name", "n", "normal-boot", "PXE to boot to")
 
 	rootCmd.AddCommand(foundationCmd)
-	foundationCmd.AddCommand(foundationListCmd)
-	foundationCmd.AddCommand(foundationGetCmd)
-	foundationCmd.AddCommand(foundationTypesCmd)
-	foundationCmd.AddCommand(foundationDeleteCmd)
-	foundationCmd.AddCommand(foundationBootToCmd)
+	foundationCmd.AddCommand(foundationListCmd, foundationGetCmd, foundationTypesCmd, foundationDeleteCmd, foundationBootToCmd)
 
 	foundationCmd.AddCommand(foundationInterfaceCmd)
-	foundationInterfaceCmd.AddCommand(foundationInterfaceListCmd)
-	foundationInterfaceCmd.AddCommand(foundationInterfaceGetCmd)
-	foundationInterfaceCmd.AddCommand(foundationInterfaceCreateCmd)
-	foundationInterfaceCmd.AddCommand(foundationInterfaceUpdateCmd)
-	foundationInterfaceCmd.AddCommand(foundationInterfaceDeleteCmd)
-	foundationInterfaceCmd.AddCommand(foundationInterfacePXECmd)
+	foundationInterfaceCmd.AddCommand(foundationInterfaceListCmd, foundationInterfaceGetCmd, foundationInterfaceCreateCmd, foundationInterfaceUpdateCmd, foundationInterfaceDeleteCmd, foundationInterfacePXECmd)
 
 	foundationCmd.AddCommand(foundationJobCmd)
-	foundationJobCmd.AddCommand(foundationJobInfoCmd)
-	foundationJobCmd.AddCommand(foundationJobStateCmd)
-	foundationJobCmd.AddCommand(foundationJobDoCreateCmd)
-	foundationJobCmd.AddCommand(foundationJobDoDestroyCmd)
-	foundationJobCmd.AddCommand(foundationJobDoUtilityCmd)
+	foundationJobCmd.AddCommand(foundationJobInfoCmd, foundationJobStateCmd, foundationJobDoCreateCmd, foundationJobDoDestroyCmd, foundationJobDoUtilityCmd)
 
 	foundationCmd.AddCommand(foundationJobLogCmd)
 }

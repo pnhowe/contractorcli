@@ -23,12 +23,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailName, detailDescription, detailParent string
-var detailZone int
-
 func siteArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Site Id/Name Argument")
+		return errors.New("requires a Site Id/Name argument")
 	}
 	return nil
 }
@@ -42,18 +39,17 @@ var siteListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Sites",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.SiteSiteList("", map[string]interface{}{})
+		vchan, err := contractorClient.SiteSiteList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Description", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Name}}	{{.Description}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -65,14 +61,15 @@ var siteGetCmd = &cobra.Command{
 	Args:  siteArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		siteID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.SiteSiteGet(siteID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.SiteSiteGet(ctx, siteID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:          {{.Name}}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
 Description:   {{.Description}}
 Parent:        {{.Parent | extractID}}
 Zone:          {{.Zone | extractID}}
@@ -88,34 +85,42 @@ var siteCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Site",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.SiteSiteNew()
-		o.Name = detailName
-		o.Description = detailDescription
+		o := contractorClient.SiteSiteNew()
+		o.Name = &detailName
+		o.Description = &detailDescription
 
 		if detailParent != "" {
-			r, err := c.SiteSiteGet(detailParent)
+			r, err := contractorClient.SiteSiteGet(ctx, detailParent)
 			if err != nil {
 				return err
 			}
-			o.Parent = r.GetID()
+			(*o.Parent) = r.GetURI()
 		}
 
 		if detailZone != 0 {
-			r, err := c.DirectoryZoneGet(detailZone)
+			r, err := contractorClient.DirectoryZoneGet(ctx, detailZone)
 			if err != nil {
 				return err
 			}
-			o.Zone = r.GetID()
+			(*o.Zone) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
+Description:   {{.Description}}
+Parent:        {{.Parent | extractID}}
+Zone:          {{.Zone | extractID}}
+Config Values: {{.ConfigValues}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -126,42 +131,46 @@ var siteUpdateCmd = &cobra.Command{
 	Short: "Update Site",
 	Args:  siteArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		siteID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.SiteSiteGet(siteID)
+		ctx := cmd.Context()
+
+		o := contractorClient.SiteSiteNewWithID(siteID)
+
+		if detailDescription != "" {
+			o.Description = &detailDescription
+		}
+
+		if detailParent != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailParent)
+			if err != nil {
+				return err
+			}
+			(*o.Parent) = r.GetURI()
+		}
+
+		if detailZone != 0 {
+			r, err := contractorClient.DirectoryZoneGet(ctx, detailZone)
+			if err != nil {
+				return err
+			}
+			(*o.Zone) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailDescription != "" {
-			o.Description = detailDescription
-			fieldList = append(fieldList, "description")
-		}
-
-		if detailParent != "" {
-			r, err := c.SiteSiteGet(detailParent)
-			if err != nil {
-				return err
-			}
-			o.Parent = r.GetID()
-			fieldList = append(fieldList, "parent")
-		}
-
-		if detailZone != 0 {
-			r, err := c.DirectoryZoneGet(detailZone)
-			if err != nil {
-				return err
-			}
-			o.Zone = r.GetID()
-			fieldList = append(fieldList, "zone")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
+Description:   {{.Description}}
+Parent:        {{.Parent | extractID}}
+Zone:          {{.Zone | extractID}}
+Config Values: {{.ConfigValues}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -173,14 +182,14 @@ var siteDeleteCmd = &cobra.Command{
 	Args:  siteArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		siteID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.SiteSiteGet(siteID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.SiteSiteGet(ctx, siteID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -194,45 +203,55 @@ var siteConfigCmd = &cobra.Command{
 	Args:  siteArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		siteID := args[0]
-		c := getContractor()
-		defer c.Logout()
+
+		ctx := cmd.Context()
 
 		if configSetName != "" {
-			o, err := c.SiteSiteGet(siteID)
+			r, err := contractorClient.SiteSiteGet(ctx, siteID)
 			if err != nil {
 				return err
 			}
-			o.ConfigValues[configSetName] = configSetValue
-			if err := o.Update([]string{"config_values"}); err != nil {
+
+			o := contractorClient.SiteSiteNewWithID(siteID)
+			o.ConfigValues = r.ConfigValues
+			(*o.ConfigValues)[configSetName] = configSetValue
+
+			o, err = o.Update(ctx)
+			if err != nil {
 				return err
 			}
-			outputKV(o.ConfigValues)
+			outputKV(*o.ConfigValues)
 
 		} else if configDeleteName != "" {
-			o, err := c.SiteSiteGet(siteID)
+			r, err := contractorClient.SiteSiteGet(ctx, siteID)
 			if err != nil {
 				return err
 			}
-			delete(o.ConfigValues, configDeleteName)
-			if err := o.Update([]string{"config_values"}); err != nil {
+
+			o := contractorClient.SiteSiteNewWithID(siteID)
+			o.ConfigValues = r.ConfigValues
+			delete(*o.ConfigValues, configDeleteName)
+
+			o, err = o.Update(ctx)
+			if err != nil {
 				return err
 			}
-			outputKV(o.ConfigValues)
+			outputKV(*o.ConfigValues)
 
 		} else if configFull {
-			o := c.SiteSiteNewWithID(siteID)
-			r, err := o.CallGetConfig()
+			o := contractorClient.SiteSiteNewWithID(siteID)
+			r, err := o.CallGetConfig(ctx)
 			if err != nil {
 				return err
 			}
 			outputKV(r)
 
 		} else {
-			o, err := c.SiteSiteGet(siteID)
+			o, err := contractorClient.SiteSiteGet(ctx, siteID)
 			if err != nil {
 				return err
 			}
-			outputKV(o.ConfigValues)
+			outputKV(*o.ConfigValues)
 		}
 		return nil
 	},
@@ -254,10 +273,5 @@ func init() {
 	siteUpdateCmd.Flags().IntVarP(&detailZone, "zone", "z", 0, "Update the Zone of Site with value")
 
 	rootCmd.AddCommand(siteCmd)
-	siteCmd.AddCommand(siteListCmd)
-	siteCmd.AddCommand(siteGetCmd)
-	siteCmd.AddCommand(siteCreateCmd)
-	siteCmd.AddCommand(siteUpdateCmd)
-	siteCmd.AddCommand(siteDeleteCmd)
-	siteCmd.AddCommand(siteConfigCmd)
+	siteCmd.AddCommand(siteListCmd, siteGetCmd, siteCreateCmd, siteUpdateCmd, siteDeleteCmd, siteConfigCmd)
 }

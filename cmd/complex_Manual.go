@@ -31,14 +31,15 @@ var complexManualGetCmd = &cobra.Command{
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ManualManualComplexGet(complexID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.ManualManualComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:               {{.Name}}
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
 Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
@@ -57,36 +58,45 @@ var complexManualCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Manual Complex",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.ManualManualComplexNew()
-		o.Name = detailName
-		o.Description = detailDescription
-		o.BuiltPercentage = detailBuiltPercentage
+		o := contractorClient.ManualManualComplexNew()
+		o.Name = &detailName
+		o.Description = &detailDescription
+		o.BuiltPercentage = &detailBuiltPercentage
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := contractorClient.BuildingStructureGet(ctx, v)
 			if err != nil {
 				return err
 			}
-			o.Members = append(o.Members, s.GetID())
+			(*o.Members) = append((*o.Members), s.GetURI())
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
+Description:        {{.Description}}
+Type:               {{.Type}}
+State:              {{.State}}
+Site:               {{.Site | extractID}}
+BuiltPercentage:    {{.BuiltPercentage}}
+Members:            {{.Members}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -96,49 +106,54 @@ var complexManualUpdateCmd = &cobra.Command{
 	Short: "Update Manual Complex",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.ManualManualComplexGet(complexID)
-		if err != nil {
-			return err
-		}
+		ctx := cmd.Context()
+
+		o := contractorClient.ManualManualComplexNewWithID(complexID)
 
 		if detailDescription != "" {
-			o.Description = detailDescription
-			fieldList = append(fieldList, "description")
+			o.Description = &detailDescription
 		}
 
 		if detailBuiltPercentage != 0 {
-			o.BuiltPercentage = detailBuiltPercentage
-			fieldList = append(fieldList, "built_percentage")
+			o.BuiltPercentage = &detailBuiltPercentage
 		}
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
+			(*o.Site) = r.GetURI()
 		}
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := contractorClient.BuildingStructureGet(ctx, v)
 				if err != nil {
 					return err
 				}
-				o.Members = append(o.Members, s.GetID())
+				(*o.Members) = append((*o.Members), s.GetURI())
 			}
-			fieldList = append(fieldList, "members")
 		}
 
-		if err := o.Update(fieldList); err != nil {
+		o, err := o.Update(ctx)
+		if err != nil {
 			return err
 		}
+
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
+Description:        {{.Description}}
+Type:               {{.Type}}
+State:              {{.State}}
+Site:               {{.Site | extractID}}
+BuiltPercentage:    {{.BuiltPercentage}}
+Members:            {{.Members}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 
 		return nil
 	},
@@ -159,7 +174,5 @@ func init() {
 	complexManualUpdateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Update the Members of the Manual Complex, specify for each member")
 
 	complexCmd.AddCommand(complexManualCmd)
-	complexManualCmd.AddCommand(complexManualGetCmd)
-	complexManualCmd.AddCommand(complexManualCreateCmd)
-	complexManualCmd.AddCommand(complexManualUpdateCmd)
+	complexManualCmd.AddCommand(complexManualGetCmd, complexManualCreateCmd, complexManualUpdateCmd)
 }

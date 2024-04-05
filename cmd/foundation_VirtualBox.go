@@ -31,14 +31,15 @@ var foundationVirtualBoxGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.VirtualboxVirtualBoxFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.VirtualboxVirtualBoxFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
 Complex:        {{.VirtualboxComplex | extractID}}
 VM UUID:        {{.VirtualboxUUID}}
 Type:           {{.Type}}
@@ -61,42 +62,55 @@ var foundationVirtualBoxCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New VirtualBox Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.VirtualboxVirtualBoxFoundationNew()
-		o.Locator = detailLocator
+		o := contractorClient.VirtualboxVirtualBoxFoundationNew()
+		o.Locator = &detailLocator
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailComplex != "" {
-			r, err := c.VirtualboxVirtualBoxComplexGet(detailComplex)
+			r, err := contractorClient.VirtualboxVirtualBoxComplexGet(ctx, detailComplex)
 			if err != nil {
 				return err
 			}
-			o.VirtualboxComplex = r.GetID()
+			(*o.VirtualboxComplex) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.VirtualboxComplex | extractID}}
+VM UUID:        {{.VirtualboxUUID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -106,46 +120,56 @@ var foundationVirtualBoxUpdateCmd = &cobra.Command{
 	Short: "Update VirtualBox Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.VirtualboxVirtualBoxFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.VirtualboxVirtualBoxFoundationNewWithID(foundationID)
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailComplex != "" {
+			r, err := contractorClient.VirtualboxVirtualBoxComplexGet(ctx, detailComplex)
+			if err != nil {
+				return err
+			}
+			(*o.VirtualboxComplex) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailComplex != "" {
-			r, err := c.VirtualboxVirtualBoxComplexGet(detailComplex)
-			if err != nil {
-				return err
-			}
-			o.VirtualboxComplex = r.GetID()
-			fieldList = append(fieldList, "virtualbox_complex")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.VirtualboxComplex | extractID}}
+VM UUID:        {{.VirtualboxUUID}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -164,7 +188,5 @@ func init() {
 	foundationVirtualBoxUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the VirtualBox Foundation")
 
 	foundationCmd.AddCommand(foundationVirtualBoxCmd)
-	foundationVirtualBoxCmd.AddCommand(foundationVirtualBoxGetCmd)
-	foundationVirtualBoxCmd.AddCommand(foundationVirtualBoxCreateCmd)
-	foundationVirtualBoxCmd.AddCommand(foundationVirtualBoxUpdateCmd)
+	foundationVirtualBoxCmd.AddCommand(foundationVirtualBoxGetCmd, foundationVirtualBoxCreateCmd, foundationVirtualBoxUpdateCmd)
 }

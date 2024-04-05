@@ -31,14 +31,15 @@ var complexVirtualBoxGetCmd = &cobra.Command{
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.VirtualboxVirtualBoxComplexGet(complexID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.VirtualboxVirtualBoxComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:               {{.Name}}
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
 Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
@@ -59,37 +60,49 @@ var complexVirtualBoxCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New VirtualBox Complex",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.VirtualboxVirtualBoxComplexNew()
-		o.Name = detailName
-		o.Description = detailDescription
-		o.BuiltPercentage = detailBuiltPercentage
-		o.VirtualboxUsername = detailUsername
-		o.VirtualboxPassword = detailPassword
+		o := contractorClient.VirtualboxVirtualBoxComplexNew()
+		o.Name = &detailName
+		o.Description = &detailDescription
+		o.BuiltPercentage = &detailBuiltPercentage
+		o.VirtualboxUsername = &detailUsername
+		o.VirtualboxPassword = &detailPassword
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		for _, v := range detailMembers {
-			s, err := c.BuildingStructureGet(v)
+			s, err := contractorClient.BuildingStructureGet(ctx, v)
 			if err != nil {
 				return err
 			}
-			o.Members = append(o.Members, s.GetID())
+			(*o.Members) = append((*o.Members), s.GetURI())
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
+Description:        {{.Description}}
+Type:               {{.Type}}
+State:              {{.State}}
+Site:               {{.Site | extractID}}
+BuiltPercentage:    {{.BuiltPercentage}}
+Members:            {{.Members}}
+VirtualboxUsername: {{.VirtualboxUsername}}
+VirtualboxPassword: {{.VirtualboxPassword}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 
 		return nil
 	},
@@ -100,59 +113,64 @@ var complexVirtualBoxUpdateCmd = &cobra.Command{
 	Short: "Update VirtualBox Complex",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.VirtualboxVirtualBoxComplexGet(complexID)
-		if err != nil {
-			return err
-		}
+		ctx := cmd.Context()
+
+		o := contractorClient.VirtualboxVirtualBoxComplexNewWithID(complexID)
 
 		if detailDescription != "" {
-			o.Description = detailDescription
-			fieldList = append(fieldList, "description")
+			o.Description = &detailDescription
 		}
 
 		if detailBuiltPercentage != 0 {
-			o.BuiltPercentage = detailBuiltPercentage
-			fieldList = append(fieldList, "built_percentage")
+			o.BuiltPercentage = &detailBuiltPercentage
 		}
 
 		if detailUsername != "" {
-			o.VirtualboxUsername = detailUsername
-			fieldList = append(fieldList, "virtualbox_username")
+			o.VirtualboxUsername = &detailUsername
 		}
 
 		if detailPassword != "" {
-			o.VirtualboxPassword = detailPassword
-			fieldList = append(fieldList, "virtualbox_password")
+			o.VirtualboxPassword = &detailPassword
 		}
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
+			(*o.Site) = r.GetURI()
 		}
 
 		if len(detailMembers) > 0 {
 			for _, v := range detailMembers {
-				s, err := c.BuildingStructureGet(v)
+				s, err := contractorClient.BuildingStructureGet(ctx, v)
 				if err != nil {
 					return err
 				}
-				o.Members = append(o.Members, s.GetID())
+				(*o.Members) = append((*o.Members), s.GetURI())
 			}
-			fieldList = append(fieldList, "members")
 		}
 
-		if err := o.Update(fieldList); err != nil {
+		o, err := o.Update(ctx)
+		if err != nil {
 			return err
 		}
+
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Name:               {{.Name}}
+Description:        {{.Description}}
+Type:               {{.Type}}
+State:              {{.State}}
+Site:               {{.Site | extractID}}
+BuiltPercentage:    {{.BuiltPercentage}}
+Members:            {{.Members}}
+VirtualboxUsername: {{.VirtualboxUsername}}
+VirtualboxPassword: {{.VirtualboxPassword}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 
 		return nil
 	},
@@ -177,7 +195,5 @@ func init() {
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the VirtualBox Password of the VirtualBox Complex with value")
 
 	complexCmd.AddCommand(complexVirtualBoxCmd)
-	complexVirtualBoxCmd.AddCommand(complexVirtualBoxGetCmd)
-	complexVirtualBoxCmd.AddCommand(complexVirtualBoxCreateCmd)
-	complexVirtualBoxCmd.AddCommand(complexVirtualBoxUpdateCmd)
+	complexVirtualBoxCmd.AddCommand(complexVirtualBoxGetCmd, complexVirtualBoxCreateCmd, complexVirtualBoxUpdateCmd)
 }

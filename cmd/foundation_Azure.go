@@ -31,14 +31,15 @@ var foundationAzureGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.AzureAzureFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.AzureAzureFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:        {{.Locator}}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
 Complex:        {{.AzureComplex | extractID}}
 Resource Name:  {{.AzureResourceName}}
 Type:           {{.Type}}
@@ -61,42 +62,55 @@ var foundationAzureCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New Azure Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.AzureAzureFoundationNew()
-		o.Locator = detailLocator
+		o := contractorClient.AzureAzureFoundationNew()
+		o.Locator = &detailLocator
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailComplex != "" {
-			r, err := c.AzureAzureComplexGet(detailComplex)
+			r, err := contractorClient.AzureAzureComplexGet(ctx, detailComplex)
 			if err != nil {
 				return err
 			}
-			o.AzureComplex = r.GetID()
+			(*o.AzureComplex) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.AzureComplex | extractID}}
+Resource Name:  {{.AzureResourceName}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -106,46 +120,56 @@ var foundationAzureUpdateCmd = &cobra.Command{
 	Short: "Update Azure Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.AzureAzureFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.AzureAzureFoundationNewWithID(foundationID)
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailComplex != "" {
+			r, err := contractorClient.AzureAzureComplexGet(ctx, detailComplex)
+			if err != nil {
+				return err
+			}
+			(*o.AzureComplex) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailComplex != "" {
-			r, err := c.AzureAzureComplexGet(detailComplex)
-			if err != nil {
-				return err
-			}
-			o.AzureComplex = r.GetID()
-			fieldList = append(fieldList, "azure_complex")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+Locator:        {{.Locator}}
+Complex:        {{.AzureComplex | extractID}}
+Resource Name:  {{.AzureResourceName}}
+Type:           {{.Type}}
+Site:           {{.Site | extractID}}
+Blueprint:      {{.Blueprint | extractID}}
+Id Map:         {{.IDMap}}
+Class List:     {{.ClassList}}
+State:          {{.State}}
+Located At:     {{.LocatedAt}}
+Built At:       {{.BuiltAt}}
+Created:        {{.Created}}
+Updated:        {{.Updated}}
+`)
 
 		return nil
 	},
@@ -164,7 +188,5 @@ func init() {
 	foundationAzureUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the Azure Foundation")
 
 	foundationCmd.AddCommand(foundationAzureCmd)
-	foundationAzureCmd.AddCommand(foundationAzureGetCmd)
-	foundationAzureCmd.AddCommand(foundationAzureCreateCmd)
-	foundationAzureCmd.AddCommand(foundationAzureUpdateCmd)
+	foundationAzureCmd.AddCommand(foundationAzureGetCmd, foundationAzureCreateCmd, foundationAzureUpdateCmd)
 }

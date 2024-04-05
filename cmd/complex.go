@@ -30,13 +30,9 @@ type complexTypeEntry struct {
 
 var complexTypes = map[string]complexTypeEntry{}
 
-var detailBuiltPercentage int
-var detailMembers []int
-var detailUsername, detailPassword string
-
 func complexArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Complex Id(Name) Argument")
+		return errors.New("requires a Complex Id(Name) argument")
 	}
 	return nil
 }
@@ -50,18 +46,17 @@ var complexListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Complexs",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.BuildingComplexList("", map[string]interface{}{})
+		vchan, err := contractorClient.BuildingComplexList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Site", "Name", "State", "Type", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Site | extractID}}	{{.Name}}	{{.State}}	{{.Type}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Name", "State", "Type", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Site | extractID}}	{{.Name}}	{{.State}}	{{.Type}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -73,14 +68,14 @@ var complexGetCmd = &cobra.Command{
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.BuildingComplexGet(complexID)
+		o, err := contractorClient.BuildingComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:          {{.Name}}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
 Description:   {{.Description}}
 Site:          {{.Site | extractID}}
 Type:          {{.Type}}
@@ -99,12 +94,11 @@ var complexTypesCmd = &cobra.Command{
 	Use:   "types",
 	Short: "List Supported Types",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		typeList := []string{}
 		for k, v := range complexTypes {
-			APIVersion, err := c.GetAPIVersion(v.URI)
+			APIVersion, err := contractorClient.GetAPIVersion(ctx, v.URI)
 			if err != nil {
 				// return err
 				continue // TODO: really should only do this if it is a 404
@@ -126,14 +120,13 @@ var complexDeleteCmd = &cobra.Command{
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.BuildingComplexGet(complexID)
+		o, err := contractorClient.BuildingComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -142,10 +135,6 @@ var complexDeleteCmd = &cobra.Command{
 }
 
 func init() {
-
 	rootCmd.AddCommand(complexCmd)
-	complexCmd.AddCommand(complexListCmd)
-	complexCmd.AddCommand(complexGetCmd)
-	complexCmd.AddCommand(complexTypesCmd)
-	complexCmd.AddCommand(complexDeleteCmd)
+	complexCmd.AddCommand(complexListCmd, complexGetCmd, complexTypesCmd, complexDeleteCmd)
 }

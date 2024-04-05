@@ -26,7 +26,7 @@ import (
 
 func jobArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Job Id Argument")
+		return errors.New("requires a Job Id Argument")
 	}
 	return nil
 }
@@ -45,11 +45,10 @@ var jobFoundationListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Foundation Jobs",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.ForemanFoundationJobList("", map[string]interface{}{})
+		vchan, err := contractorClient.ForemanFoundationJobList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
@@ -71,10 +70,10 @@ var jobFoundationGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanFoundationJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
@@ -103,15 +102,15 @@ var jobFoundationPauseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanFoundationJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallPause(); err != nil {
+		if err = r.CallPause(ctx); err != nil {
 			return err
 		}
 
@@ -128,15 +127,15 @@ var jobFoundationResumeCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanFoundationJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallResume(); err != nil {
+		if err = r.CallResume(ctx); err != nil {
 			return err
 		}
 
@@ -153,15 +152,15 @@ var jobFoundationRestCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanFoundationJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallReset(); err != nil {
+		if err = r.CallReset(ctx); err != nil {
 			return err
 		}
 
@@ -178,15 +177,15 @@ var jobFoundationRollbackCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanFoundationJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallRollback(); err != nil {
+		if err = r.CallRollback(ctx); err != nil {
 			return err
 		}
 
@@ -203,11 +202,10 @@ var jobStructureListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Structure Jobs",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.ForemanStructureJobList("", map[string]interface{}{})
+		vchan, err := contractorClient.ForemanStructureJobList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
@@ -229,10 +227,10 @@ var jobStructureGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanStructureJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
@@ -261,15 +259,15 @@ var jobStructurePauseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanStructureJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallPause(); err != nil {
+		if err = r.CallPause(ctx); err != nil {
 			return err
 		}
 
@@ -286,15 +284,15 @@ var jobStructureResumeCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanStructureJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallResume(); err != nil {
+		if err = r.CallResume(ctx); err != nil {
 			return err
 		}
 
@@ -311,15 +309,15 @@ var jobStructureRestCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanStructureJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallReset(); err != nil {
+		if err = r.CallReset(ctx); err != nil {
 			return err
 		}
 
@@ -336,15 +334,15 @@ var jobStructureRollbackCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.ForemanStructureJobGet(jobID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallRollback(); err != nil {
+		if err = r.CallRollback(ctx); err != nil {
 			return err
 		}
 
@@ -355,18 +353,8 @@ var jobStructureRollbackCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(jobCmd)
 	jobCmd.AddCommand(jobFoundationCmd)
-	jobFoundationCmd.AddCommand(jobFoundationListCmd)
-	jobFoundationCmd.AddCommand(jobFoundationGetCmd)
-	jobFoundationCmd.AddCommand(jobFoundationPauseCmd)
-	jobFoundationCmd.AddCommand(jobFoundationResumeCmd)
-	jobFoundationCmd.AddCommand(jobFoundationRestCmd)
-	jobFoundationCmd.AddCommand(jobFoundationRollbackCmd)
+	jobFoundationCmd.AddCommand(jobFoundationListCmd, jobFoundationGetCmd, jobFoundationPauseCmd, jobFoundationResumeCmd, jobFoundationRestCmd, jobFoundationRollbackCmd)
 
 	jobCmd.AddCommand(jobStructureCmd)
-	jobStructureCmd.AddCommand(jobStructureListCmd)
-	jobStructureCmd.AddCommand(jobStructureGetCmd)
-	jobStructureCmd.AddCommand(jobStructurePauseCmd)
-	jobStructureCmd.AddCommand(jobStructureResumeCmd)
-	jobStructureCmd.AddCommand(jobStructureRestCmd)
-	jobStructureCmd.AddCommand(jobStructureRollbackCmd)
+	jobStructureCmd.AddCommand(jobStructureListCmd, jobStructureGetCmd, jobStructurePauseCmd, jobStructureResumeCmd, jobStructureRestCmd, jobStructureRollbackCmd)
 }

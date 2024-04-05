@@ -20,8 +20,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailRedFishUsername, detailRedFishPassword, detailRedFishIP, detailRedFishSOL string
-
 var foundationRedFishCmd = &cobra.Command{
 	Use:   "redfish",
 	Short: "Work with RedFish Foundations",
@@ -33,29 +31,30 @@ var foundationRedFishGetCmd = &cobra.Command{
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.RedfishRedFishFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.RedfishRedFishFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Locator:         {{.Locator}}
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Locator:            {{.Locator}}
 RedFish Username:   {{.RedfishUsername}}
 RedFish Password:   {{.RedfishPassword}}
 RedFish Ip Address: {{.RedfishIPAddress}}
 RedFish SOL Port:   {{.RedfishSolPort}}
-Plot:            {{.Plot | extractID}}
-Type:            {{.Type}}
-Site:            {{.Site | extractID}}
-Blueprint:       {{.Blueprint | extractID}}
-Id Map:          {{.IDMap}}
-Class List:      {{.ClassList}}
-State:           {{.State}}
-Located At:      {{.LocatedAt}}
-Built At:        {{.BuiltAt}}
-Created:         {{.Created}}
-Updated:         {{.Updated}}
+Plot:               {{.Plot | extractID}}
+Type:               {{.Type}}
+Site:               {{.Site | extractID}}
+Blueprint:          {{.Blueprint | extractID}}
+Id Map:             {{.IDMap}}
+Class List:         {{.ClassList}}
+State:              {{.State}}
+Located At:         {{.LocatedAt}}
+Built At:           {{.BuiltAt}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
 `)
 
 		return nil
@@ -66,46 +65,62 @@ var foundationRedFishCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New RedFish Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o := c.RedfishRedFishFoundationNew()
-		o.Locator = detailLocator
-		o.RedfishUsername = detailRedFishUsername
-		o.RedfishPassword = detailRedFishPassword
-		o.RedfishIPAddress = detailRedFishIP
-		o.RedfishSolPort = detailRedFishSOL
+		o := contractorClient.RedfishRedFishFoundationNew()
+		o.Locator = &detailLocator
+		o.RedfishUsername = &detailRedFishUsername
+		o.RedfishPassword = &detailRedFishPassword
+		o.RedfishIPAddress = &detailRedFishIP
+		o.RedfishSolPort = &detailRedFishSOL
 
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
 		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
 			if err != nil {
 				return err
 			}
-			o.Blueprint = r.GetID()
+			(*o.Blueprint) = r.GetURI()
 		}
 
 		if detailPlot != "" {
-			r, err := c.SurveyPlotGet(detailPlot)
+			r, err := contractorClient.SurveyPlotGet(ctx, detailPlot)
 			if err != nil {
 				return err
 			}
-			o.Plot = r.GetID()
+			(*o.Plot) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
-
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Locator:            {{.Locator}}
+RedFish Username:   {{.RedfishUsername}}
+RedFish Password:   {{.RedfishPassword}}
+RedFish Ip Address: {{.RedfishIPAddress}}
+RedFish SOL Port:   {{.RedfishSolPort}}
+Plot:               {{.Plot | extractID}}
+Type:               {{.Type}}
+Site:               {{.Site | extractID}}
+Blueprint:          {{.Blueprint | extractID}}
+Id Map:             {{.IDMap}}
+Class List:         {{.ClassList}}
+State:              {{.State}}
+Located At:         {{.LocatedAt}}
+Built At:           {{.BuiltAt}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -115,66 +130,75 @@ var foundationRedFishUpdateCmd = &cobra.Command{
 	Short: "Update RedFish Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		foundationID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.RedfishRedFishFoundationGet(foundationID)
+		ctx := cmd.Context()
+
+		o := contractorClient.RedfishRedFishFoundationNewWithID(foundationID)
+
+		if detailRedFishUsername != "" {
+			o.RedfishUsername = &detailRedFishUsername
+		}
+
+		if detailRedFishPassword != "" {
+			o.RedfishPassword = &detailRedFishPassword
+		}
+
+		if detailRedFishIP != "" {
+			o.RedfishIPAddress = &detailRedFishIP
+		}
+
+		if detailRedFishSOL != "" {
+			o.RedfishSolPort = &detailRedFishSOL
+		}
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		if detailBlueprint != "" {
+			r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailBlueprint)
+			if err != nil {
+				return err
+			}
+			(*o.Blueprint) = r.GetURI()
+		}
+
+		if detailPlot != "" {
+			r, err := contractorClient.SurveyPlotGet(ctx, detailPlot)
+			if err != nil {
+				return err
+			}
+			(*o.Plot) = r.GetURI()
+		}
+
+		o, err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailRedFishUsername != "" {
-			o.RedfishUsername = detailRedFishUsername
-			fieldList = append(fieldList, "redfish_username")
-		}
-
-		if detailRedFishPassword != "" {
-			o.RedfishPassword = detailRedFishPassword
-			fieldList = append(fieldList, "redfish_password")
-		}
-
-		if detailRedFishIP != "" {
-			o.RedfishIPAddress = detailRedFishIP
-			fieldList = append(fieldList, "redfish_ip_address")
-		}
-
-		if detailRedFishSOL != "" {
-			o.RedfishSolPort = detailRedFishSOL
-			fieldList = append(fieldList, "redfish_sol_port")
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if detailBlueprint != "" {
-			r, err := c.BlueprintFoundationBluePrintGet(detailBlueprint)
-			if err != nil {
-				return err
-			}
-			o.Blueprint = r.GetID()
-			fieldList = append(fieldList, "blueprint")
-		}
-
-		if detailPlot != "" {
-			r, err := c.SurveyPlotGet(detailPlot)
-			if err != nil {
-				return err
-			}
-			o.Plot = r.GetID()
-			fieldList = append(fieldList, "plot")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
+		outputDetail(o, `Id:                 {{.GetURI | extractID}}
+Locator:            {{.Locator}}
+RedFish Username:   {{.RedfishUsername}}
+RedFish Password:   {{.RedfishPassword}}
+RedFish Ip Address: {{.RedfishIPAddress}}
+RedFish SOL Port:   {{.RedfishSolPort}}
+Plot:               {{.Plot | extractID}}
+Type:               {{.Type}}
+Site:               {{.Site | extractID}}
+Blueprint:          {{.Blueprint | extractID}}
+Id Map:             {{.IDMap}}
+Class List:         {{.ClassList}}
+State:              {{.State}}
+Located At:         {{.LocatedAt}}
+Built At:           {{.BuiltAt}}
+Created:            {{.Created}}
+Updated:            {{.Updated}}
+`)
 
 		return nil
 	},
@@ -201,7 +225,5 @@ func init() {
 	foundationRedFishUpdateCmd.Flags().StringVarP(&detailRedFishSOL, "redfish-sol", "o", "", "Update the RedFish SOL Port (console/ttyS1/etc) of the RedFish Foundation")
 
 	foundationCmd.AddCommand(foundationRedFishCmd)
-	foundationRedFishCmd.AddCommand(foundationRedFishGetCmd)
-	foundationRedFishCmd.AddCommand(foundationRedFishCreateCmd)
-	foundationRedFishCmd.AddCommand(foundationRedFishUpdateCmd)
+	foundationRedFishCmd.AddCommand(foundationRedFishGetCmd, foundationRedFishCreateCmd, foundationRedFishUpdateCmd)
 }

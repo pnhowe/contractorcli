@@ -28,12 +28,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var detailSubnet, detailReason, detailPXE string
-var detailPrefix, detailGatewayOffset, detailOffset int
-
 func addressblockArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a AddressBlock Id Argument")
+		return errors.New("requires an AddressBlock Id argument")
 	}
 	return nil
 }
@@ -47,18 +44,17 @@ var addressblockListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List AddressBlocks",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesAddressBlockList("", map[string]interface{}{})
+		vchan, err := contractorClient.UtilitiesAddressBlockList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Name", "Site", "SubNet", "Prefix", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Subnet}}	{{.Prefix}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Site", "SubNet", "Prefix", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Name}}	{{.Site | extractID}}	{{.Subnet}}	{{.Prefix}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -73,14 +69,15 @@ var addressblockGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Name:          {{.Name}}
+		outputDetail(o, `Id:            {{.GetURI | extractID}}
+Name:          {{.Name}}
 Site:          {{.Site | extractID}}
 Subnet:        {{.Subnet}}
 Prefix:        {{.Prefix}} ({{.Netmask}})
@@ -98,30 +95,40 @@ var addressblockCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create New AddressBlock",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
-
-		o := c.UtilitiesAddressBlockNew()
-		o.Name = detailName
-		o.Subnet = detailSubnet
-		o.Prefix = detailPrefix
+		o := contractorClient.UtilitiesAddressBlockNew()
+		o.Name = &detailName
+		o.Subnet = &detailSubnet
+		o.Prefix = &detailPrefix
 		if detailGatewayOffset != 0 {
-			o.GatewayOffset = detailGatewayOffset
+			o.GatewayOffset = &detailGatewayOffset
 		}
 
+		ctx := cmd.Context()
+
 		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
 			if err != nil {
 				return err
 			}
-			o.Site = r.GetID()
+			(*o.Site) = r.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		r, err := o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(r, `Id:            {{.GetURI  | extractID}}
+Name:          {{.Name}}
+Site:          {{.Site | extractID}}
+Subnet:        {{.Subnet}}
+Prefix:        {{.Prefix}} ({{.Netmask}})
+Gateway Offset:{{.GatewayOffset}} ({{.Gateway}})
+Max Addresse:  {{.MaxAddress}}
+Size:          {{.Size}}
+Created:       {{.Created}}
+Updated:       {{.Updated}}
+`)
 
 		return nil
 	},
@@ -132,52 +139,54 @@ var addressblockUpdateCmd = &cobra.Command{
 	Short: "Update AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fieldList := []string{}
 		addressblockID, err := strconv.Atoi(args[0])
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		o, err := c.UtilitiesAddressBlockGet(addressblockID)
+		o := contractorClient.UtilitiesAddressBlockNewWithID(addressblockID)
+
+		if detailName != "" {
+			o.Name = &detailName
+		}
+
+		if detailSubnet != "" {
+			o.Subnet = &detailSubnet
+		}
+
+		if detailPrefix != 0 {
+			o.Prefix = &detailPrefix
+		}
+
+		if detailGatewayOffset != 0 {
+			o.GatewayOffset = &detailGatewayOffset
+		}
+
+		if detailSite != "" {
+			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
+			if err != nil {
+				return err
+			}
+			(*o.Site) = r.GetURI()
+		}
+
+		o, err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
 
-		if detailName != "" {
-			o.Name = detailName
-			fieldList = append(fieldList, "name")
-		}
-
-		if detailSubnet != "" {
-			o.Subnet = detailSubnet
-			fieldList = append(fieldList, "subnet")
-		}
-
-		if detailPrefix != 0 {
-			o.Prefix = detailPrefix
-			fieldList = append(fieldList, "prefix")
-		}
-
-		if detailGatewayOffset != 0 {
-			o.GatewayOffset = detailGatewayOffset
-			fieldList = append(fieldList, "gateway_offset")
-		}
-
-		if detailSite != "" {
-			r, err := c.SiteSiteGet(detailSite)
-			if err != nil {
-				return err
-			}
-			o.Site = r.GetID()
-			fieldList = append(fieldList, "site")
-		}
-
-		if err := o.Update(fieldList); err != nil {
-			return err
-		}
-
+		outputDetail(o, `Id:               {{.GetURI | extractID}}
+Name:             {{.Name}}
+Site:             {{.Site | extractID}}
+Subnet:           {{.Subnet}}
+Prefix:           {{.Prefix}} ({{.Netmask}})
+Gateway Offset:   {{.GatewayOffset}} ({{.Gateway}})
+Max Addresse:     {{.MaxAddress}}
+Size:             {{.Size}}
+Created:          {{.Created}}
+Updated:          {{.Updated}}
+`)
 		return nil
 	},
 }
@@ -191,14 +200,13 @@ var addressblockDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		o, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -215,15 +223,14 @@ var addressblockUsageCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
 
-		u, err := r.CallUsage()
+		u, err := r.CallUsage(ctx)
 		if err != nil {
 			return err
 		}
@@ -247,30 +254,29 @@ var addressblockAllocationCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		o, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := c.UtilitiesAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		vchan, err := contractorClient.UtilitiesAddressList(ctx, "address_block", map[string]interface{}{"address_block": o.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		vchan2, err := c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		vchan2, err := contractorClient.UtilitiesReservedAddressList(ctx, "address_block", map[string]interface{}{"address_block": o.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan2 {
 			rl = append(rl, v)
 		}
-		vchan3, err := c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		vchan3, err := contractorClient.UtilitiesDynamicAddressList(ctx, "address_block", map[string]interface{}{"address_block": o.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -279,10 +285,33 @@ var addressblockAllocationCmd = &cobra.Command{
 		}
 
 		sort.Slice(rl, func(i, j int) bool {
-			return rl[i].(*contractor.UtilitiesDynamicAddress).Offset < rl[j].(*contractor.UtilitiesDynamicAddress).Offset
+			var offsetI, offsetJ int
+
+			switch a := rl[i].(type) {
+			case *contractor.UtilitiesDynamicAddress:
+				offsetI = *a.Offset
+			case *contractor.UtilitiesReservedAddress:
+				offsetI = *a.Offset
+			case *contractor.UtilitiesAddress:
+				offsetI = *a.Offset
+			default:
+				offsetI = 0
+			}
+
+			switch a := rl[j].(type) {
+			case *contractor.UtilitiesDynamicAddress:
+				offsetJ = *a.Offset
+			case *contractor.UtilitiesReservedAddress:
+				offsetJ = *a.Offset
+			case *contractor.UtilitiesAddress:
+				offsetJ = *a.Offset
+			default:
+				offsetJ = 0
+			}
+			return offsetI < offsetJ
 		})
 
-		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type"}, "{{.GetID | extractID}}	{{.Offset}}	{{.IPAddress}}	{{.Type}}\n")
+		outputList(rl, []string{"Id", "Offset", "Ip Address", "Type"}, "{{.GetURI | extractID}}	{{.Offset}}	{{.IPAddress}}	{{.Type}}\n")
 
 		return nil
 	},
@@ -297,32 +326,39 @@ var addressblockReserveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
 		if detailOffset == 0 {
-			return fmt.Errorf("Offset required")
+			return fmt.Errorf("offset required")
 		}
 
 		if detailReason == "" {
-			return fmt.Errorf("Reason Required")
+			return fmt.Errorf("reason Required")
 		}
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesReservedAddressNew()
-		o.AddressBlock = r.GetID()
-		o.Offset = detailOffset
-		o.Reason = detailReason
+		o := contractorClient.UtilitiesReservedAddressNew()
+		(*o.AddressBlock) = r.GetURI()
+		o.Offset = &detailOffset
+		o.Reason = &detailReason
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:             {{.GetURI | extractID}}
+AddressBlock:   {{.AddressBlock | extractID}}
+Offset:         {{.Offset}}
+Reason:         {{.Reason}}
+Updated:        {{.Updated}}
+Created:        {{.Created}}
+`)
 
 		return nil
 	},
@@ -337,29 +373,29 @@ var addressblockDeReserveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
 		if detailOffset == 0 {
-			return fmt.Errorf("Offset required")
+			return fmt.Errorf("offset required")
 		}
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
-		vchan, err := c.UtilitiesReservedAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		vchan, err := contractorClient.UtilitiesReservedAddressList(ctx, "address_block", map[string]interface{}{"address_block": r.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
-			if v.Offset == detailOffset {
-				v.Delete()
+			if *v.Offset == detailOffset {
+				v.Delete(ctx)
 				return nil
 			}
 		}
 
-		return fmt.Errorf("Offset not found")
+		return fmt.Errorf("offset not found")
 	},
 }
 
@@ -372,34 +408,40 @@ var addressblockDynamicCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
 		if detailOffset == 0 {
-			return fmt.Errorf("Offset required")
+			return fmt.Errorf("offset required")
 		}
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
 
-		o := c.UtilitiesDynamicAddressNew()
-		o.AddressBlock = r.GetID()
-		o.Offset = detailOffset
+		o := contractorClient.UtilitiesDynamicAddressNew()
+		(*o.AddressBlock) = r.GetURI()
+		o.Offset = &detailOffset
 		if detailPXE != "" {
-			r2, err := c.BlueprintPXEGet(detailPXE)
+			r2, err := contractorClient.BlueprintPXEGet(ctx, detailPXE)
 			if err != nil {
 				return err
 			}
-			o.Pxe = r2.GetID()
+			(*o.Pxe) = r2.GetURI()
 		}
 
-		if err := o.Create(); err != nil {
+		o, err = o.Create(ctx)
+		if err != nil {
 			return err
 		}
 
-		outputKV(map[string]interface{}{"id": o.GetID()})
+		outputDetail(o, `Id:           {{.GetURI | extractID}}
+AddressBlock: {{.AddressBlock | extractID}}
+Offset:       {{.Offset}}
+Updated:      {{.Updated}}
+Created:      {{.Created}}
+`)
 
 		return nil
 	},
@@ -414,29 +456,29 @@ var addressblockDeDynamicCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		c := getContractor()
-		defer c.Logout()
 
 		if detailOffset == 0 {
-			return fmt.Errorf("Offset required")
+			return fmt.Errorf("offset required")
 		}
 
-		r, err := c.UtilitiesAddressBlockGet(addressblockID)
+		ctx := cmd.Context()
+
+		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
-		vchan, err := c.UtilitiesDynamicAddressList("address_block", map[string]interface{}{"address_block": r.GetID()})
+		vchan, err := contractorClient.UtilitiesDynamicAddressList(ctx, "address_block", map[string]interface{}{"address_block": r.GetURI()})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
-			if v.Offset == detailOffset {
-				v.Delete()
+			if *v.Offset == detailOffset {
+				v.Delete(ctx)
 				return nil
 			}
 		}
 
-		return fmt.Errorf("Offset not found")
+		return fmt.Errorf("offset not found")
 	},
 }
 
@@ -464,15 +506,5 @@ func init() {
 	addressblockDeDynamicCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset of the Dynamic Ip to Remove")
 
 	rootCmd.AddCommand(addressblockCmd)
-	addressblockCmd.AddCommand(addressblockListCmd)
-	addressblockCmd.AddCommand(addressblockGetCmd)
-	addressblockCmd.AddCommand(addressblockCreateCmd)
-	addressblockCmd.AddCommand(addressblockUpdateCmd)
-	addressblockCmd.AddCommand(addressblockDeleteCmd)
-	addressblockCmd.AddCommand(addressblockUsageCmd)
-	addressblockCmd.AddCommand(addressblockAllocationCmd)
-	addressblockCmd.AddCommand(addressblockReserveCmd)
-	addressblockCmd.AddCommand(addressblockDeReserveCmd)
-	addressblockCmd.AddCommand(addressblockDynamicCmd)
-	addressblockCmd.AddCommand(addressblockDeDynamicCmd)
+	addressblockCmd.AddCommand(addressblockListCmd, addressblockGetCmd, addressblockCreateCmd, addressblockUpdateCmd, addressblockDeleteCmd, addressblockUsageCmd, addressblockAllocationCmd, addressblockReserveCmd, addressblockDeReserveCmd, addressblockDynamicCmd, addressblockDeDynamicCmd)
 }

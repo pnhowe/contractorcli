@@ -25,7 +25,7 @@ import (
 
 func cartographerArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Requires a Id Argument")
+		return errors.New("requires a Id argument")
 	}
 	return nil
 }
@@ -39,18 +39,17 @@ var cartographerListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Cartographers",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c := getContractor()
-		defer c.Logout()
+		ctx := cmd.Context()
 
 		rl := []cinp.Object{}
-		vchan, err := c.SurveyCartographerList("", map[string]interface{}{})
+		vchan, err := contractorClient.SurveyCartographerList(ctx, "", map[string]interface{}{})
 		if err != nil {
 			return err
 		}
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Identifier", "Message", "Foundation", "Last Checkin", "Created", "Updated"}, "{{.GetID | extractID}}	{{.Message}}	{{.Foundation | extractID}}	{{.LastCheckin}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Identifier", "Message", "Foundation", "Last Checkin", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Message}}	{{.Foundation | extractID}}	{{.LastCheckin}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -62,14 +61,15 @@ var cartographerGetCmd = &cobra.Command{
 	Args:  cartographerArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cartographerID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		r, err := c.SurveyCartographerGet(cartographerID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.SurveyCartographerGet(ctx, cartographerID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Identifier:    {{.Identifier}}
+		outputDetail(o, `Id:            {{.GetURI | extractID }}
+Identifier:    {{.Identifier}}
 Message:       {{.Message}}
 Foundation:    {{.Foundation | extractID}}
 Last Checkin:  {{.Created}}
@@ -87,20 +87,20 @@ var cartographerAssignCmd = &cobra.Command{
 	Args:  cartographerArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cartographerID := args[0]
-		c := getContractor()
-		defer c.Logout()
 
-		o, err := c.SurveyCartographerGet(cartographerID)
+		ctx := cmd.Context()
+
+		o, err := contractorClient.SurveyCartographerGet(ctx, cartographerID)
 		if err != nil {
 			return err
 		}
 
-		r, err := c.BuildingFoundationGet(detailFoundation)
+		r, err := contractorClient.BuildingFoundationGet(ctx, detailFoundation)
 		if err != nil {
 			return err
 		}
 
-		err = o.CallAssign(r.GetID())
+		err = o.CallAssign(ctx, r.GetURI())
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,5 @@ func init() {
 	cartographerAssignCmd.Flags().StringVarP(&detailFoundation, "foundation", "f", "", "Foundation to assign")
 
 	rootCmd.AddCommand(cartographerCmd)
-	cartographerCmd.AddCommand(cartographerListCmd)
-	cartographerCmd.AddCommand(cartographerGetCmd)
-	cartographerCmd.AddCommand(cartographerAssignCmd)
+	cartographerCmd.AddCommand(cartographerListCmd, cartographerGetCmd, cartographerAssignCmd)
 }
