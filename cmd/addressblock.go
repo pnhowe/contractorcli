@@ -113,12 +113,12 @@ var addressblockCreateCmd = &cobra.Command{
 			(*o.Site) = r.GetURI()
 		}
 
-		r, err := o.Create(ctx)
+		o, err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
 
-		outputDetail(r, `Id:            {{.GetURI  | extractID}}
+		outputDetail(o, `Id:            {{.GetURI  | extractID}}
 Name:          {{.Name}}
 Site:          {{.Site | extractID}}
 Subnet:        {{.Subnet}}
@@ -225,12 +225,12 @@ var addressblockUsageCmd = &cobra.Command{
 		}
 		ctx := cmd.Context()
 
-		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
+		o, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
 
-		u, err := r.CallUsage(ctx)
+		u, err := o.CallUsage(ctx)
 		if err != nil {
 			return err
 		}
@@ -380,11 +380,11 @@ var addressblockDeReserveCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
+		o, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
-		vchan, err := contractorClient.UtilitiesReservedAddressList(ctx, "address_block", map[string]interface{}{"address_block": r.GetURI()})
+		vchan, err := contractorClient.UtilitiesReservedAddressList(ctx, "address_block", map[string]interface{}{"address_block": o.GetURI()})
 		if err != nil {
 			return err
 		}
@@ -463,11 +463,11 @@ var addressblockDeDynamicCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
+		o, err := contractorClient.UtilitiesAddressBlockGet(ctx, addressblockID)
 		if err != nil {
 			return err
 		}
-		vchan, err := contractorClient.UtilitiesDynamicAddressList(ctx, "address_block", map[string]interface{}{"address_block": r.GetURI()})
+		vchan, err := contractorClient.UtilitiesDynamicAddressList(ctx, "address_block", map[string]interface{}{"address_block": o.GetURI()})
 		if err != nil {
 			return err
 		}

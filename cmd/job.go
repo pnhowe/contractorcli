@@ -73,11 +73,11 @@ var jobFoundationGetCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Id:          {{.GetID | extractID}}
+		outputDetail(o, `Id:          {{.GetID | extractID}}
 Site:        {{.Site}}
 Foundation:  {{.Foundation | extractID}}
 Script:      {{.ScriptName}}
@@ -105,12 +105,12 @@ var jobFoundationPauseCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallPause(ctx); err != nil {
+		if err = o.CallPause(ctx); err != nil {
 			return err
 		}
 
@@ -130,12 +130,12 @@ var jobFoundationResumeCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallResume(ctx); err != nil {
+		if err = o.CallResume(ctx); err != nil {
 			return err
 		}
 
@@ -155,12 +155,12 @@ var jobFoundationRestCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallReset(ctx); err != nil {
+		if err = o.CallReset(ctx); err != nil {
 			return err
 		}
 
@@ -180,12 +180,12 @@ var jobFoundationRollbackCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallRollback(ctx); err != nil {
+		if err = o.CallRollback(ctx); err != nil {
 			return err
 		}
 
@@ -230,11 +230,11 @@ var jobStructureGetCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
-		outputDetail(r, `Id:          {{.GetID | extractID}}
+		outputDetail(o, `Id:          {{.GetID | extractID}}
 Site:        {{.Site}}
 Structure:   {{.Structure | extractID}}
 Script:      {{.ScriptName}}
@@ -262,12 +262,12 @@ var jobStructurePauseCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallPause(ctx); err != nil {
+		if err = o.CallPause(ctx); err != nil {
 			return err
 		}
 
@@ -287,12 +287,12 @@ var jobStructureResumeCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallResume(ctx); err != nil {
+		if err = o.CallResume(ctx); err != nil {
 			return err
 		}
 
@@ -312,12 +312,12 @@ var jobStructureRestCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallReset(ctx); err != nil {
+		if err = o.CallReset(ctx); err != nil {
 			return err
 		}
 
@@ -337,12 +337,12 @@ var jobStructureRollbackCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
+		o, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
 		if err != nil {
 			return err
 		}
 
-		if err = r.CallRollback(ctx); err != nil {
+		if err = o.CallRollback(ctx); err != nil {
 			return err
 		}
 

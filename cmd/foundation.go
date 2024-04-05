@@ -375,11 +375,11 @@ var foundationInterfaceDeleteCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.UtilitiesRealNetworkInterfaceGet(ctx, interfaceID)
+		o, err := contractorClient.UtilitiesRealNetworkInterfaceGet(ctx, interfaceID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(ctx); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 

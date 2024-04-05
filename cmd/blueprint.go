@@ -237,11 +237,11 @@ var blueprintFoundationDeleteCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, blueprintID)
+		o, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, blueprintID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(ctx); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
@@ -373,12 +373,12 @@ var blueprintFoundationScriptUnlinkCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, blueprintID)
+		o, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, blueprintID)
 		if err != nil {
 			return err
 		}
 
-		_, ok := (*r.ScriptMap)[scriptName]
+		_, ok := (*o.ScriptMap)[scriptName]
 		if !ok {
 			return fmt.Errorf("no Script link to Blueprint with that name")
 		}
@@ -570,11 +570,11 @@ var blueprintStructureDeleteCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.BlueprintStructureBluePrintGet(ctx, blueprintID)
+		o, err := contractorClient.BlueprintStructureBluePrintGet(ctx, blueprintID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(ctx); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 

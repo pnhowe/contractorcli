@@ -755,13 +755,13 @@ var structureInterfaceListCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.BuildingStructureGet(ctx, structureID)
+		o, err := contractorClient.BuildingStructureGet(ctx, structureID)
 		if err != nil {
 			return err
 		}
 
 		rl := []cinp.Object{}
-		vchan, err := contractorClient.UtilitiesAbstractNetworkInterfaceList(ctx, "structure", map[string]interface{}{"structure": r.GetURI()})
+		vchan, err := contractorClient.UtilitiesAbstractNetworkInterfaceList(ctx, "structure", map[string]interface{}{"structure": o.GetURI()})
 		if err != nil {
 			return err
 		}

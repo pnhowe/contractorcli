@@ -194,11 +194,11 @@ var networkDeleteCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		r, err := contractorClient.UtilitiesNetworkGet(ctx, networkID)
+		o, err := contractorClient.UtilitiesNetworkGet(ctx, networkID)
 		if err != nil {
 			return err
 		}
-		if err := r.Delete(ctx); err != nil {
+		if err := o.Delete(ctx); err != nil {
 			return err
 		}
 
