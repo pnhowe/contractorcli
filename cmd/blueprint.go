@@ -383,7 +383,7 @@ var blueprintFoundationScriptUnlinkCmd = &cobra.Command{
 			return fmt.Errorf("no Script link to Blueprint with that name")
 		}
 
-		vchan, err := contractorClient.BlueprintBluePrintScriptList(ctx, "blueprint", map[string]interface{}{"blueprint": strings.Replace(r.GetURI(), "/api/v1/BluePrint/FoundationBluePrint", "/api/v1/BluePrint/BluePrint", 1)})
+		vchan, err := contractorClient.BlueprintBluePrintScriptList(ctx, "blueprint", map[string]interface{}{"blueprint": strings.Replace(o.GetURI(), "/api/v1/BluePrint/FoundationBluePrint", "/api/v1/BluePrint/BluePrint", 1)})
 		if err != nil {
 			return err
 		}
