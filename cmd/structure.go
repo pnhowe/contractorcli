@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	contractor "github.com/t3kton/contractor_client/go/autogen"
+	contractor "github.com/t3kton/contractor_goclient"
 
 	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"

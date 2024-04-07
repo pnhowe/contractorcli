@@ -10,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stromland/cobra-prompt v0.5.0
-	github.com/t3kton/contractor_client/go v0.0.0-20240404132203-bb77d09e1162
+	github.com/t3kton/contractor_goclient v1.0.2
 )
 
 require (

@@ -27,7 +27,7 @@ import (
 	"text/template"
 
 	"github.com/olekukonko/tablewriter"
-	contractor "github.com/t3kton/contractor_client/go"
+	contractor "github.com/t3kton/contractor_goclient"
 
 	cinp "github.com/cinp/go"
 	homedir "github.com/mitchellh/go-homedir"
