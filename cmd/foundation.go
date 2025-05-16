@@ -236,7 +236,8 @@ var foundationInterfaceCreateCmd = &cobra.Command{
 		}
 
 		o := contractorClient.UtilitiesRealNetworkInterfaceNew()
-		(*o.Foundation) = r.GetURI()
+		foundation := r.GetURI()
+		o.Foundation = &foundation
 		o.Name = &detailName
 		o.PhysicalLocation = &detailPhysicalLocation
 		o.IsProvisioning = &detailIsProvisioning
@@ -248,7 +249,8 @@ var foundationInterfaceCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Network) = r.GetURI()
+			network := r.GetURI()
+			o.Network = &network
 		}
 
 		o, err = o.Create(ctx)
@@ -313,7 +315,8 @@ var foundationInterfaceUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Network) = r.GetURI()
+			network := r.GetURI()
+			o.Network = &network
 		}
 
 		o, err = o.Update(ctx)
@@ -352,7 +355,8 @@ var foundationInterfacePXECmd = &cobra.Command{
 		ctx := cmd.Context()
 
 		o := contractorClient.UtilitiesRealNetworkInterfaceNewWithID(interfaceID)
-		(*o.Pxe) = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
+		pxe := fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
+		o.Pxe = &pxe
 
 		_, err = o.Update(ctx)
 		if err != nil {
@@ -390,97 +394,6 @@ var foundationInterfaceDeleteCmd = &cobra.Command{
 var foundationJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Foundation Jobs",
-}
-
-var foundationJobInfoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Show Foundation Job Info",
-	Args:  foundationArgCheck,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		foundationID := args[0]
-
-		ctx := cmd.Context()
-
-		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
-		if err != nil {
-			return err
-		}
-
-		jobURI, err := o.CallGetJob(ctx)
-		if err != nil {
-			return err
-		}
-
-		if jobURI == "" {
-			outputDetail("", "No Job\n")
-			return nil
-		}
-
-		j, err := contractorClient.ForemanStructureJobGetURI(ctx, jobURI)
-		if err != nil {
-			return err
-		}
-
-		outputDetail(j, `Job:           {{.GetURI | extractID}}
-Site:          {{.Site}}
-Foundation:    {{.Foundation | extractID}}
-State:         {{.State}}
-Status:        {{.Status}}
-Message:       {{.Message}}
-Script Name:   {{.ScriptName}}
-Can Start:     {{.CanStart}}
-Updated:       {{.Updated}}
-Created:       {{.Created}}
-`)
-		return nil
-	},
-}
-
-var foundationJobStateCmd = &cobra.Command{
-	Use:   "state",
-	Short: "Show Foundation Job State",
-	Args:  foundationArgCheck,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		foundationID := args[0]
-
-		ctx := cmd.Context()
-
-		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
-		if err != nil {
-			return err
-		}
-		jobURI, err := o.CallGetJob(ctx)
-		if err != nil {
-			return err
-		}
-
-		if jobURI == "" {
-			outputDetail("", "No Job\n")
-			return nil
-		}
-
-		j, err := contractorClient.ForemanStructureJobGetURI(ctx, jobURI)
-		if err != nil {
-			return err
-		}
-
-		vars, err := j.CallJobRunnerVariables(ctx)
-		if err != nil {
-			return err
-		}
-
-		state, err := j.CallJobRunnerState(ctx)
-		if err != nil {
-			return err
-		}
-		outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables: {{.variables}}
-Script State: {{.state.state}}
-Script Line No: {{.state.cur_line}}
--- Script --
-{{.state.script}}
-`)
-		return nil
-	},
 }
 
 var foundationJobDoCreateCmd = &cobra.Command{
@@ -549,6 +462,41 @@ var foundationJobDoUtilityCmd = &cobra.Command{
 		if _, err := o.CallDoJob(ctx, scriptName); err != nil {
 			return err
 		}
+		return nil
+	},
+}
+
+var foundationJobIdCmd = &cobra.Command{
+	Use:   "id",
+	Short: "Get the Job Id for active job",
+	Args:  structureArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		foundationID := args[0]
+
+		ctx := cmd.Context()
+
+		o, err := contractorClient.BuildingFoundationGet(ctx, foundationID)
+		if err != nil {
+			return err
+		}
+		jobURI, err := o.CallGetJob(ctx)
+		if err != nil {
+			return err
+		}
+
+		if jobURI == "" {
+			outputDetail("", "No Job\n")
+			return nil
+		}
+
+		j, err := contractorClient.ForemanFoundationJobGetURI(ctx, jobURI)
+		if err != nil {
+			return err
+		}
+
+		valueMap := map[string]interface{}{"Id": extractID(j.GetURI())}
+		outputKV(valueMap)
+
 		return nil
 	},
 }
@@ -643,7 +591,7 @@ func init() {
 	foundationInterfaceCmd.AddCommand(foundationInterfaceListCmd, foundationInterfaceGetCmd, foundationInterfaceCreateCmd, foundationInterfaceUpdateCmd, foundationInterfaceDeleteCmd, foundationInterfacePXECmd)
 
 	foundationCmd.AddCommand(foundationJobCmd)
-	foundationJobCmd.AddCommand(foundationJobInfoCmd, foundationJobStateCmd, foundationJobDoCreateCmd, foundationJobDoDestroyCmd, foundationJobDoUtilityCmd)
+	foundationJobCmd.AddCommand(foundationJobIdCmd, foundationJobDoCreateCmd, foundationJobDoDestroyCmd, foundationJobDoUtilityCmd)
 
 	foundationCmd.AddCommand(foundationJobLogCmd)
 }

@@ -158,6 +158,9 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+			if o.ParentList == nil {
+				o.ParentList = &[]string{}
+			}
 			(*o.ParentList) = append(*o.ParentList, p.GetURI())
 		}
 
@@ -347,8 +350,10 @@ var blueprintFoundationScriptLinkCmd = &cobra.Command{
 
 		link := contractorClient.BlueprintBluePrintScriptNew()
 		link.Name = &scriptName
-		(*link.Blueprint) = strings.Replace(o.GetURI(), "/api/v1/BluePrint/FoundationBluePrint", "/api/v1/BluePrint/BluePrint", 1)
-		(*link.Script) = s.GetURI()
+		blueprint := strings.Replace(o.GetURI(), "/api/v1/BluePrint/FoundationBluePrint", "/api/v1/BluePrint/BluePrint", 1)
+		link.Blueprint = &blueprint
+		uri := s.GetURI()
+		link.Script = &uri
 		_, err = link.Create(ctx)
 		if err != nil {
 			return err
@@ -503,6 +508,9 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+			if o.ParentList == nil {
+				o.ParentList = &[]string{}
+			}
 			(*o.ParentList) = append(*o.ParentList, p.GetURI())
 		}
 
@@ -524,6 +532,9 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			p, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, detailAddFoundationBluePrint)
 			if err != nil {
 				return err
+			}
+			if o.FoundationBlueprintList == nil {
+				o.FoundationBlueprintList = &[]string{}
 			}
 			(*o.FoundationBlueprintList) = append(*o.FoundationBlueprintList, p.GetURI())
 		}
@@ -680,8 +691,10 @@ var blueprintStructureScriptLinkCmd = &cobra.Command{
 
 		link := contractorClient.BlueprintBluePrintScriptNew()
 		link.Name = &scriptName
-		(*link.Blueprint) = strings.Replace(o.GetURI(), "/api/v1/BluePrint/StructureBluePrint", "/api/v1/BluePrint/BluePrint", 1)
-		(*link.Script) = s.GetURI()
+		blueprint := strings.Replace(o.GetURI(), "/api/v1/BluePrint/StructureBluePrint", "/api/v1/BluePrint/BluePrint", 1)
+		link.Blueprint = &blueprint
+		uri := s.GetURI()
+		link.Script = &uri
 
 		_, err = link.Create(ctx)
 		if err != nil {

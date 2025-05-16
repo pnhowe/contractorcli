@@ -1,3 +1,9 @@
+contractorcli (0.17.0-1) jammy; urgency=medium
+
+  * Added TestFoundation
+
+ -- Peter Howe <pnhowe@gmail.com>  Thu, 18 Apr 2024 21:59:02 -0600
+
 contractorcli (0.16.0-1) focal; urgency=medium
 
   * Updated to cinp 1.0

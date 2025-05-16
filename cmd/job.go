@@ -55,7 +55,7 @@ var jobFoundationListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Foundation", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetID | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Foundation", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetURI | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -77,7 +77,7 @@ var jobFoundationGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		outputDetail(o, `Id:          {{.GetID | extractID}}
+		outputDetail(o, `Id:          {{.GetURI | extractID}}
 Site:        {{.Site}}
 Foundation:  {{.Foundation | extractID}}
 Script:      {{.ScriptName}}
@@ -88,6 +88,44 @@ Status:      {{.Status}}
 CanStart:    {{.CanStart}}
 Created:     {{.Created}}
 Updated:     {{.Updated}}
+`)
+		return nil
+	},
+}
+
+var jobFoundationStateCmd = &cobra.Command{
+	Use:   "state",
+	Short: "Show Foundation Job State",
+	Args:  jobArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
+
+		ctx := cmd.Context()
+
+		o, err := contractorClient.ForemanFoundationJobGet(ctx, jobID)
+		if err != nil {
+			return err
+		}
+
+		vars, err := o.CallJobRunnerVariables(ctx)
+		if err != nil {
+			return err
+		}
+
+		state, err := o.CallJobRunnerState(ctx)
+		if err != nil {
+			return err
+		}
+		outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables:
+{{range $index, $element := .variables}} - {{$index}}: {{$element}}
+{{end}}
+Script State: {{.state.state}}
+Script Line No: {{.state.cur_line}}
+-- Script --
+{{.state.script}}
 `)
 		return nil
 	},
@@ -212,7 +250,7 @@ var jobStructureListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Structure", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetID | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Structure", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetURI | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -234,7 +272,7 @@ var jobStructureGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		outputDetail(o, `Id:          {{.GetID | extractID}}
+		outputDetail(o, `Id:          {{.GetURI | extractID}}
 Site:        {{.Site}}
 Structure:   {{.Structure | extractID}}
 Script:      {{.ScriptName}}
@@ -245,6 +283,44 @@ Status:      {{.Status}}
 CanStart:    {{.CanStart}}
 Created:     {{.Created}}
 Updated:     {{.Updated}}
+`)
+		return nil
+	},
+}
+
+var jobStructureStateCmd = &cobra.Command{
+	Use:   "state",
+	Short: "Show Structure Job State",
+	Args:  jobArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		jobID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
+
+		ctx := cmd.Context()
+
+		o, err := contractorClient.ForemanStructureJobGet(ctx, jobID)
+		if err != nil {
+			return err
+		}
+
+		vars, err := o.CallJobRunnerVariables(ctx)
+		if err != nil {
+			return err
+		}
+
+		state, err := o.CallJobRunnerState(ctx)
+		if err != nil {
+			return err
+		}
+		outputDetail(map[string]interface{}{"variables": vars, "state": state}, `Variables:
+{{range $index, $element := .variables}} - {{$index}}: {{$element}}
+{{end}}
+Script State: {{.state.state}}
+Script Line No: {{.state.cur_line}}
+-- Script --
+{{.state.script}}
 `)
 		return nil
 	},
@@ -353,8 +429,8 @@ var jobStructureRollbackCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(jobCmd)
 	jobCmd.AddCommand(jobFoundationCmd)
-	jobFoundationCmd.AddCommand(jobFoundationListCmd, jobFoundationGetCmd, jobFoundationPauseCmd, jobFoundationResumeCmd, jobFoundationRestCmd, jobFoundationRollbackCmd)
+	jobFoundationCmd.AddCommand(jobFoundationListCmd, jobFoundationGetCmd, jobFoundationStateCmd, jobFoundationPauseCmd, jobFoundationResumeCmd, jobFoundationRestCmd, jobFoundationRollbackCmd)
 
 	jobCmd.AddCommand(jobStructureCmd)
-	jobStructureCmd.AddCommand(jobStructureListCmd, jobStructureGetCmd, jobStructurePauseCmd, jobStructureResumeCmd, jobStructureRestCmd, jobStructureRollbackCmd)
+	jobStructureCmd.AddCommand(jobStructureListCmd, jobStructureGetCmd, jobStructureStateCmd, jobStructurePauseCmd, jobStructureResumeCmd, jobStructureRestCmd, jobStructureRollbackCmd)
 }
