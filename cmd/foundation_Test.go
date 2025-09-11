@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
@@ -72,8 +73,7 @@ var foundationTestCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			site := r.GetURI()
-			o.Site = &site
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -81,8 +81,7 @@ var foundationTestCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			blueprint := r.GetURI()
-			o.Blueprint = &blueprint
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailDelayVariance != -1 {
@@ -93,7 +92,7 @@ var foundationTestCreateCmd = &cobra.Command{
 			o.TestFailLikelihood = &detailFailLikelihood
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -135,8 +134,7 @@ var foundationTestUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			site := r.GetURI()
-			o.Site = &site
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -144,8 +142,7 @@ var foundationTestUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			blueprint := r.GetURI()
-			o.Blueprint = &blueprint
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailDelayVariance != -1 {
@@ -156,7 +153,7 @@ var foundationTestUpdateCmd = &cobra.Command{
 			o.TestFailLikelihood = &detailFailLikelihood
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}

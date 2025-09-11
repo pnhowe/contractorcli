@@ -120,8 +120,7 @@ var structureCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			site := r.GetURI()
-			o.Site = &site
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -129,8 +128,7 @@ var structureCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			blueprint := r.GetURI()
-			o.Blueprint = &blueprint
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailFoundation != "" {
@@ -138,11 +136,10 @@ var structureCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			foundation := r.GetURI()
-			o.Foundation = &foundation
+			o.Foundation = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -186,8 +183,7 @@ var structureUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			site := r.GetURI()
-			o.Site = &site
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -195,8 +191,7 @@ var structureUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			blueprint := r.GetURI()
-			o.Blueprint = &blueprint
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailFoundation != "" {
@@ -204,11 +199,10 @@ var structureUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			foundation := r.GetURI()
-			o.Foundation = &foundation
+			o.Foundation = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -276,7 +270,7 @@ var structureConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			(*o.ConfigValues)[configSetName] = configSetValue
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -292,7 +286,7 @@ var structureConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			delete(*o.ConfigValues, configDeleteName)
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -437,7 +431,7 @@ var structureAddressAddCmd = &cobra.Command{
 		o.InterfaceName = &detailInterfaceName
 		o.IsPrimary = &detailIsPrimary
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -484,7 +478,7 @@ var structureAddressUpdateCmd = &cobra.Command{
 			o.InterfaceName = &detailInterfaceName
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -787,7 +781,7 @@ var structureInterfaceCreateCmd = &cobra.Command{
 			o.Network = &network
 		}
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -831,7 +825,7 @@ var structureInterfaceUpdateCmd = &cobra.Command{
 			o.Network = &network
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -983,10 +977,10 @@ var structureAggInterfaceCreateCmd = &cobra.Command{
 				return err
 			}
 			ri = contractorClient.UtilitiesNetworkInterfaceNewWithID(i)
-			(*o.SecondaryInterfaces) = append((*o.SecondaryInterfaces), ri.GetURI())
+			*o.SecondaryInterfaces = append(*o.SecondaryInterfaces, ri.GetURI())
 		}
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -1039,11 +1033,11 @@ var structureAggInterfaceUpdateCmd = &cobra.Command{
 			o.SecondaryInterfaces = &[]string{}
 			for id := range strings.Split(detailSecondary, ",") {
 				ri := contractorClient.UtilitiesNetworkInterfaceNewWithID(id)
-				(*o.SecondaryInterfaces) = append((*o.SecondaryInterfaces), ri.GetURI())
+				*o.SecondaryInterfaces = append(*o.SecondaryInterfaces, ri.GetURI())
 			}
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}

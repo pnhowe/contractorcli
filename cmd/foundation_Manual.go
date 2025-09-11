@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
@@ -70,7 +71,7 @@ var foundationManualCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -78,10 +79,10 @@ var foundationManualCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Blueprint) = r.GetURI()
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -121,7 +122,7 @@ var foundationManualUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -129,10 +130,10 @@ var foundationManualUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Blueprint) = r.GetURI()
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}

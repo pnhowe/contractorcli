@@ -21,21 +21,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var complexVirtualBoxCmd = &cobra.Command{
-	Use:   "virtualbox",
-	Short: "Work with VirtualBox Complexes",
+var complexLibVirtCmd = &cobra.Command{
+	Use:   "libvirt",
+	Short: "Work with LibVirt Complexes",
 }
 
-var complexVirtualBoxGetCmd = &cobra.Command{
+var complexLibVirtGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get VirtualBox Complexes",
+	Short: "Get LibVirt Complexes",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
 
 		ctx := cmd.Context()
 
-		o, err := contractorClient.VirtualboxVirtualBoxComplexGet(ctx, complexID)
+		o, err := contractorClient.LibvirtLibVirtComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
@@ -45,8 +45,6 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
-VirtualboxUsername: {{.VirtualboxUsername}}
-VirtualboxPassword: {{.VirtualboxPassword}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -55,18 +53,16 @@ Updated:            {{.Updated}}
 	},
 }
 
-var complexVirtualBoxCreateCmd = &cobra.Command{
+var complexLibVirtCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create New VirtualBox Complex",
+	Short: "Create New LibVirt Complex",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		o := contractorClient.VirtualboxVirtualBoxComplexNew()
+		o := contractorClient.LibvirtLibVirtComplexNew()
 		o.BuiltPercentage = nil
 		o.Name = &detailName
 		o.Description = &detailDescription
-		o.VirtualboxUsername = &detailUsername
-		o.VirtualboxPassword = &detailPassword
 
 		if detailSite != "" {
 			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
@@ -87,8 +83,6 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
-VirtualboxUsername: {{.VirtualboxUsername}}
-VirtualboxPassword: {{.VirtualboxPassword}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -97,27 +91,19 @@ Updated:            {{.Updated}}
 	},
 }
 
-var complexVirtualBoxUpdateCmd = &cobra.Command{
+var complexLibVirtUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update VirtualBox Complex",
+	Short: "Update LibVirt Complex",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
 
 		ctx := cmd.Context()
 
-		o := contractorClient.VirtualboxVirtualBoxComplexNewWithID(complexID)
+		o := contractorClient.LibvirtLibVirtComplexNewWithID(complexID)
 
 		if detailDescription != "" {
 			o.Description = &detailDescription
-		}
-
-		if detailUsername != "" {
-			o.VirtualboxUsername = &detailUsername
-		}
-
-		if detailPassword != "" {
-			o.VirtualboxPassword = &detailPassword
 		}
 
 		if detailSite != "" {
@@ -139,8 +125,6 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
-VirtualboxUsername: {{.VirtualboxUsername}}
-VirtualboxPassword: {{.VirtualboxPassword}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -150,19 +134,15 @@ Updated:            {{.Updated}}
 }
 
 func init() {
-	complexTypes["virtualbox"] = complexTypeEntry{"/api/v1/VirtualBox/", "0.1"}
+	complexTypes["libvirt"] = complexTypeEntry{"/api/v1/LibVirt/", "0.1"}
 
-	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New VirtualBox Complex")
-	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VirtualBox Complex")
-	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New VirtualBox Complex")
-	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "VirtualBox Username of New VirtualBox Complex")
-	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "VirtualBox Password of New VirtualBox Complex")
+	complexLibVirtCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New LibVirt Complex")
+	complexLibVirtCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New LibVirt Complex")
+	complexLibVirtCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New LibVirt Complex")
 
-	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
-	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of VirtualBox Complex with value")
-	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Update the VirtualBox Username of the VirtualBox Complex with value")
-	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the VirtualBox Password of the VirtualBox Complex with value")
+	complexLibVirtUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
+	complexLibVirtUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of LibVirt Complex with value")
 
-	complexCmd.AddCommand(complexVirtualBoxCmd)
-	complexVirtualBoxCmd.AddCommand(complexVirtualBoxGetCmd, complexVirtualBoxCreateCmd, complexVirtualBoxUpdateCmd)
+	complexCmd.AddCommand(complexLibVirtCmd)
+	complexLibVirtCmd.AddCommand(complexLibVirtGetCmd, complexLibVirtCreateCmd, complexLibVirtUpdateCmd)
 }

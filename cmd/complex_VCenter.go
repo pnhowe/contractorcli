@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
@@ -79,7 +80,7 @@ var complexVCenterCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		for _, v := range detailMembers {
@@ -87,7 +88,7 @@ var complexVCenterCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Members) = append((*o.Members), s.GetURI())
+			*o.Members = append(*o.Members, s.GetURI())
 		}
 
 		if detailHost != 0 {
@@ -95,10 +96,10 @@ var complexVCenterCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.VcenterHost) = r.GetURI()
+			o.VcenterHost = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -163,7 +164,7 @@ var complexVCenterUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if len(detailMembers) > 0 {
@@ -172,7 +173,7 @@ var complexVCenterUpdateCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				(*o.Members) = append((*o.Members), s.GetURI())
+				*o.Members = append(*o.Members, s.GetURI())
 			}
 		}
 
@@ -181,10 +182,10 @@ var complexVCenterUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.VcenterHost) = r.GetURI()
+			o.VcenterHost = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}

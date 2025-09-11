@@ -4,13 +4,13 @@ go 1.21
 
 require (
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/cinp/go v1.2.1
+	github.com/cinp/go v1.2.6
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stromland/cobra-prompt v0.5.0
-	github.com/t3kton/contractor_goclient v1.0.3
+	github.com/t3kton/contractor_goclient v1.0.11
 )
 
 require (

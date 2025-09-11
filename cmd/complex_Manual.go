@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
@@ -70,7 +71,7 @@ var complexManualCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		for _, v := range detailMembers {
@@ -78,10 +79,10 @@ var complexManualCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Members) = append((*o.Members), s.GetURI())
+			*o.Members = append(*o.Members, s.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -125,7 +126,7 @@ var complexManualUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if len(detailMembers) > 0 {
@@ -134,11 +135,11 @@ var complexManualUpdateCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				(*o.Members) = append((*o.Members), s.GetURI())
+				*o.Members = append(*o.Members, s.GetURI())
 			}
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}

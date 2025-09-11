@@ -253,7 +253,7 @@ var foundationInterfaceCreateCmd = &cobra.Command{
 			o.Network = &network
 		}
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -319,7 +319,7 @@ var foundationInterfaceUpdateCmd = &cobra.Command{
 			o.Network = &network
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -358,7 +358,7 @@ var foundationInterfacePXECmd = &cobra.Command{
 		pxe := fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
 		o.Pxe = &pxe
 
-		_, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -550,9 +550,9 @@ var foundationBootToCmd = &cobra.Command{
 		for v := range vchan {
 			if *v.IsProvisioning {
 				v = contractorClient.UtilitiesRealNetworkInterfaceNewWithID(*v.ID)
-				(*v.Pxe) = fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName)
+				v.Pxe = cinp.StringAddr(fmt.Sprintf("/api/v1/BluePrint/PXE:%s:", detailPxeName))
 
-				_, err := v.Update(ctx)
+				err := v.Update(ctx)
 				if err != nil {
 					return err
 				}

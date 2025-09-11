@@ -115,10 +115,10 @@ var networkCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -158,14 +158,14 @@ var networkUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailMTU != 0 {
 			o.Mtu = &detailMTU
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -229,7 +229,7 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 		}
 
 		o := contractorClient.UtilitiesNetworkAddressBlockNew()
-		(*o.Network) = r.GetURI()
+		o.Network = cinp.StringAddr(r.GetURI())
 		o.Vlan = &detailVlan
 
 		if detailAddressBlock != 0 {
@@ -237,10 +237,10 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.AddressBlock) = r.GetURI()
+			o.AddressBlock = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -275,7 +275,7 @@ var networkAddressBlockUpdateCmd = &cobra.Command{
 			o.Vlan = &detailVlan
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}

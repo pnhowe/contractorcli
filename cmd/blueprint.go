@@ -117,7 +117,7 @@ var blueprintFoundationCreateCmd = &cobra.Command{
 		o.Description = &detailDescription
 		o.FoundationTypeList = &[]string{detailAddType}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -161,7 +161,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 			if o.ParentList == nil {
 				o.ParentList = &[]string{}
 			}
-			(*o.ParentList) = append(*o.ParentList, p.GetURI())
+			*o.ParentList = append(*o.ParentList, p.GetURI())
 		}
 
 		if detailDeleteParent != "" {
@@ -172,7 +172,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 			id := p.GetURI()
 			for i := 0; i < len(*o.ParentList); i++ {
 				if (*o.ParentList)[i] == id {
-					(*o.ParentList) = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
+					*o.ParentList = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
 					break
 				}
 			}
@@ -186,7 +186,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		if detailDeleteType != "" {
 			for i := 0; i < len(*o.FoundationTypeList); i++ {
 				if (*o.FoundationTypeList)[i] == detailDeleteType {
-					(*o.FoundationTypeList) = append((*o.FoundationTypeList)[:i], (*o.FoundationTypeList)[i+1:]...)
+					*o.FoundationTypeList = append((*o.FoundationTypeList)[:i], (*o.FoundationTypeList)[i+1:]...)
 					break
 				}
 			}
@@ -200,7 +200,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		if detailDeleteIfaceName != "" {
 			for i := 0; i < len(*o.PhysicalInterfaceNames); i++ {
 				if (*o.PhysicalInterfaceNames)[i] == detailDeleteIfaceName {
-					(*o.PhysicalInterfaceNames) = append((*o.PhysicalInterfaceNames)[:i], (*o.PhysicalInterfaceNames)[i+1:]...)
+					*o.PhysicalInterfaceNames = append((*o.PhysicalInterfaceNames)[:i], (*o.PhysicalInterfaceNames)[i+1:]...)
 					break
 				}
 			}
@@ -209,7 +209,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		// will deal with these later
 		// Template map[string]interface{} `json:"template"`
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -271,7 +271,7 @@ var blueprintFoundationConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			(*o.ConfigValues)[configSetName] = configSetValue
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -287,7 +287,7 @@ var blueprintFoundationConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			delete(*o.ConfigValues, configDeleteName)
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -354,7 +354,7 @@ var blueprintFoundationScriptLinkCmd = &cobra.Command{
 		link.Blueprint = &blueprint
 		uri := s.GetURI()
 		link.Script = &uri
-		_, err = link.Create(ctx)
+		err = link.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -468,7 +468,7 @@ var blueprintStructureCreateCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -511,7 +511,7 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			if o.ParentList == nil {
 				o.ParentList = &[]string{}
 			}
-			(*o.ParentList) = append(*o.ParentList, p.GetURI())
+			*o.ParentList = append(*o.ParentList, p.GetURI())
 		}
 
 		if detailDeleteParent != "" {
@@ -522,7 +522,7 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			id := p.GetURI()
 			for i := 0; i < len(*o.ParentList); i++ {
 				if (*o.ParentList)[i] == id {
-					(*o.ParentList) = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
+					*o.ParentList = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
 					break
 				}
 			}
@@ -536,7 +536,7 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			if o.FoundationBlueprintList == nil {
 				o.FoundationBlueprintList = &[]string{}
 			}
-			(*o.FoundationBlueprintList) = append(*o.FoundationBlueprintList, p.GetURI())
+			*o.FoundationBlueprintList = append(*o.FoundationBlueprintList, p.GetURI())
 		}
 
 		if detailDeleteFoundationBluePrint != "" {
@@ -547,13 +547,13 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 			id := p.GetURI()
 			for i := 0; i < len(*o.FoundationBlueprintList); i++ {
 				if (*o.FoundationBlueprintList)[i] == id {
-					(*o.FoundationBlueprintList) = append((*o.FoundationBlueprintList)[:i], (*o.FoundationBlueprintList)[i+1:]...)
+					*o.FoundationBlueprintList = append((*o.FoundationBlueprintList)[:i], (*o.FoundationBlueprintList)[i+1:]...)
 					break
 				}
 			}
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -612,7 +612,7 @@ var blueprintStructureConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			(*o.ConfigValues)[configSetName] = configSetValue
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -628,7 +628,7 @@ var blueprintStructureConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			delete(*o.ConfigValues, configDeleteName)
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -696,7 +696,7 @@ var blueprintStructureScriptLinkCmd = &cobra.Command{
 		uri := s.GetURI()
 		link.Script = &uri
 
-		_, err = link.Create(ctx)
+		err = link.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -810,7 +810,7 @@ var scriptCreateCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -842,7 +842,7 @@ var scriptUpdateCmd = &cobra.Command{
 			o.Description = &detailDescription
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -921,7 +921,7 @@ var scriptEditCmd = &cobra.Command{
 			}
 
 			o.Script = &newScript
-			_, err := o.Update(ctx)
+			err := o.Update(ctx)
 			if err != nil {
 				if scriptFile == "" && strings.HasPrefix(err.Error(), "Invalid Request: 'map[script:[Script is invalid") {
 					fmt.Printf("Error parsing the script:%s\n", err.Error())
@@ -1037,7 +1037,7 @@ var pxeEditScriptCmd = &cobra.Command{
 		}
 
 		o.BootScript = &newScript
-		_, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -1086,7 +1086,7 @@ var pxeEditTemplateCmd = &cobra.Command{
 		}
 
 		o.Template = &newTemplate
-		_, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}

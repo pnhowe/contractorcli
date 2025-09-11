@@ -96,7 +96,7 @@ var siteCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Parent) = r.GetURI()
+			o.Parent = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailZone != 0 {
@@ -104,10 +104,10 @@ var siteCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Zone) = r.GetURI()
+			o.Zone = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -146,7 +146,7 @@ var siteUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Parent) = r.GetURI()
+			o.Parent = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailZone != 0 {
@@ -154,10 +154,10 @@ var siteUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Zone) = r.GetURI()
+			o.Zone = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -216,7 +216,7 @@ var siteConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			(*o.ConfigValues)[configSetName] = configSetValue
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
@@ -232,7 +232,7 @@ var siteConfigCmd = &cobra.Command{
 			o.ConfigValues = r.ConfigValues
 			delete(*o.ConfigValues, configDeleteName)
 
-			o, err = o.Update(ctx)
+			err = o.Update(ctx)
 			if err != nil {
 				return err
 			}
