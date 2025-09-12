@@ -45,6 +45,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
+Member:             {{.Members}}
 VirtualboxUsername: {{.VirtualboxUsername}}
 VirtualboxPassword: {{.VirtualboxPassword}}
 Created:            {{.Created}}
@@ -76,6 +77,15 @@ var complexVirtualBoxCreateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
+		if detailMember != 0 {
+
+			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
+			if err != nil {
+				return err
+			}
+			o.Members = &[]string{s.GetURI()}
+		}
+
 		err := o.Create(ctx)
 		if err != nil {
 			return err
@@ -87,6 +97,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
+Member:             {{.Members}}
 VirtualboxUsername: {{.VirtualboxUsername}}
 VirtualboxPassword: {{.VirtualboxPassword}}
 Created:            {{.Created}}
@@ -128,6 +139,14 @@ var complexVirtualBoxUpdateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
+		if detailMember != 0 {
+			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
+			if err != nil {
+				return err
+			}
+			o.Members = &[]string{s.GetURI()}
+		}
+
 		err := o.Update(ctx)
 		if err != nil {
 			return err
@@ -139,6 +158,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
+Member:             {{.Members}}
 VirtualboxUsername: {{.VirtualboxUsername}}
 VirtualboxPassword: {{.VirtualboxPassword}}
 Created:            {{.Created}}
@@ -155,11 +175,13 @@ func init() {
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New VirtualBox Complex")
+	complexVirtualBoxCreateCmd.Flags().IntVarP(&detailMember, "member", "m", 0, "Members of the new VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "VirtualBox Username of New VirtualBox Complex")
 	complexVirtualBoxCreateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "VirtualBox Password of New VirtualBox Complex")
 
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of VirtualBox Complex with value")
+	complexVirtualBoxUpdateCmd.Flags().IntVarP(&detailMember, "member", "m", 0, "Update the Member of the VirtualBox Complex")
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailUsername, "username", "u", "", "Update the VirtualBox Username of the VirtualBox Complex with value")
 	complexVirtualBoxUpdateCmd.Flags().StringVarP(&detailPassword, "password", "p", "", "Update the VirtualBox Password of the VirtualBox Complex with value")
 

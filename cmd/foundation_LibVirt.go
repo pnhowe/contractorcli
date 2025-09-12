@@ -41,8 +41,8 @@ var foundationLibVirtGetCmd = &cobra.Command{
 		}
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.LibVirtComplex | extractID}}
-VM UUID:        {{.LibVirtUUID}}
+Complex:        {{.LibvirtComplex | extractID}}
+VM UUID:        {{.LibvirtUUID}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -99,8 +99,8 @@ var foundationLibVirtCreateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.LibVirtComplex | extractID}}
-VM UUID:        {{.LibVirtUUID}}
+Complex:        {{.LibvirtComplex | extractID}}
+VM UUID:        {{.LibvirtUUID}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -158,8 +158,8 @@ var foundationLibVirtUpdateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.LibVirtComplex | extractID}}
-VM UUID:        {{.LibVirtUUID}}
+Complex:        {{.LibvirtComplex | extractID}}
+VM UUID:        {{.LibvirtUUID}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}

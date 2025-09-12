@@ -45,6 +45,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
+Member:             {{.Members}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -72,6 +73,15 @@ var complexLibVirtCreateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
+		if detailMember != 0 {
+
+			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
+			if err != nil {
+				return err
+			}
+			o.Members = &[]string{s.GetURI()}
+		}
+
 		err := o.Create(ctx)
 		if err != nil {
 			return err
@@ -83,6 +93,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
+Member:             {{.Members}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -114,6 +125,14 @@ var complexLibVirtUpdateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
+		if detailMember != 0 {
+			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
+			if err != nil {
+				return err
+			}
+			o.Members = &[]string{s.GetURI()}
+		}
+
 		err := o.Update(ctx)
 		if err != nil {
 			return err
@@ -125,6 +144,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
+Member:             {{.Members}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -139,9 +159,11 @@ func init() {
 	complexLibVirtCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New LibVirt Complex")
 	complexLibVirtCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New LibVirt Complex")
 	complexLibVirtCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New LibVirt Complex")
+	complexLibVirtCreateCmd.Flags().IntVarP(&detailMember, "member", "m", 0, "Members of the new LibVirt Complex")
 
 	complexLibVirtUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
 	complexLibVirtUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of LibVirt Complex with value")
+	complexLibVirtUpdateCmd.Flags().IntVarP(&detailMember, "member", "m", 0, "Update the Member of the LibVirt Complex")
 
 	complexCmd.AddCommand(complexLibVirtCmd)
 	complexLibVirtCmd.AddCommand(complexLibVirtGetCmd, complexLibVirtCreateCmd, complexLibVirtUpdateCmd)

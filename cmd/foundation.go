@@ -68,7 +68,7 @@ var foundationListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Site", "Locator", "Structure", "State", "Blueprint", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Site | extractID}}	{{.Locator}}	{{.Structure | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Site", "Locator", "Structure", "State", "Blueprint", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Site | extractID}}	{{.Locator}}	{{or .Structure \":<None>:\" | extractID}}	{{.State}}	{{.Blueprint | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -92,7 +92,7 @@ Locator:       {{.Locator}}
 Type:          {{.Type}}
 Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
-Structure:     {{.Structure | extractID}}
+Structure:     {{or .Structure ":<None>:" | extractID}}
 Id Map:        {{.IDMap}}
 Class List:    {{.ClassList}}
 State:         {{.State}}

@@ -30,6 +30,7 @@ var detailZone int
 var detailDatacenter, detailCluster string
 var detailHost int
 var detailBuiltPercentage int
+var detailMember int
 var detailMembers []int
 var detailUsername, detailPassword string
 var detailAMTUsername, detailAMTPassword, detailAMTIP string
