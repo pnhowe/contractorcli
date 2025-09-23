@@ -21,21 +21,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var complexManualCmd = &cobra.Command{
-	Use:   "manual",
-	Short: "Work with Manual Complexes",
+var complexLibVirtCmd = &cobra.Command{
+	Use:   "libvirt",
+	Short: "Work with LibVirt Complexes",
 }
 
-var complexManualGetCmd = &cobra.Command{
+var complexLibVirtGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get Manual Complexes",
+	Short: "Get LibVirt Complexes",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
 
 		ctx := cmd.Context()
 
-		o, err := contractorClient.ManualManualComplexGet(ctx, complexID)
+		o, err := contractorClient.LibvirtLibVirtComplexGet(ctx, complexID)
 		if err != nil {
 			return err
 		}
@@ -45,8 +45,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
-BuiltPercentage:    {{.BuiltPercentage}}
-Members:            {{.Members}}
+Member:             {{.Members}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -55,16 +54,16 @@ Updated:            {{.Updated}}
 	},
 }
 
-var complexManualCreateCmd = &cobra.Command{
+var complexLibVirtCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create New Manual Complex",
+	Short: "Create New LibVirt Complex",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		o := contractorClient.ManualManualComplexNew()
+		o := contractorClient.LibvirtLibVirtComplexNew()
+		o.BuiltPercentage = nil
 		o.Name = &detailName
 		o.Description = &detailDescription
-		o.BuiltPercentage = &detailBuiltPercentage
 
 		if detailSite != "" {
 			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
@@ -74,12 +73,13 @@ var complexManualCreateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
-		for _, v := range detailMembers {
-			s, err := contractorClient.BuildingStructureGet(ctx, v)
+		if detailMember != 0 {
+
+			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
 			if err != nil {
 				return err
 			}
-			*o.Members = append(*o.Members, s.GetURI())
+			o.Members = &[]string{s.GetURI()}
 		}
 
 		err := o.Create(ctx)
@@ -93,32 +93,28 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
-BuiltPercentage:    {{.BuiltPercentage}}
-Members:            {{.Members}}
+Member:             {{.Members}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
+
 		return nil
 	},
 }
 
-var complexManualUpdateCmd = &cobra.Command{
+var complexLibVirtUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update Manual Complex",
+	Short: "Update LibVirt Complex",
 	Args:  complexArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		complexID := args[0]
 
 		ctx := cmd.Context()
 
-		o := contractorClient.ManualManualComplexNewWithID(complexID)
+		o := contractorClient.LibvirtLibVirtComplexNewWithID(complexID)
 
 		if detailDescription != "" {
 			o.Description = &detailDescription
-		}
-
-		if detailBuiltPercentage != 0 {
-			o.BuiltPercentage = &detailBuiltPercentage
 		}
 
 		if detailSite != "" {
@@ -129,14 +125,12 @@ var complexManualUpdateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
-		if len(detailMembers) > 0 {
-			for _, v := range detailMembers {
-				s, err := contractorClient.BuildingStructureGet(ctx, v)
-				if err != nil {
-					return err
-				}
-				*o.Members = append(*o.Members, s.GetURI())
+		if detailMember != 0 {
+			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
+			if err != nil {
+				return err
 			}
+			o.Members = &[]string{s.GetURI()}
 		}
 
 		err := o.Update(ctx)
@@ -150,8 +144,7 @@ Description:        {{.Description}}
 Type:               {{.Type}}
 State:              {{.State}}
 Site:               {{.Site | extractID}}
-BuiltPercentage:    {{.BuiltPercentage}}
-Members:            {{.Members}}
+Member:             {{.Members}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -161,19 +154,17 @@ Updated:            {{.Updated}}
 }
 
 func init() {
-	complexTypes["manual"] = complexTypeEntry{"/api/v1/Manual/", "0.1"}
+	complexTypes["libvirt"] = complexTypeEntry{"/api/v1/LibVirt/", "0.1"}
 
-	complexManualCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New Manual Complex")
-	complexManualCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Manual Complex")
-	complexManualCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Manual Complex")
-	complexManualCreateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 80, "Built Percentage of New Manual Complex\n(Percentage of Built Members at which the complex is considered built)")
-	complexManualCreateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Members of the new Manual Complex, specify for each member")
+	complexLibVirtCreateCmd.Flags().StringVarP(&detailName, "name", "l", "", "Locator of New LibVirt Complex")
+	complexLibVirtCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New LibVirt Complex")
+	complexLibVirtCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New LibVirt Complex")
+	complexLibVirtCreateCmd.Flags().IntVarP(&detailMember, "member", "m", 0, "Members of the new LibVirt Complex")
 
-	complexManualUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
-	complexManualUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Manual Complex with value")
-	complexManualUpdateCmd.Flags().IntVarP(&detailBuiltPercentage, "builtperc", "b", 0, "Update the Built Percentage of Manual Complex with value")
-	complexManualUpdateCmd.Flags().IntSliceVarP(&detailMembers, "members", "m", []int{}, "Update the Members of the Manual Complex, specify for each member")
+	complexLibVirtUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Complex with value")
+	complexLibVirtUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of LibVirt Complex with value")
+	complexLibVirtUpdateCmd.Flags().IntVarP(&detailMember, "member", "m", 0, "Update the Member of the LibVirt Complex")
 
-	complexCmd.AddCommand(complexManualCmd)
-	complexManualCmd.AddCommand(complexManualGetCmd, complexManualCreateCmd, complexManualUpdateCmd)
+	complexCmd.AddCommand(complexLibVirtCmd)
+	complexLibVirtCmd.AddCommand(complexLibVirtGetCmd, complexLibVirtCreateCmd, complexLibVirtUpdateCmd)
 }

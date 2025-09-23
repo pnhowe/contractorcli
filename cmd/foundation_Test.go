@@ -21,28 +21,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var foundationAzureCmd = &cobra.Command{
-	Use:   "azure",
-	Short: "Work with Azure Foundations",
+var foundationTestCmd = &cobra.Command{
+	Use:   "test",
+	Short: "Work with Test Foundations",
 }
 
-var foundationAzureGetCmd = &cobra.Command{
+var foundationTestGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get Azure Foundation",
+	Short: "Get Test Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 
 		ctx := cmd.Context()
 
-		o, err := contractorClient.AzureAzureFoundationGet(ctx, foundationID)
+		o, err := contractorClient.TestTestFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.AzureComplex | extractID}}
-Resource Name:  {{.AzureResourceName}}
+Delay Variance  {{.TestDelayVariance}}
+Fail Likelihood {{.TestFailLikelihood}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -59,13 +59,13 @@ Updated:        {{.Updated}}
 	},
 }
 
-var foundationAzureCreateCmd = &cobra.Command{
+var foundationTestCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create New Azure Foundation",
+	Short: "Create New Test Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		o := contractorClient.AzureAzureFoundationNew()
+		o := contractorClient.TestTestFoundationNew()
 		o.Locator = &detailLocator
 
 		if detailSite != "" {
@@ -84,12 +84,12 @@ var foundationAzureCreateCmd = &cobra.Command{
 			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
-		if detailComplex != "" {
-			r, err := contractorClient.AzureAzureComplexGet(ctx, detailComplex)
-			if err != nil {
-				return err
-			}
-			o.AzureComplex = cinp.StringAddr(r.GetURI())
+		if detailDelayVariance != -1 {
+			o.TestDelayVariance = &detailDelayVariance
+		}
+
+		if detailFailLikelihood != -1 {
+			o.TestFailLikelihood = &detailFailLikelihood
 		}
 
 		err := o.Create(ctx)
@@ -99,8 +99,8 @@ var foundationAzureCreateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.AzureComplex | extractID}}
-Resource Name:  {{.AzureResourceName}}
+Delay Variance  {{.TestDelayVariance}}
+Fail Likelihood {{.TestFailLikelihood}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -112,20 +112,22 @@ Built At:       {{.BuiltAt}}
 Created:        {{.Created}}
 Updated:        {{.Updated}}
 `)
+
 		return nil
 	},
 }
 
-var foundationAzureUpdateCmd = &cobra.Command{
+var foundationTestUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update Azure Foundation",
+	Short: "Update Test Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
+
 		foundationID := args[0]
 
 		ctx := cmd.Context()
 
-		o := contractorClient.AzureAzureFoundationNewWithID(foundationID)
+		o := contractorClient.TestTestFoundationNewWithID(foundationID)
 
 		if detailSite != "" {
 			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
@@ -143,12 +145,12 @@ var foundationAzureUpdateCmd = &cobra.Command{
 			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
-		if detailComplex != "" {
-			r, err := contractorClient.AzureAzureComplexGet(ctx, detailComplex)
-			if err != nil {
-				return err
-			}
-			o.AzureComplex = cinp.StringAddr(r.GetURI())
+		if detailDelayVariance != -1 {
+			o.TestDelayVariance = &detailDelayVariance
+		}
+
+		if detailFailLikelihood != -1 {
+			o.TestFailLikelihood = &detailFailLikelihood
 		}
 
 		err := o.Update(ctx)
@@ -158,8 +160,8 @@ var foundationAzureUpdateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.AzureComplex | extractID}}
-Resource Name:  {{.AzureResourceName}}
+Delay Variance  {{.TestDelayVariance}}
+Fail Likelihood {{.TestFailLikelihood}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -177,17 +179,19 @@ Updated:        {{.Updated}}
 }
 
 func init() {
-	fundationTypes["azure"] = foundationTypeEntry{"/api/v1/Azure/", "0.1"}
+	fundationTypes["test"] = foundationTypeEntry{"/api/v1/Test/", "0.1"}
 
-	foundationAzureCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New Azure Foundation")
+	foundationTestCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Test Foundation")
+	foundationTestCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Test Foundation")
+	foundationTestCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Test Foundation")
+	foundationTestCreateCmd.Flags().IntVarP(&detailDelayVariance, "delay", "d", -1, "The Variance of operations, in seconds")
+	foundationTestCreateCmd.Flags().IntVarP(&detailFailLikelihood, "fail", "f", -1, "Likelyhood of failures per 1000, per 'run' execution (ie: the longer the delay the more likely), if greater than 9, Unrecoverable errors my happen, 0 to disable")
 
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the Azure Foundation")
+	foundationTestUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
+	foundationTestUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
+	foundationTestUpdateCmd.Flags().IntVarP(&detailDelayVariance, "delay", "d", -1, "The Variance of operations, in seconds")
+	foundationTestUpdateCmd.Flags().IntVarP(&detailFailLikelihood, "fail", "f", -1, "Likelyhood of failures per 1000, per 'run' execution (ie: the longer the delay the more likely), if greater than 9, Unrecoverable errors my happen, 0 to disable")
 
-	foundationCmd.AddCommand(foundationAzureCmd)
-	foundationAzureCmd.AddCommand(foundationAzureGetCmd, foundationAzureCreateCmd, foundationAzureUpdateCmd)
+	foundationCmd.AddCommand(foundationTestCmd)
+	foundationTestCmd.AddCommand(foundationTestGetCmd, foundationTestCreateCmd, foundationTestUpdateCmd)
 }

@@ -1,3 +1,16 @@
+contractorcli (0.18.0-1) noble; urgency=medium
+
+  * Added LibVirtFoundation and Complex
+  * Supports API 1.0
+
+ -- Peter Howe <pnhowe@gmail.com>  Fri, 12 Sep 2025 13:21:37 -0600
+
+contractorcli (0.17.0-1) jammy; urgency=medium
+
+  * Added TestFoundation
+
+ -- Peter Howe <pnhowe@gmail.com>  Thu, 18 Apr 2024 21:59:02 -0600
+
 contractorcli (0.16.0-1) focal; urgency=medium
 
   * Updated to cinp 1.0

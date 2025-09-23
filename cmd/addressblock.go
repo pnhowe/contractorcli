@@ -110,10 +110,10 @@ var addressblockCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -168,10 +168,10 @@ var addressblockUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err = o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -343,11 +343,11 @@ var addressblockReserveCmd = &cobra.Command{
 		}
 
 		o := contractorClient.UtilitiesReservedAddressNew()
-		(*o.AddressBlock) = r.GetURI()
+		o.AddressBlock = cinp.StringAddr(r.GetURI())
 		o.Offset = &detailOffset
 		o.Reason = &detailReason
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -421,17 +421,17 @@ var addressblockDynamicCmd = &cobra.Command{
 		}
 
 		o := contractorClient.UtilitiesDynamicAddressNew()
-		(*o.AddressBlock) = r.GetURI()
+		o.AddressBlock = cinp.StringAddr(r.GetURI())
 		o.Offset = &detailOffset
 		if detailPXE != "" {
 			r2, err := contractorClient.BlueprintPXEGet(ctx, detailPXE)
 			if err != nil {
 				return err
 			}
-			(*o.Pxe) = r2.GetURI()
+			o.Pxe = cinp.StringAddr(r2.GetURI())
 		}
 
-		o, err = o.Create(ctx)
+		err = o.Create(ctx)
 		if err != nil {
 			return err
 		}

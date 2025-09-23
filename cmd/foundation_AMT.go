@@ -17,6 +17,7 @@ limitations under the License.
 */
 
 import (
+	cinp "github.com/cinp/go"
 	"github.com/spf13/cobra"
 )
 
@@ -76,7 +77,7 @@ var foundationAMTCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -84,7 +85,7 @@ var foundationAMTCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Blueprint) = r.GetURI()
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailPlot != "" {
@@ -92,10 +93,10 @@ var foundationAMTCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Plot) = r.GetURI()
+			o.Plot = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Create(ctx)
+		err := o.Create(ctx)
 		if err != nil {
 			return err
 		}
@@ -150,7 +151,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Site) = r.GetURI()
+			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailBlueprint != "" {
@@ -158,7 +159,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Blueprint) = r.GetURI()
+			o.Blueprint = cinp.StringAddr(r.GetURI())
 		}
 
 		if detailPlot != "" {
@@ -166,10 +167,10 @@ var foundationAMTUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			(*o.Plot) = r.GetURI()
+			o.Plot = cinp.StringAddr(r.GetURI())
 		}
 
-		o, err := o.Update(ctx)
+		err := o.Update(ctx)
 		if err != nil {
 			return err
 		}

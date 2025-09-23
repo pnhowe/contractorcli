@@ -21,28 +21,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var foundationAzureCmd = &cobra.Command{
-	Use:   "azure",
-	Short: "Work with Azure Foundations",
+var foundationLibVirtCmd = &cobra.Command{
+	Use:   "libvirt",
+	Short: "Work with LibVirt Foundations",
 }
 
-var foundationAzureGetCmd = &cobra.Command{
+var foundationLibVirtGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get Azure Foundation",
+	Short: "Get LibVirt Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 
 		ctx := cmd.Context()
 
-		o, err := contractorClient.AzureAzureFoundationGet(ctx, foundationID)
+		o, err := contractorClient.LibvirtLibVirtFoundationGet(ctx, foundationID)
 		if err != nil {
 			return err
 		}
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.AzureComplex | extractID}}
-Resource Name:  {{.AzureResourceName}}
+Complex:        {{.LibvirtComplex | extractID}}
+VM UUID:        {{.LibvirtUUID}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -59,13 +59,13 @@ Updated:        {{.Updated}}
 	},
 }
 
-var foundationAzureCreateCmd = &cobra.Command{
+var foundationLibVirtCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create New Azure Foundation",
+	Short: "Create New LibVirt Foundation",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		o := contractorClient.AzureAzureFoundationNew()
+		o := contractorClient.LibvirtLibVirtFoundationNew()
 		o.Locator = &detailLocator
 
 		if detailSite != "" {
@@ -85,11 +85,11 @@ var foundationAzureCreateCmd = &cobra.Command{
 		}
 
 		if detailComplex != "" {
-			r, err := contractorClient.AzureAzureComplexGet(ctx, detailComplex)
+			r, err := contractorClient.LibvirtLibVirtComplexGet(ctx, detailComplex)
 			if err != nil {
 				return err
 			}
-			o.AzureComplex = cinp.StringAddr(r.GetURI())
+			o.LibvirtComplex = cinp.StringAddr(r.GetURI())
 		}
 
 		err := o.Create(ctx)
@@ -99,8 +99,8 @@ var foundationAzureCreateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.AzureComplex | extractID}}
-Resource Name:  {{.AzureResourceName}}
+Complex:        {{.LibvirtComplex | extractID}}
+VM UUID:        {{.LibvirtUUID}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -116,16 +116,16 @@ Updated:        {{.Updated}}
 	},
 }
 
-var foundationAzureUpdateCmd = &cobra.Command{
+var foundationLibVirtUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update Azure Foundation",
+	Short: "Update LibVirt Foundation",
 	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 
 		ctx := cmd.Context()
 
-		o := contractorClient.AzureAzureFoundationNewWithID(foundationID)
+		o := contractorClient.LibvirtLibVirtFoundationNewWithID(foundationID)
 
 		if detailSite != "" {
 			r, err := contractorClient.SiteSiteGet(ctx, detailSite)
@@ -144,11 +144,11 @@ var foundationAzureUpdateCmd = &cobra.Command{
 		}
 
 		if detailComplex != "" {
-			r, err := contractorClient.AzureAzureComplexGet(ctx, detailComplex)
+			r, err := contractorClient.LibvirtLibVirtComplexGet(ctx, detailComplex)
 			if err != nil {
 				return err
 			}
-			o.AzureComplex = cinp.StringAddr(r.GetURI())
+			o.LibvirtComplex = cinp.StringAddr(r.GetURI())
 		}
 
 		err := o.Update(ctx)
@@ -158,8 +158,8 @@ var foundationAzureUpdateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Complex:        {{.AzureComplex | extractID}}
-Resource Name:  {{.AzureResourceName}}
+Complex:        {{.LibvirtComplex | extractID}}
+VM UUID:        {{.LibvirtUUID}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -177,17 +177,17 @@ Updated:        {{.Updated}}
 }
 
 func init() {
-	fundationTypes["azure"] = foundationTypeEntry{"/api/v1/Azure/", "0.1"}
+	fundationTypes["libvirt"] = foundationTypeEntry{"/api/v1/LibVirt/", "0.1"}
 
-	foundationAzureCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New Azure Foundation")
+	foundationLibVirtCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New LibVirt Foundation")
+	foundationLibVirtCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New LibVirt Foundation")
+	foundationLibVirtCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New LibVirt Foundation")
+	foundationLibVirtCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New LibVirt Foundation")
 
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the Azure Foundation")
+	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
+	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
+	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the LibVirt Foundation")
 
-	foundationCmd.AddCommand(foundationAzureCmd)
-	foundationAzureCmd.AddCommand(foundationAzureGetCmd, foundationAzureCreateCmd, foundationAzureUpdateCmd)
+	foundationCmd.AddCommand(foundationLibVirtCmd)
+	foundationLibVirtCmd.AddCommand(foundationLibVirtGetCmd, foundationLibVirtCreateCmd, foundationLibVirtUpdateCmd)
 }
