@@ -25,7 +25,7 @@ var detailSubnet, detailReason, detailPXE string
 var detailPrefix, detailGatewayOffset, detailOffset int
 var scriptFile string
 var detailAddParent, detailDeleteParent, detailAddFoundationBluePrint, detailDeleteFoundationBluePrint, detailAddType, detailDeleteType, detailAddIfaceName, detailDeleteIfaceName string
-var detailName, detailDescription, detailParent string
+var detailName, detailDescription, detailParent, detailCorners string
 var detailZone int
 var detailDatacenter, detailCluster string
 var detailHost int

@@ -105,8 +105,14 @@ var networkCreateCmd = &cobra.Command{
 	Short: "Create New Network",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		o := contractorClient.UtilitiesNetworkNew()
-		o.Name = &detailName
-		o.Mtu = &detailMTU
+
+		if detailName != "" {
+			o.Name = &detailName
+		}
+
+		if detailMTU != 0 {
+			o.Mtu = &detailMTU
+		}
 
 		ctx := cmd.Context()
 
@@ -230,7 +236,9 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 
 		o := contractorClient.UtilitiesNetworkAddressBlockNew()
 		o.Network = cinp.StringAddr(r.GetURI())
-		o.Vlan = &detailVlan
+		if detailVlan != -1 {
+			o.Vlan = &detailVlan
+		}
 
 		if detailAddressBlock != 0 {
 			r, err := contractorClient.UtilitiesAddressBlockGet(ctx, detailAddressBlock)
@@ -326,7 +334,7 @@ func init() {
 	networkUpdateCmd.Flags().IntVarP(&detailMTU, "mtu", "m", 0, "Update the MTU of the Network with the value")
 
 	networkAddressBlockCreateCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "AddressBlock to Link to")
-	networkAddressBlockCreateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", 0, "VLan the Addressblock is tagged as")
+	networkAddressBlockCreateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", -1, "VLan the Addressblock is tagged as")
 
 	networkAddressBlockUpdateCmd.Flags().IntVarP(&detailVlan, "vlan", "v", -1, "VLan the Addressblock is tagged as")
 

@@ -71,7 +71,7 @@ var siteGetCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
 Name:          {{.Name}}
 Description:   {{.Description}}
-Parent:        {{.Parent | extractID}}
+Parent:        {{or .Parent ":<None>:" | extractID}}
 Zone:          {{.Zone | extractID}}
 Config Values: {{.ConfigValues}}
 Created:       {{.Created}}
@@ -115,7 +115,7 @@ var siteCreateCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
 Name:          {{.Name}}
 Description:   {{.Description}}
-Parent:        {{.Parent | extractID}}
+Parent:        {{or .Parent ":<None>:" | extractID}}
 Zone:          {{.Zone | extractID}}
 Config Values: {{.ConfigValues}}
 Created:       {{.Created}}
@@ -165,7 +165,7 @@ var siteUpdateCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
 Name:          {{.Name}}
 Description:   {{.Description}}
-Parent:        {{.Parent | extractID}}
+Parent:        {{or .Parent ":<None>:" | extractID}}
 Zone:          {{.Zone | extractID}}
 Config Values: {{.ConfigValues}}
 Created:       {{.Created}}
