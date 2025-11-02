@@ -18,8 +18,11 @@ limitations under the License.
 
 import (
 	"errors"
+	"io"
+	"os"
 
 	cinp "github.com/cinp/go"
+	"github.com/pelletier/go-toml/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -206,7 +209,7 @@ var siteConfigCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		if configSetName != "" {
+		if configSetName != "" || configFile != "" || configDeleteName != "" {
 			r, err := contractorClient.SiteSiteGet(ctx, siteID)
 			if err != nil {
 				return err
@@ -214,23 +217,37 @@ var siteConfigCmd = &cobra.Command{
 
 			o := contractorClient.SiteSiteNewWithID(siteID)
 			o.ConfigValues = r.ConfigValues
-			(*o.ConfigValues)[configSetName] = configSetValue
 
-			err = o.Update(ctx)
-			if err != nil {
-				return err
+			if configSetName != "" {
+				(*o.ConfigValues)[configSetName] = configSetValue
+
+			} else if configFile != "" {
+				var reader io.Reader
+				if configFile == "-" {
+					reader = os.Stdin
+				} else {
+					f, err := os.Open(configFile)
+					if err != nil {
+						return err
+					}
+					defer f.Close()
+					reader = f
+				}
+
+				var newValues map[string]interface{}
+				decoder := toml.NewDecoder(reader)
+				err := decoder.Decode(&newValues)
+				if err != nil {
+					return err
+				}
+
+				for k, v := range newValues {
+					(*o.ConfigValues)[k] = v
+				}
+
+			} else if configDeleteName != "" {
+				delete(*o.ConfigValues, configDeleteName)
 			}
-			outputKV(*o.ConfigValues)
-
-		} else if configDeleteName != "" {
-			r, err := contractorClient.SiteSiteGet(ctx, siteID)
-			if err != nil {
-				return err
-			}
-
-			o := contractorClient.SiteSiteNewWithID(siteID)
-			o.ConfigValues = r.ConfigValues
-			delete(*o.ConfigValues, configDeleteName)
 
 			err = o.Update(ctx)
 			if err != nil {
@@ -262,6 +279,7 @@ func init() {
 	siteConfigCmd.Flags().StringVarP(&configSetName, "set-name", "n", "", "Set Config Value Key Name, if set-value is not specified, the value will be set to ''")
 	siteConfigCmd.Flags().StringVarP(&configSetValue, "set-value", "v", "", "Set Config Value, ignored if set-name is not specified")
 	siteConfigCmd.Flags().StringVarP(&configDeleteName, "delete", "d", "", "Delete Config Value Key Name")
+	siteConfigCmd.Flags().StringVarP(&configFile, "file", "i", "", "Load Values from file in TOML format, this will be merged with the existing config, '-' for reading from stdin")
 
 	siteCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Site")
 	siteCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Site")

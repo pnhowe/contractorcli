@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var configSetName, configSetValue, configDeleteName string
+var configSetName, configSetValue, configDeleteName, configFile string
 var configFull, detailIsPrimary bool
 var detailHostname, detailSite, detailBlueprint, detailFoundation, detailInterfaceName string
 var detailPrimary int

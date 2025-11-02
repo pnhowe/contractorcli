@@ -1,3 +1,10 @@
+contractorcli (0.18.2-1) noble; urgency=medium
+
+  * Now loading config from toml
+  * bug fixes
+
+ -- Peter Howe <pnhowe@gmail.com>  Sat, 01 Nov 2025 23:06:32 -0600
+
 contractorcli (0.18.1-1) noble; urgency=medium
 
   * Added Plot

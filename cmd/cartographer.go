@@ -49,7 +49,7 @@ var cartographerListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Identifier", "Message", "Foundation", "Last Checkin", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Message}}	{{.Foundation | extractID}}	{{.LastCheckin}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Identifier", "Message", "Foundation", "Last Checkin", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.Message}}	{{or .Foundation \":<None>\" | extractID}}	{{.LastCheckin}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -71,7 +71,7 @@ var cartographerGetCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID }}
 Identifier:    {{.Identifier}}
 Message:       {{.Message}}
-Foundation:    {{.Foundation | extractID}}
+Foundation:    {{or .Foundation ":<None>" | extractID}}
 Last Checkin:  {{.Created}}
 Info Map:      {{.InfoMap}}
 Created:       {{.Created}}
