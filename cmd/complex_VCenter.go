@@ -83,6 +83,7 @@ var complexVCenterCreateCmd = &cobra.Command{
 			o.Site = cinp.StringAddr(r.GetURI())
 		}
 
+		o.Members = &[]string{}
 		for _, v := range detailMembers {
 			s, err := contractorClient.BuildingStructureGet(ctx, v)
 			if err != nil {
@@ -168,6 +169,9 @@ var complexVCenterUpdateCmd = &cobra.Command{
 		}
 
 		if len(detailMembers) > 0 {
+			if o.Members == nil {
+				o.Members = &[]string{}
+			}
 			for _, v := range detailMembers {
 				s, err := contractorClient.BuildingStructureGet(ctx, v)
 				if err != nil {

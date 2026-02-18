@@ -7,10 +7,11 @@ require (
 	github.com/cinp/go v1.2.6
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/pelletier/go-toml/v2 v2.2.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stromland/cobra-prompt v0.5.0
-	github.com/t3kton/contractor_goclient v1.0.11
+	github.com/t3kton/contractor_goclient v1.0.12
 )
 
 require (
@@ -24,7 +25,6 @@ require (
 	github.com/mattn/go-tty v0.0.5 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.0 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/afero v1.11.0 // indirect

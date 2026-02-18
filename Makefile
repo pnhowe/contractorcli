@@ -10,7 +10,7 @@ install: contractorcli
 version:
 	echo $(VERSION)
 
-contractorcli: main.go cmd/* go.mod go.sum
+contractorcli: main.go cmd/* go.mod go.sum debian/changelog
 	go build -ldflags "-linkmode external -extldflags -static -X 'github.com/t3kton/contractorcli/cmd.version=${VERSION}' -X 'github.com/t3kton/contractorcli/cmd.gitVersion=${GIT_VERSION}'" -o contractorcli -a main.go
 
 clean:

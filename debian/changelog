@@ -1,3 +1,9 @@
+contractorcli (0.18.3-1) noble; urgency=medium
+
+  * Added Proxmox
+
+ -- Peter Howe <pnhowe@gmail.com>  Thu, 08 Jan 2026 08:06:44 -0700
+
 contractorcli (0.18.2-1) noble; urgency=medium
 
   * Now loading config from toml
