@@ -182,7 +182,7 @@ var foundationInterfaceListCmd = &cobra.Command{
 			return *(rl[i].(*contractor.UtilitiesRealNetworkInterface).ID) < *(rl[j].(*contractor.UtilitiesRealNetworkInterface).ID)
 		})
 
-		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetURI | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{.Pxe| extractID}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Name", "Physical Location", "MAC", "Is Provisioning", "Network", "Link Name", "PXE", "Created", "Update"}, "{{.GetURI | extractID}}	{{.Name}}	{{.PhysicalLocation}}	{{.Mac}}	{{.IsProvisioning}}	{{.Network | extractID}}	{{.LinkName}}	{{or .Pxe \":<None>\" | extractID}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},

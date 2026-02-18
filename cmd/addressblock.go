@@ -96,9 +96,18 @@ var addressblockCreateCmd = &cobra.Command{
 	Short: "Create New AddressBlock",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		o := contractorClient.UtilitiesAddressBlockNew()
-		o.Name = &detailName
-		o.Subnet = &detailSubnet
-		o.Prefix = &detailPrefix
+		if detailName != "" {
+			o.Name = &detailName
+		}
+
+		if detailSubnet != "" {
+			o.Subnet = &detailSubnet
+		}
+
+		if detailPrefix != 0 {
+			o.Prefix = &detailPrefix
+		}
+
 		if detailGatewayOffset != 0 {
 			o.GatewayOffset = &detailGatewayOffset
 		}

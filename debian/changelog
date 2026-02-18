@@ -1,3 +1,22 @@
+contractorcli (0.18.3-1) noble; urgency=medium
+
+  * Added Proxmox
+
+ -- Peter Howe <pnhowe@gmail.com>  Thu, 08 Jan 2026 08:06:44 -0700
+
+contractorcli (0.18.2-1) noble; urgency=medium
+
+  * Now loading config from toml
+  * bug fixes
+
+ -- Peter Howe <pnhowe@gmail.com>  Sat, 01 Nov 2025 23:06:32 -0600
+
+contractorcli (0.18.1-1) noble; urgency=medium
+
+  * Added Plot
+
+ -- Peter Howe <pnhowe@gmail.com>  Thu, 16 Oct 2025 12:14:03 -0600
+
 contractorcli (0.18.0-1) noble; urgency=medium
 
   * Added LibVirtFoundation and Complex

@@ -18,10 +18,13 @@ limitations under the License.
 
 import (
 	"errors"
+	"io"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/pelletier/go-toml/v2"
 	contractor "github.com/t3kton/contractor_goclient"
 
 	cinp "github.com/cinp/go"
@@ -260,7 +263,7 @@ var structureConfigCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		if configSetName != "" {
+		if configSetName != "" || configFile != "" || configDeleteName != "" {
 			r, err := contractorClient.BuildingStructureGet(ctx, structureID)
 			if err != nil {
 				return err
@@ -268,23 +271,36 @@ var structureConfigCmd = &cobra.Command{
 
 			o := contractorClient.BuildingStructureNewWithID(structureID)
 			o.ConfigValues = r.ConfigValues
-			(*o.ConfigValues)[configSetName] = configSetValue
+			if configSetName != "" {
+				(*o.ConfigValues)[configSetName] = configSetValue
 
-			err = o.Update(ctx)
-			if err != nil {
-				return err
+			} else if configFile != "" {
+				var reader io.Reader
+				if configFile == "-" {
+					reader = os.Stdin
+				} else {
+					f, err := os.Open(configFile)
+					if err != nil {
+						return err
+					}
+					defer f.Close()
+					reader = f
+				}
+
+				var newValues map[string]interface{}
+				decoder := toml.NewDecoder(reader)
+				err := decoder.Decode(&newValues)
+				if err != nil {
+					return err
+				}
+
+				for k, v := range newValues {
+					(*o.ConfigValues)[k] = v
+				}
+
+			} else if configDeleteName != "" {
+				delete(*o.ConfigValues, configDeleteName)
 			}
-			outputKV(*o.ConfigValues)
-
-		} else if configDeleteName != "" {
-			r, err := contractorClient.BuildingStructureGet(ctx, structureID)
-			if err != nil {
-				return err
-			}
-
-			o := contractorClient.BuildingStructureNewWithID(structureID)
-			o.ConfigValues = r.ConfigValues
-			delete(*o.ConfigValues, configDeleteName)
 
 			err = o.Update(ctx)
 			if err != nil {
@@ -1083,6 +1099,7 @@ func init() {
 	structureConfigCmd.Flags().StringVarP(&configSetName, "set-name", "n", "", "Set Config Value Key Name, if set-value is not specified, the value will be set to ''")
 	structureConfigCmd.Flags().StringVarP(&configSetValue, "set-value", "v", "", "Set Config Value, ignored if set-name is not specified") // TODO: make a numberic version
 	structureConfigCmd.Flags().StringVarP(&configDeleteName, "delete", "d", "", "Delete Config Value Key Name")
+	structureConfigCmd.Flags().StringVarP(&configFile, "file", "i", "", "Load Values from file in TOML format, this will be merged with the existing config, '-' for reading from stdin")
 
 	structureCreateCmd.Flags().StringVarP(&detailHostname, "hostname", "o", "", "Hostname of New Structure")
 	structureCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Structure")

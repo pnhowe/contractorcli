@@ -63,7 +63,6 @@ var complexVirtualBoxCreateCmd = &cobra.Command{
 		ctx := cmd.Context()
 
 		o := contractorClient.VirtualboxVirtualBoxComplexNew()
-		o.BuiltPercentage = nil
 		o.Name = &detailName
 		o.Description = &detailDescription
 		o.VirtualboxUsername = &detailUsername
@@ -78,7 +77,6 @@ var complexVirtualBoxCreateCmd = &cobra.Command{
 		}
 
 		if detailMember != 0 {
-
 			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
 			if err != nil {
 				return err

@@ -61,7 +61,6 @@ var complexLibVirtCreateCmd = &cobra.Command{
 		ctx := cmd.Context()
 
 		o := contractorClient.LibvirtLibVirtComplexNew()
-		o.BuiltPercentage = nil
 		o.Name = &detailName
 		o.Description = &detailDescription
 
@@ -74,7 +73,6 @@ var complexLibVirtCreateCmd = &cobra.Command{
 		}
 
 		if detailMember != 0 {
-
 			s, err := contractorClient.BuildingStructureGet(ctx, detailMember)
 			if err != nil {
 				return err
