@@ -486,6 +486,15 @@ var structureAddressUpdateCmd = &cobra.Command{
 
 		o := contractorClient.UtilitiesAddressNewWithID(addressID)
 
+		if detailAddressBlock != 0 {
+			a, err := contractorClient.UtilitiesAddressBlockGet(ctx, detailAddressBlock)
+			if err != nil {
+				return err
+			}
+			addressBlock := a.GetURI()
+			o.AddressBlock = &addressBlock
+		}
+
 		if detailOffset != 0 {
 			o.Offset = &detailOffset
 		}
@@ -1120,6 +1129,7 @@ func init() {
 	structureAddressAddCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 	structureAddressAddCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
 
+	structureAddressUpdateCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "Address Block to get an IP From")
 	structureAddressUpdateCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
 	structureAddressUpdateCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 
