@@ -29,7 +29,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	contractor "github.com/t3kton/contractor_goclient"
 
-	cinp "github.com/cinp/go"
+	cinp "github.com/cinp/go/v2"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -53,6 +53,8 @@ of contractor without having to write your own small app, or use the API`,
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show Version",
+	PersistentPreRunE:  func(cmd *cobra.Command, args []string) error { return nil },
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error { return nil },
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("contractorcli\n  Version:\t%s\n  Commit:\t%s\n", version, gitVersion)
 	},
@@ -69,7 +71,14 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(doInit)
-	cobra.OnFinalize(doFinalize)
+
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		return connectContractor(cmd)
+	}
+	rootCmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
+		doFinalize(cmd)
+		return nil
+	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
 	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
@@ -80,17 +89,13 @@ func init() {
 
 func doInit() {
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		// Search config in home directory with name ".contractorcli" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".contractorcli")
 	}
@@ -98,9 +103,8 @@ func doInit() {
 	viper.SetDefault("contractor.host", "http://contractor")
 	viper.SetDefault("contractor.proxy", "")
 	viper.SetEnvPrefix("CONTRACTOR")
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.AutomaticEnv()
 
-	// If a config file is found, read it in.
 	err := viper.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
@@ -108,28 +112,30 @@ func doInit() {
 			os.Exit(1)
 		}
 	}
-	/*else {
-		//fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}*/
+}
 
+func connectContractor(cmd *cobra.Command) error {
 	handlerOptions := &slog.HandlerOptions{}
 	if debug {
 		handlerOptions.Level = slog.LevelDebug
 	} else {
 		handlerOptions.Level = slog.LevelWarn
 	}
-	handler := slog.NewTextHandler(os.Stderr, handlerOptions)
-	log := slog.New(handler)
+	log := slog.New(slog.NewTextHandler(os.Stderr, handlerOptions))
 
-	contractorClient, err = contractor.NewContractor(rootCmd.Context(), log, viper.GetString("contractor.host"), viper.GetString("contractor.proxy"), viper.GetString("contractor.username"), viper.GetString("contractor.password"))
+	var err error
+	contractorClient, err = contractor.NewContractor(cmd.Context(), log, viper.GetString("contractor.host"), viper.GetString("contractor.proxy"), viper.GetString("contractor.username"), viper.GetString("contractor.password"))
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
-func doFinalize() {
-	contractorClient.Logout(rootCmd.Context())
+func doFinalize(cmd *cobra.Command) {
+	if contractorClient == nil {
+		return
+	}
+	contractorClient.Logout(cmd.Context())
 	contractorClient = nil
 }
 

@@ -19,7 +19,7 @@ limitations under the License.
 import (
 	"errors"
 
-	cinp "github.com/cinp/go"
+	cinp "github.com/cinp/go/v2"
 	"github.com/spf13/cobra"
 )
 

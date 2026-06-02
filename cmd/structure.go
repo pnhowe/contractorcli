@@ -27,7 +27,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	contractor "github.com/t3kton/contractor_goclient"
 
-	cinp "github.com/cinp/go"
+	cinp "github.com/cinp/go/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -952,7 +952,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
-Paramaters:       {{.Paramaters}}
+Parameters:       {{.Parameters}}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)
@@ -1016,7 +1016,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
-Paramaters:       {{.Paramaters}}
+Parameters:       {{.Parameters}}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)
@@ -1073,7 +1073,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
-Paramaters:       {{.Paramaters}}
+Parameters:       {{.Parameters}}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)

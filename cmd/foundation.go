@@ -24,7 +24,7 @@ import (
 
 	contractor "github.com/t3kton/contractor_goclient"
 
-	cinp "github.com/cinp/go"
+	cinp "github.com/cinp/go/v2"
 	"github.com/spf13/cobra"
 )
 

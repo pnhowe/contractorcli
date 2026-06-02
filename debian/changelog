@@ -1,3 +1,9 @@
+contractorcli (0.19.0-1) noble; urgency=medium
+
+  * Updated to cinp 2.0
+
+ -- Peter Howe <pnhowe@gmail.com>  Tue, 02 Jun 2026 07:38:23 -0600
+
 contractorcli (0.18.3-1) noble; urgency=medium
 
   * Added Proxmox
