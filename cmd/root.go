@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -27,6 +28,7 @@ import (
 	"text/template"
 
 	"github.com/olekukonko/tablewriter"
+	toml "github.com/pelletier/go-toml/v2"
 	contractor "github.com/t3kton/contractor_goclient"
 
 	cinp "github.com/cinp/go/v2"
@@ -36,7 +38,7 @@ import (
 )
 
 var cfgFile string
-var asJSON, debug bool
+var asJSON, asTOML, debug bool
 var version = "development"
 var gitVersion = "none"
 var contractorClient *contractor.Contractor = nil
@@ -51,8 +53,8 @@ of contractor without having to write your own small app, or use the API`,
 }
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Show Version",
+	Use:                "version",
+	Short:              "Show Version",
 	PersistentPreRunE:  func(cmd *cobra.Command, args []string) error { return nil },
 	PersistentPostRunE: func(cmd *cobra.Command, args []string) error { return nil },
 	Run: func(cmd *cobra.Command, args []string) {
@@ -73,6 +75,9 @@ func init() {
 	cobra.OnInitialize(doInit)
 
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if asJSON && asTOML {
+			return fmt.Errorf("only one of --json or --toml may be specified")
+		}
 		return connectContractor(cmd)
 	}
 	rootCmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
@@ -81,7 +86,8 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.contractorcli.ini)")
-	rootCmd.PersistentFlags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
+	rootCmd.PersistentFlags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	rootCmd.PersistentFlags().BoolVar(&asTOML, "toml", false, "Output as TOML")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "", false, "Debug Output(will interfere with JSON output)")
 
 	rootCmd.AddCommand(versionCmd)
@@ -226,6 +232,13 @@ func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 		}
 		os.Stdout.Write(buff)
 		os.Stdout.Write([]byte("\n"))
+	} else if asTOML {
+		buff, err := toml.Marshal(map[string]interface{}{"items": valueList})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(buff)
 	} else {
 		var rederbuff bytes.Buffer
 		table := tablewriter.NewWriter(os.Stdout)
@@ -259,6 +272,13 @@ func outputDetail(value interface{}, detailTemplate string) {
 		}
 		os.Stdout.Write(buff)
 		os.Stdout.Write([]byte("\n"))
+	} else if asTOML {
+		buff, err := toml.Marshal(value)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(buff)
 	} else {
 		t := template.New("output")
 		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList})
@@ -283,9 +303,62 @@ func outputKV(valueMap map[string]interface{}) {
 			os.Exit(1)
 		}
 		os.Stdout.Write(buff)
+	} else if asTOML {
+		buff, err := toml.Marshal(valueMap)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Stdout.Write(buff)
 	} else {
 		for k, v := range valueMap {
 			fmt.Printf("%s:\t%+v\n", k, v)
 		}
 	}
+}
+
+// readConfigFile reads a config values file (or stdin if path is "-") and decodes
+// it as either JSON or TOML, detecting the format from the file extension, falling
+// back to sniffing the content if the extension is absent or unrecognized.
+func readConfigFile(path string) (map[string]interface{}, error) {
+	var reader io.Reader
+	if path == "-" {
+		reader = os.Stdin
+	} else {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		reader = f
+	}
+
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	useJSON := false
+	switch {
+	case strings.HasSuffix(strings.ToLower(path), ".json"):
+		useJSON = true
+	case strings.HasSuffix(strings.ToLower(path), ".toml"):
+		useJSON = false
+	default:
+		trimmed := bytes.TrimLeft(data, " \t\r\n")
+		useJSON = len(trimmed) > 0 && trimmed[0] == '{'
+	}
+
+	newValues := map[string]interface{}{}
+	if useJSON {
+		if err := json.Unmarshal(data, &newValues); err != nil {
+			return nil, fmt.Errorf("unable to parse '%s' as JSON: %w", path, err)
+		}
+	} else {
+		if err := toml.Unmarshal(data, &newValues); err != nil {
+			return nil, fmt.Errorf("unable to parse '%s' as TOML: %w", path, err)
+		}
+	}
+
+	return newValues, nil
 }

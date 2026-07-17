@@ -44,7 +44,7 @@ func foundationArgCheck(cmd *cobra.Command, args []string) error {
 
 func foundationInterfaceArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("requires a Structure Interface Id argument")
+		return errors.New("requires a Foundation Interface Id argument")
 	}
 	return nil
 }
@@ -469,7 +469,7 @@ var foundationJobDoUtilityCmd = &cobra.Command{
 var foundationJobIdCmd = &cobra.Command{
 	Use:   "id",
 	Short: "Get the Job Id for active job",
-	Args:  structureArgCheck,
+	Args:  foundationArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		foundationID := args[0]
 

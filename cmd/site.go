@@ -18,11 +18,8 @@ limitations under the License.
 
 import (
 	"errors"
-	"io"
-	"os"
 
 	cinp "github.com/cinp/go/v2"
-	"github.com/pelletier/go-toml/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -222,21 +219,7 @@ var siteConfigCmd = &cobra.Command{
 				(*o.ConfigValues)[configSetName] = configSetValue
 
 			} else if configFile != "" {
-				var reader io.Reader
-				if configFile == "-" {
-					reader = os.Stdin
-				} else {
-					f, err := os.Open(configFile)
-					if err != nil {
-						return err
-					}
-					defer f.Close()
-					reader = f
-				}
-
-				var newValues map[string]interface{}
-				decoder := toml.NewDecoder(reader)
-				err := decoder.Decode(&newValues)
+				newValues, err := readConfigFile(configFile)
 				if err != nil {
 					return err
 				}
@@ -279,7 +262,7 @@ func init() {
 	siteConfigCmd.Flags().StringVarP(&configSetName, "set-name", "n", "", "Set Config Value Key Name, if set-value is not specified, the value will be set to ''")
 	siteConfigCmd.Flags().StringVarP(&configSetValue, "set-value", "v", "", "Set Config Value, ignored if set-name is not specified")
 	siteConfigCmd.Flags().StringVarP(&configDeleteName, "delete", "d", "", "Delete Config Value Key Name")
-	siteConfigCmd.Flags().StringVarP(&configFile, "file", "i", "", "Load Values from file in TOML format, this will be merged with the existing config, '-' for reading from stdin")
+	siteConfigCmd.Flags().StringVarP(&configFile, "file", "i", "", "Load Values from a JSON or TOML file (format is detected from the '.json'/'.toml' extension, or the content if the extension is absent), this will be merged with the existing config, '-' for reading from stdin. In TOML files, keys starting with '<', '>', or '~' must be quoted, e.g. \"<key\" = \"value\"")
 
 	siteCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Site")
 	siteCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Site")
