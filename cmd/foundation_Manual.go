@@ -159,9 +159,9 @@ Updated:        {{.Updated}}
 func init() {
 	fundationTypes["manual"] = foundationTypeEntry{"/api/v1/Manual/", "0.1"}
 
-	foundationManualCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New AMT Foundation")
-	foundationManualCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New AMT Foundation")
-	foundationManualCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New AMT Foundation")
+	foundationManualCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Manual Foundation")
+	foundationManualCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Manual Foundation")
+	foundationManualCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Manual Foundation")
 
 	foundationManualUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationManualUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")

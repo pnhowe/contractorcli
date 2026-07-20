@@ -84,7 +84,6 @@ Script:      {{.ScriptName}}
 State:       {{.State}}
 Status:      {{.Status}}
 Message:     {{.Message}}
-Status:      {{.Status}}
 CanStart:    {{.CanStart}}
 Created:     {{.Created}}
 Updated:     {{.Updated}}
@@ -279,7 +278,6 @@ Script:      {{.ScriptName}}
 State:       {{.State}}
 Status:      {{.Status}}
 Message:     {{.Message}}
-Status:      {{.Status}}
 CanStart:    {{.CanStart}}
 Created:     {{.Created}}
 Updated:     {{.Updated}}

@@ -182,11 +182,11 @@ func init() {
 	foundationProxmoxCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Proxmox Foundation")
 	foundationProxmoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Proxmox Foundation")
 	foundationProxmoxCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Proxmox Foundation")
-	foundationProxmoxCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New Proxmox Foundation")
+	foundationProxmoxCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Complex of New Proxmox Foundation")
 
 	foundationProxmoxUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationProxmoxUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationProxmoxUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the Proxmox Foundation")
+	foundationProxmoxUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Complex of the Proxmox Foundation")
 
 	foundationCmd.AddCommand(foundationProxmoxCmd)
 	foundationProxmoxCmd.AddCommand(foundationProxmoxGetCmd, foundationProxmoxCreateCmd, foundationProxmoxUpdateCmd)

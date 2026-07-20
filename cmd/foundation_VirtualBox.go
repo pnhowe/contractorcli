@@ -182,11 +182,11 @@ func init() {
 	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New VirtualBox Foundation")
 	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VirtualBox Foundation")
 	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New VirtualBox Foundation")
-	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New VirtualBox Foundation")
+	foundationVirtualBoxCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Complex of New VirtualBox Foundation")
 
 	foundationVirtualBoxUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationVirtualBoxUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationVirtualBoxUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the VirtualBox Foundation")
+	foundationVirtualBoxUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Complex of the VirtualBox Foundation")
 
 	foundationCmd.AddCommand(foundationVirtualBoxCmd)
 	foundationVirtualBoxCmd.AddCommand(foundationVirtualBoxGetCmd, foundationVirtualBoxCreateCmd, foundationVirtualBoxUpdateCmd)

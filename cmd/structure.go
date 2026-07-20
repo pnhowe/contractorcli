@@ -683,7 +683,7 @@ var structureJobLogCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Canceled By", "Cancled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
+		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Canceled By", "Canceled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
 
 		return nil
 	},
@@ -1039,8 +1039,12 @@ var structureAggInterfaceUpdateCmd = &cobra.Command{
 
 		if detailSecondary != "" {
 			o.SecondaryInterfaces = &[]string{}
-			for id := range strings.Split(detailSecondary, ",") {
-				ri := contractorClient.UtilitiesNetworkInterfaceNewWithID(id)
+			for _, id := range strings.Split(detailSecondary, ",") {
+				i, err := strconv.Atoi(id)
+				if err != nil {
+					return err
+				}
+				ri := contractorClient.UtilitiesNetworkInterfaceNewWithID(i)
 				*o.SecondaryInterfaces = append(*o.SecondaryInterfaces, ri.GetURI())
 			}
 		}
@@ -1104,16 +1108,16 @@ func init() {
 	structureUpdateCmd.Flags().StringVarP(&detailFoundation, "foundation", "f", "", "Update the Foundation of Structure with value")
 
 	structureAddressNextCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "Address Block to get an IP From")
-	structureAddressNextCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
+	structureAddressNextCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assign the IP to")
 	structureAddressNextCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
 
 	structureAddressAddCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "Address Block to get an IP From")
-	structureAddressAddCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
+	structureAddressAddCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assign the IP to")
 	structureAddressAddCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 	structureAddressAddCmd.Flags().BoolVarP(&detailIsPrimary, "primary", "p", false, "If this is the primary IP Address")
 
 	structureAddressUpdateCmd.Flags().IntVarP(&detailAddressBlock, "addressblock", "a", 0, "Address Block to get an IP From")
-	structureAddressUpdateCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assigne the IP To")
+	structureAddressUpdateCmd.Flags().StringVarP(&detailInterfaceName, "interfacename", "n", "", "Name of the Interface to assign the IP to")
 	structureAddressUpdateCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset inside the Address Block to use")
 
 	structureInterfaceCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of the new Interface")

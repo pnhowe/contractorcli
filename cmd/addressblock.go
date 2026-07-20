@@ -82,7 +82,7 @@ Site:          {{.Site | extractID}}
 Subnet:        {{.Subnet}}
 Prefix:        {{.Prefix}} ({{.Netmask}})
 Gateway Offset:{{.GatewayOffset}} ({{.Gateway}})
-Max Addresse:  {{.MaxAddress}}
+Max Address:   {{.MaxAddress}}
 Size:          {{.Size}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
@@ -133,7 +133,7 @@ Site:          {{.Site | extractID}}
 Subnet:        {{.Subnet}}
 Prefix:        {{.Prefix}} ({{.Netmask}})
 Gateway Offset:{{.GatewayOffset}} ({{.Gateway}})
-Max Addresse:  {{.MaxAddress}}
+Max Address:   {{.MaxAddress}}
 Size:          {{.Size}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
@@ -191,7 +191,7 @@ Site:             {{.Site | extractID}}
 Subnet:           {{.Subnet}}
 Prefix:           {{.Prefix}} ({{.Netmask}})
 Gateway Offset:   {{.GatewayOffset}} ({{.Gateway}})
-Max Addresse:     {{.MaxAddress}}
+Max Address:      {{.MaxAddress}}
 Size:             {{.Size}}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
@@ -247,7 +247,7 @@ var addressblockUsageCmd = &cobra.Command{
 		outputDetail(u, `Total:         {{.total}}
 Static:        {{.static}}
 Reserved:      {{.reserved}}
-Dynammic:      {{.dynamic}}
+Dynamic:       {{.dynamic}}
 `)
 
 		return nil
@@ -256,7 +256,7 @@ Dynammic:      {{.dynamic}}
 
 var addressblockAllocationCmd = &cobra.Command{
 	Use:   "allocation",
-	Short: "Display the usage for an AddressBlock",
+	Short: "Display the allocation for an AddressBlock",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addressblockID, err := strconv.Atoi(args[0])
@@ -328,7 +328,7 @@ var addressblockAllocationCmd = &cobra.Command{
 
 var addressblockReserveCmd = &cobra.Command{
 	Use:   "reserve",
-	Short: "Reserve and ip/offset in an Address Block",
+	Short: "Reserve an ip/offset in an Address Block",
 	Args:  addressblockArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addressblockID, err := strconv.Atoi(args[0])
@@ -336,7 +336,7 @@ var addressblockReserveCmd = &cobra.Command{
 			return err
 		}
 
-		if detailOffset == 0 {
+		if detailAddressBlockOffset == -1 {
 			return fmt.Errorf("offset required")
 		}
 
@@ -353,7 +353,7 @@ var addressblockReserveCmd = &cobra.Command{
 
 		o := contractorClient.UtilitiesReservedAddressNew()
 		o.AddressBlock = cinp.StringAddr(r.GetURI())
-		o.Offset = &detailOffset
+		o.Offset = &detailAddressBlockOffset
 		o.Reason = &detailReason
 
 		err = o.Create(ctx)
@@ -383,7 +383,7 @@ var addressblockDeReserveCmd = &cobra.Command{
 			return err
 		}
 
-		if detailOffset == 0 {
+		if detailAddressBlockOffset == -1 {
 			return fmt.Errorf("offset required")
 		}
 
@@ -398,7 +398,7 @@ var addressblockDeReserveCmd = &cobra.Command{
 			return err
 		}
 		for v := range vchan {
-			if *v.Offset == detailOffset {
+			if *v.Offset == detailAddressBlockOffset {
 				v.Delete(ctx)
 				return nil
 			}
@@ -418,7 +418,7 @@ var addressblockDynamicCmd = &cobra.Command{
 			return err
 		}
 
-		if detailOffset == 0 {
+		if detailAddressBlockOffset == -1 {
 			return fmt.Errorf("offset required")
 		}
 
@@ -431,7 +431,7 @@ var addressblockDynamicCmd = &cobra.Command{
 
 		o := contractorClient.UtilitiesDynamicAddressNew()
 		o.AddressBlock = cinp.StringAddr(r.GetURI())
-		o.Offset = &detailOffset
+		o.Offset = &detailAddressBlockOffset
 		if detailPXE != "" {
 			r2, err := contractorClient.BlueprintPXEGet(ctx, detailPXE)
 			if err != nil {
@@ -466,7 +466,7 @@ var addressblockDeDynamicCmd = &cobra.Command{
 			return err
 		}
 
-		if detailOffset == 0 {
+		if detailAddressBlockOffset == -1 {
 			return fmt.Errorf("offset required")
 		}
 
@@ -481,7 +481,7 @@ var addressblockDeDynamicCmd = &cobra.Command{
 			return err
 		}
 		for v := range vchan {
-			if *v.Offset == detailOffset {
+			if *v.Offset == detailAddressBlockOffset {
 				v.Delete(ctx)
 				return nil
 			}
@@ -504,15 +504,15 @@ func init() {
 	addressblockUpdateCmd.Flags().IntVarP(&detailPrefix, "prefix", "p", 0, "Update the Prefix of the AddressBlock")
 	addressblockUpdateCmd.Flags().IntVarP(&detailGatewayOffset, "gateway", "g", 0, "Update the Gateway Offset of the AddressBlock")
 
-	addressblockReserveCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset for the New Reservation")
+	addressblockReserveCmd.Flags().IntVarP(&detailAddressBlockOffset, "offset", "o", -1, "Offset for the New Reservation")
 	addressblockReserveCmd.Flags().StringVarP(&detailReason, "reason", "r", "", "Reason for the New Reservation")
 
-	addressblockDeReserveCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset of the Reservation to Remove")
+	addressblockDeReserveCmd.Flags().IntVarP(&detailAddressBlockOffset, "offset", "o", -1, "Offset of the Reservation to Remove")
 
-	addressblockDynamicCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset for the New Dynamic Ip")
+	addressblockDynamicCmd.Flags().IntVarP(&detailAddressBlockOffset, "offset", "o", -1, "Offset for the New Dynamic Ip")
 	addressblockDynamicCmd.Flags().StringVarP(&detailPXE, "pxe", "p", "", "PXE for the New Dynamic Ip")
 
-	addressblockDeDynamicCmd.Flags().IntVarP(&detailOffset, "offset", "o", 0, "Offset of the Dynamic Ip to Remove")
+	addressblockDeDynamicCmd.Flags().IntVarP(&detailAddressBlockOffset, "offset", "o", -1, "Offset of the Dynamic Ip to Remove")
 
 	rootCmd.AddCommand(addressblockCmd)
 	addressblockCmd.AddCommand(addressblockListCmd, addressblockGetCmd, addressblockCreateCmd, addressblockUpdateCmd, addressblockDeleteCmd, addressblockUsageCmd, addressblockAllocationCmd, addressblockReserveCmd, addressblockDeReserveCmd, addressblockDynamicCmd, addressblockDeDynamicCmd)

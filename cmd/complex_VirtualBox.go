@@ -47,7 +47,7 @@ State:              {{.State}}
 Site:               {{.Site | extractID}}
 Member:             {{.Members}}
 VirtualboxUsername: {{.VirtualboxUsername}}
-VirtualboxPassword: {{.VirtualboxPassword}}
+VirtualboxPassword: {{.VirtualboxPassword | maskSecret}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -97,7 +97,7 @@ State:              {{.State}}
 Site:               {{.Site | extractID}}
 Member:             {{.Members}}
 VirtualboxUsername: {{.VirtualboxUsername}}
-VirtualboxPassword: {{.VirtualboxPassword}}
+VirtualboxPassword: {{.VirtualboxPassword | maskSecret}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -158,7 +158,7 @@ State:              {{.State}}
 Site:               {{.Site | extractID}}
 Member:             {{.Members}}
 VirtualboxUsername: {{.VirtualboxUsername}}
-VirtualboxPassword: {{.VirtualboxPassword}}
+VirtualboxPassword: {{.VirtualboxPassword | maskSecret}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)

@@ -254,7 +254,6 @@ var networkAddressBlockCreateCmd = &cobra.Command{
 		}
 
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
-Id:            {{.ID}}
 Network:       {{.Network | extractID}}
 Address Block: {{.AddressBlock | extractID}}
 Created:       {{.Created}}
@@ -289,7 +288,6 @@ var networkAddressBlockUpdateCmd = &cobra.Command{
 		}
 
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
-Id:            {{.ID}}
 Network:       {{.Network | extractID}}
 Address Block: {{.AddressBlock | extractID}}
 Created:       {{.Created}}

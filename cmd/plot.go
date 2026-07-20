@@ -71,7 +71,7 @@ var plotGetCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
 Name:          {{.Name}}
 Corners:       {{.Corners}}
-Parent:        {{.Parent}}
+Parent:        {{or .Parent ":<None>" | extractID}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
@@ -97,7 +97,11 @@ var plotCreateCmd = &cobra.Command{
 		}
 
 		if detailParent != "" {
-			o.Parent = &detailParent
+			r, err := contractorClient.SurveyPlotGet(ctx, detailParent)
+			if err != nil {
+				return err
+			}
+			o.Parent = cinp.StringAddr(r.GetURI())
 		}
 
 		err := o.Create(ctx)
@@ -108,7 +112,7 @@ var plotCreateCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
 Name:          {{.Name}}
 Corners:       {{.Corners}}
-Parent:        {{.Parent}}
+Parent:        {{or .Parent ":<None>" | extractID}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
@@ -133,7 +137,11 @@ var plotUpdateCmd = &cobra.Command{
 		}
 
 		if detailParent != "" {
-			o.Parent = &detailParent
+			r, err := contractorClient.SurveyPlotGet(ctx, detailParent)
+			if err != nil {
+				return err
+			}
+			o.Parent = cinp.StringAddr(r.GetURI())
 		}
 
 		err := o.Update(ctx)
@@ -144,7 +152,7 @@ var plotUpdateCmd = &cobra.Command{
 		outputDetail(o, `Id:            {{.GetURI | extractID}}
 Name:          {{.Name}}
 Corners:       {{.Corners}}
-Parent:        {{.Parent}}
+Parent:        {{or .Parent ":<None>" | extractID}}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)

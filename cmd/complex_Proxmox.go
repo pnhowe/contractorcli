@@ -49,7 +49,7 @@ BuiltPercentage:    {{.BuiltPercentage}}
 Members:            {{.Members}}
 Proxmox Host:       {{.ProxmoxHost}}
 Proxmox Username:   {{.ProxmoxUsername}}
-Proxmox Password:   {{.ProxmoxPassword}}
+Proxmox Password:   {{.ProxmoxPassword | maskSecret}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -111,7 +111,7 @@ BuiltPercentage:    {{.BuiltPercentage}}
 Members:            {{.Members}}
 Proxmox Host:       {{.ProxmoxHost}}
 Proxmox Username:   {{.ProxmoxUsername}}
-Proxmox Password:   {{.ProxmoxPassword}}
+Proxmox Password:   {{.ProxmoxPassword | maskSecret}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)
@@ -190,7 +190,7 @@ BuiltPercentage:    {{.BuiltPercentage}}
 Members:            {{.Members}}
 Proxmox Host:       {{.ProxmoxHost}}
 Proxmox Username:   {{.ProxmoxUsername}}
-Proxmox Password:   {{.ProxmoxPassword}}
+Proxmox Password:   {{.ProxmoxPassword | maskSecret}}
 Created:            {{.Created}}
 Updated:            {{.Updated}}
 `)

@@ -39,12 +39,12 @@ func complexArgCheck(cmd *cobra.Command, args []string) error {
 
 var complexCmd = &cobra.Command{
 	Use:   "complex",
-	Short: "Work with Complexs",
+	Short: "Work with Complexes",
 }
 
 var complexListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List Complexs",
+	Short: "List Complexes",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 

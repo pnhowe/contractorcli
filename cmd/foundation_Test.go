@@ -41,8 +41,8 @@ var foundationTestGetCmd = &cobra.Command{
 		}
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Delay Variance  {{.TestDelayVariance}}
-Fail Likelihood {{.TestFailLikelihood}}
+Delay Variance: {{.TestDelayVariance}}
+Fail Likelihood: {{.TestFailLikelihood}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -99,8 +99,8 @@ var foundationTestCreateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Delay Variance  {{.TestDelayVariance}}
-Fail Likelihood {{.TestFailLikelihood}}
+Delay Variance: {{.TestDelayVariance}}
+Fail Likelihood: {{.TestFailLikelihood}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -160,8 +160,8 @@ var foundationTestUpdateCmd = &cobra.Command{
 
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
-Delay Variance  {{.TestDelayVariance}}
-Fail Likelihood {{.TestFailLikelihood}}
+Delay Variance: {{.TestDelayVariance}}
+Fail Likelihood: {{.TestFailLikelihood}}
 Type:           {{.Type}}
 Site:           {{.Site | extractID}}
 Blueprint:      {{.Blueprint | extractID}}
@@ -185,12 +185,12 @@ func init() {
 	foundationTestCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Test Foundation")
 	foundationTestCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Test Foundation")
 	foundationTestCreateCmd.Flags().IntVarP(&detailDelayVariance, "delay", "d", -1, "The Variance of operations, in seconds")
-	foundationTestCreateCmd.Flags().IntVarP(&detailFailLikelihood, "fail", "f", -1, "Likelyhood of failures per 1000, per 'run' execution (ie: the longer the delay the more likely), if greater than 9, Unrecoverable errors my happen, 0 to disable")
+	foundationTestCreateCmd.Flags().IntVarP(&detailFailLikelihood, "fail", "f", -1, "Likelihood of failures per 1000, per 'run' execution (ie: the longer the delay the more likely), if greater than 9, Unrecoverable errors may happen, 0 to disable")
 
 	foundationTestUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationTestUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
 	foundationTestUpdateCmd.Flags().IntVarP(&detailDelayVariance, "delay", "d", -1, "The Variance of operations, in seconds")
-	foundationTestUpdateCmd.Flags().IntVarP(&detailFailLikelihood, "fail", "f", -1, "Likelyhood of failures per 1000, per 'run' execution (ie: the longer the delay the more likely), if greater than 9, Unrecoverable errors my happen, 0 to disable")
+	foundationTestUpdateCmd.Flags().IntVarP(&detailFailLikelihood, "fail", "f", -1, "Likelihood of failures per 1000, per 'run' execution (ie: the longer the delay the more likely), if greater than 9, Unrecoverable errors may happen, 0 to disable")
 
 	foundationCmd.AddCommand(foundationTestCmd)
 	foundationTestCmd.AddCommand(foundationTestGetCmd, foundationTestCreateCmd, foundationTestUpdateCmd)

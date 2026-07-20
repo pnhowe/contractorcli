@@ -42,7 +42,7 @@ var foundationIPMIGetCmd = &cobra.Command{
 		outputDetail(o, `Id:              {{.GetURI | extractID}}
 Locator:         {{.Locator}}
 IPMI Username:   {{.IpmiUsername}}
-IPMI Password:   {{.IpmiPassword}}
+IPMI Password:   {{.IpmiPassword | maskSecret}}
 IPMI Ip Address: {{.IpmiIPAddress}}
 IPMI SOL Port:   {{.IpmiSolPort}}
 Plot:            {{.Plot | extractID}}
@@ -108,7 +108,7 @@ var foundationIPMICreateCmd = &cobra.Command{
 		outputDetail(o, `Id:              {{.GetURI | extractID}}
 Locator:         {{.Locator}}
 IPMI Username:   {{.IpmiUsername}}
-IPMI Password:   {{.IpmiPassword}}
+IPMI Password:   {{.IpmiPassword | maskSecret}}
 IPMI Ip Address: {{.IpmiIPAddress}}
 IPMI SOL Port:   {{.IpmiSolPort}}
 Plot:            {{.Plot | extractID}}
@@ -185,23 +185,23 @@ var foundationIPMIUpdateCmd = &cobra.Command{
 		}
 
 		outputDetail(o, `Id:              {{.GetURI | extractID}}
-		Locator:         {{.Locator}}
-		IPMI Username:   {{.IpmiUsername}}
-		IPMI Password:   {{.IpmiPassword}}
-		IPMI Ip Address: {{.IpmiIPAddress}}
-		IPMI SOL Port:   {{.IpmiSolPort}}
-		Plot:            {{.Plot | extractID}}
-		Type:            {{.Type}}
-		Site:            {{.Site | extractID}}
-		Blueprint:       {{.Blueprint | extractID}}
-		Id Map:          {{.IDMap}}
-		Class List:      {{.ClassList}}
-		State:           {{.State}}
-		Located At:      {{.LocatedAt}}
-		Built At:        {{.BuiltAt}}
-		Created:         {{.Created}}
-		Updated:         {{.Updated}}
-		`)
+Locator:         {{.Locator}}
+IPMI Username:   {{.IpmiUsername}}
+IPMI Password:   {{.IpmiPassword | maskSecret}}
+IPMI Ip Address: {{.IpmiIPAddress}}
+IPMI SOL Port:   {{.IpmiSolPort}}
+Plot:            {{.Plot | extractID}}
+Type:            {{.Type}}
+Site:            {{.Site | extractID}}
+Blueprint:       {{.Blueprint | extractID}}
+Id Map:          {{.IDMap}}
+Class List:      {{.ClassList}}
+State:           {{.State}}
+Located At:      {{.LocatedAt}}
+Built At:        {{.BuiltAt}}
+Created:         {{.Created}}
+Updated:         {{.Updated}}
+`)
 
 		return nil
 	},

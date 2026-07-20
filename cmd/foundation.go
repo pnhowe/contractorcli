@@ -344,7 +344,7 @@ Updated:          {{.Updated}}
 
 var foundationInterfacePXECmd = &cobra.Command{
 	Use:   "pxe",
-	Short: "SetFoundation Interface PXE",
+	Short: "Set Foundation Interface PXE",
 	Args:  foundationInterfaceArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		interfaceID, err := strconv.Atoi(args[0])
@@ -523,7 +523,7 @@ var foundationJobLogCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Cancled By", "Cancled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
+		outputList(rl, []string{"Script Name", "Created By", "Started At", "Finished At", "Canceled By", "Canceled At", "Created", "Updated"}, "{{.ScriptName}}	{{.Creator}}	{{.StartedAt}}	{{.FinishedAt}}	{{.CanceledBy}}	{{.CanceledAt}}	{{.Updated}}	{{.Created}}\n")
 
 		return nil
 	},

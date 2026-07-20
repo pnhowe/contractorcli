@@ -19,6 +19,7 @@ limitations under the License.
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -42,7 +43,7 @@ func scriptArgCheck(cmd *cobra.Command, args []string) error {
 
 func pxeArgCheck(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("requires a PXE Name(Id) Name argument")
+		return errors.New("requires a PXE Name/Id argument")
 	}
 	return nil
 }
@@ -147,7 +148,10 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		o := contractorClient.BlueprintFoundationBluePrintNewWithID(blueprintID)
+		o, err := contractorClient.BlueprintFoundationBluePrintGet(ctx, blueprintID)
+		if err != nil {
+			return err
+		}
 
 		if detailDescription != "" {
 			o.Description = &detailDescription
@@ -170,38 +174,48 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 				return err
 			}
 			id := p.GetURI()
-			for i := 0; i < len(*o.ParentList); i++ {
-				if (*o.ParentList)[i] == id {
-					*o.ParentList = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
-					break
+			if o.ParentList != nil {
+				for i := 0; i < len(*o.ParentList); i++ {
+					if (*o.ParentList)[i] == id {
+						*o.ParentList = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
+						break
+					}
 				}
 			}
 		}
 
 		if detailAddType != "" {
-			foundationTypeList := append(*o.FoundationTypeList, detailAddType)
-			o.FoundationTypeList = &foundationTypeList
+			if o.FoundationTypeList == nil {
+				o.FoundationTypeList = &[]string{}
+			}
+			*o.FoundationTypeList = append(*o.FoundationTypeList, detailAddType)
 		}
 
 		if detailDeleteType != "" {
-			for i := 0; i < len(*o.FoundationTypeList); i++ {
-				if (*o.FoundationTypeList)[i] == detailDeleteType {
-					*o.FoundationTypeList = append((*o.FoundationTypeList)[:i], (*o.FoundationTypeList)[i+1:]...)
-					break
+			if o.FoundationTypeList != nil {
+				for i := 0; i < len(*o.FoundationTypeList); i++ {
+					if (*o.FoundationTypeList)[i] == detailDeleteType {
+						*o.FoundationTypeList = append((*o.FoundationTypeList)[:i], (*o.FoundationTypeList)[i+1:]...)
+						break
+					}
 				}
 			}
 		}
 
 		if detailAddIfaceName != "" {
-			physicalInterfaceNames := append(*o.PhysicalInterfaceNames, detailAddIfaceName)
-			o.PhysicalInterfaceNames = &physicalInterfaceNames
+			if o.PhysicalInterfaceNames == nil {
+				o.PhysicalInterfaceNames = &[]string{}
+			}
+			*o.PhysicalInterfaceNames = append(*o.PhysicalInterfaceNames, detailAddIfaceName)
 		}
 
 		if detailDeleteIfaceName != "" {
-			for i := 0; i < len(*o.PhysicalInterfaceNames); i++ {
-				if (*o.PhysicalInterfaceNames)[i] == detailDeleteIfaceName {
-					*o.PhysicalInterfaceNames = append((*o.PhysicalInterfaceNames)[:i], (*o.PhysicalInterfaceNames)[i+1:]...)
-					break
+			if o.PhysicalInterfaceNames != nil {
+				for i := 0; i < len(*o.PhysicalInterfaceNames); i++ {
+					if (*o.PhysicalInterfaceNames)[i] == detailDeleteIfaceName {
+						*o.PhysicalInterfaceNames = append((*o.PhysicalInterfaceNames)[:i], (*o.PhysicalInterfaceNames)[i+1:]...)
+						break
+					}
 				}
 			}
 		}
@@ -209,7 +223,7 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 		// will deal with these later
 		// Template map[string]interface{} `json:"template"`
 
-		err := o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -322,7 +336,7 @@ var blueprintFoundationScriptLinkCmd = &cobra.Command{
 	Short: "Link Foundation Blueprint to Script",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 3 {
-			return errors.New("requires a Blueprint Id/Name, Script Id/Nme, and a Link name (ie: create/destroy/etc) Argument")
+			return errors.New("requires a Blueprint Id/Name, Script Id/Name, and a Link name (ie: create/destroy/etc) Argument")
 		}
 		return nil
 	},
@@ -340,7 +354,7 @@ var blueprintFoundationScriptLinkCmd = &cobra.Command{
 
 		_, ok := (*o.ScriptMap)[scriptName]
 		if ok {
-			return fmt.Errorf("blueprint allready has a script linked with that name")
+			return fmt.Errorf("blueprint already has a script linked with that name")
 		}
 
 		s, err := contractorClient.BlueprintScriptGet(ctx, scriptID)
@@ -497,7 +511,10 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 
 		ctx := cmd.Context()
 
-		o := contractorClient.BlueprintStructureBluePrintNewWithID(blueprintID)
+		o, err := contractorClient.BlueprintStructureBluePrintGet(ctx, blueprintID)
+		if err != nil {
+			return err
+		}
 
 		if detailDescription != "" {
 			o.Description = &detailDescription
@@ -520,10 +537,12 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 				return err
 			}
 			id := p.GetURI()
-			for i := 0; i < len(*o.ParentList); i++ {
-				if (*o.ParentList)[i] == id {
-					*o.ParentList = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
-					break
+			if o.ParentList != nil {
+				for i := 0; i < len(*o.ParentList); i++ {
+					if (*o.ParentList)[i] == id {
+						*o.ParentList = append((*o.ParentList)[:i], (*o.ParentList)[i+1:]...)
+						break
+					}
 				}
 			}
 		}
@@ -545,15 +564,17 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 				return err
 			}
 			id := p.GetURI()
-			for i := 0; i < len(*o.FoundationBlueprintList); i++ {
-				if (*o.FoundationBlueprintList)[i] == id {
-					*o.FoundationBlueprintList = append((*o.FoundationBlueprintList)[:i], (*o.FoundationBlueprintList)[i+1:]...)
-					break
+			if o.FoundationBlueprintList != nil {
+				for i := 0; i < len(*o.FoundationBlueprintList); i++ {
+					if (*o.FoundationBlueprintList)[i] == id {
+						*o.FoundationBlueprintList = append((*o.FoundationBlueprintList)[:i], (*o.FoundationBlueprintList)[i+1:]...)
+						break
+					}
 				}
 			}
 		}
 
-		err := o.Update(ctx)
+		err = o.Update(ctx)
 		if err != nil {
 			return err
 		}
@@ -663,7 +684,7 @@ var blueprintStructureScriptLinkCmd = &cobra.Command{
 	Short: "Link Structure Blueprint to Script",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 3 {
-			return errors.New("requires a Blueprint Id/Name, Script Id/Nme, and a Link name (ie: create/destroy/etc) Argument")
+			return errors.New("requires a Blueprint Id/Name, Script Id/Name, and a Link name (ie: create/destroy/etc) Argument")
 		}
 		return nil
 	},
@@ -681,7 +702,7 @@ var blueprintStructureScriptLinkCmd = &cobra.Command{
 
 		_, ok := (*o.ScriptMap)[scriptName]
 		if ok {
-			return fmt.Errorf("blueprint allready has a script linked with that name")
+			return fmt.Errorf("blueprint already has a script linked with that name")
 		}
 
 		s, err := contractorClient.BlueprintScriptGet(ctx, scriptID)
@@ -778,7 +799,7 @@ Updated:               {{.Updated}}
 
 var scriptListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List Scriptss",
+	Short: "List Scripts",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		ctx := cmd.Context()
@@ -906,12 +927,11 @@ var scriptEditCmd = &cobra.Command{
 						return err
 					}
 				}
-				buf := make([]byte, 4096*1024)
-				len, err := source.Read(buf)
+				buf, err := io.ReadAll(source)
 				if err != nil {
 					return err
 				}
-				newScript = strings.TrimSpace(string(buf[:len]))
+				newScript = strings.TrimSpace(string(buf))
 
 			} else {
 				newScript, err = editBuffer(*o.Script)
@@ -1001,7 +1021,7 @@ var pxeListCmd = &cobra.Command{
 var pxeEditScriptCmd = &cobra.Command{
 	Use:   "editscript",
 	Short: "Edit Script of PXE",
-	Args:  scriptArgCheck,
+	Args:  pxeArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pxeID := args[0]
 
@@ -1022,12 +1042,11 @@ var pxeEditScriptCmd = &cobra.Command{
 					return err
 				}
 			}
-			buf := make([]byte, 4096*1024)
-			len, err := source.Read(buf)
+			buf, err := io.ReadAll(source)
 			if err != nil {
 				return err
 			}
-			newScript = strings.TrimSpace(string(buf[:len]))
+			newScript = strings.TrimSpace(string(buf))
 
 		} else {
 			newScript, err = editBuffer(*o.BootScript)
@@ -1050,7 +1069,7 @@ var pxeEditScriptCmd = &cobra.Command{
 var pxeEditTemplateCmd = &cobra.Command{
 	Use:   "edittemplate",
 	Short: "Edit Template of PXE",
-	Args:  scriptArgCheck,
+	Args:  pxeArgCheck,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pxeID := args[0]
 
@@ -1071,12 +1090,11 @@ var pxeEditTemplateCmd = &cobra.Command{
 					return err
 				}
 			}
-			buf := make([]byte, 4096*1024)
-			len, err := source.Read(buf)
+			buf, err := io.ReadAll(source)
 			if err != nil {
 				return err
 			}
-			newTemplate = strings.TrimSpace(string(buf[:len]))
+			newTemplate = strings.TrimSpace(string(buf))
 
 		} else {
 			newTemplate, err = editBuffer(*o.Template)
@@ -1130,7 +1148,7 @@ func init() {
 	blueprintStructureUpdateCmd.Flags().StringVarP(&detailAddFoundationBluePrint, "add-foundation-blueprint", "f", "", "Add Foundation Blueprint to Structure Blueprint")
 	blueprintStructureUpdateCmd.Flags().StringVarP(&detailDeleteFoundationBluePrint, "delete-foundation-blueprint", "g", "", "Remove Foundation Blueprint from Structure Blueprint")
 
-	scriptCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Scriptt")
+	scriptCreateCmd.Flags().StringVarP(&detailName, "name", "n", "", "Name of New Script")
 	scriptCreateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Description of New Script")
 
 	scriptUpdateCmd.Flags().StringVarP(&detailDescription, "description", "d", "", "Update the Description of Script with value")

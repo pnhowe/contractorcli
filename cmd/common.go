@@ -41,3 +41,7 @@ var detailIsProvisioning bool
 var detailNetwork int
 var detailAddressBlock, detailVlan, detailMTU int
 var detailFailLikelihood, detailDelayVariance int
+var detailTTL, detailRefresh, detailRetry, detailExpire, detailMinimum int
+var detailType, detailTarget string
+var detailPriority, detailWeight, detailPort int
+var detailAddressBlockOffset int

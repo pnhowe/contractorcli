@@ -182,11 +182,11 @@ func init() {
 	foundationLibVirtCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New LibVirt Foundation")
 	foundationLibVirtCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New LibVirt Foundation")
 	foundationLibVirtCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New LibVirt Foundation")
-	foundationLibVirtCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New LibVirt Foundation")
+	foundationLibVirtCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Complex of New LibVirt Foundation")
 
 	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the LibVirt Foundation")
+	foundationLibVirtUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Complex of the LibVirt Foundation")
 
 	foundationCmd.AddCommand(foundationLibVirtCmd)
 	foundationLibVirtCmd.AddCommand(foundationLibVirtGetCmd, foundationLibVirtCreateCmd, foundationLibVirtUpdateCmd)

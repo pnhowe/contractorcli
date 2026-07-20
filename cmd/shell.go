@@ -68,8 +68,8 @@ var shellCmd = &cobra.Command{
 }
 
 var exitCmd = &cobra.Command{
-	Use:               "exit",
-	Short:             "Exit the shell",
+	Use:                "exit",
+	Short:              "Exit the shell",
 	PersistentPreRunE:  func(cmd *cobra.Command, args []string) error { return nil },
 	PersistentPostRunE: func(cmd *cobra.Command, args []string) error { return nil },
 	Run: func(cmd *cobra.Command, args []string) {

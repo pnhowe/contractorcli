@@ -182,11 +182,11 @@ func init() {
 	foundationVCenterCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New VCenter Foundation")
 	foundationVCenterCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New VCenter Foundation")
 	foundationVCenterCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New VCenter Foundation")
-	foundationVCenterCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New VCenter Foundation")
+	foundationVCenterCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Complex of New VCenter Foundation")
 
 	foundationVCenterUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationVCenterUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationVCenterUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the VCenter Foundation")
+	foundationVCenterUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Complex of the VCenter Foundation")
 
 	foundationCmd.AddCommand(foundationVCenterCmd)
 	foundationVCenterCmd.AddCommand(foundationVCenterGetCmd, foundationVCenterCreateCmd, foundationVCenterUpdateCmd)

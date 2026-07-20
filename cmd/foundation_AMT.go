@@ -41,7 +41,7 @@ var foundationAMTGetCmd = &cobra.Command{
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
 AMT Username:   {{.AmtUsername}}
-AMT Password:   {{.AmtPassword}}
+AMT Password:   {{.AmtPassword | maskSecret}}
 AMT Ip Address: {{.AmtIPAddress}}
 Plot:           {{.Plot | extractID}}
 Type:           {{.Type}}
@@ -104,7 +104,7 @@ var foundationAMTCreateCmd = &cobra.Command{
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
 AMT Username:   {{.AmtUsername}}
-AMT Password:   {{.AmtPassword}}
+AMT Password:   {{.AmtPassword | maskSecret}}
 AMT Ip Address: {{.AmtIPAddress}}
 Plot:           {{.Plot | extractID}}
 Type:           {{.Type}}
@@ -178,7 +178,7 @@ var foundationAMTUpdateCmd = &cobra.Command{
 		outputDetail(o, `Id:             {{.GetURI | extractID}}
 Locator:        {{.Locator}}
 AMT Username:   {{.AmtUsername}}
-AMT Password:   {{.AmtPassword}}
+AMT Password:   {{.AmtPassword | maskSecret}}
 AMT Ip Address: {{.AmtIPAddress}}
 Plot:           {{.Plot | extractID}}
 Type:           {{.Type}}

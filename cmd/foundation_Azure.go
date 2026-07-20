@@ -182,11 +182,11 @@ func init() {
 	foundationAzureCreateCmd.Flags().StringVarP(&detailLocator, "locator", "l", "", "Locator of New Azure Foundation")
 	foundationAzureCreateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Site of New Azure Foundation")
 	foundationAzureCreateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Blueprint of New Azure Foundation")
-	foundationAzureCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Plot of New Azure Foundation")
+	foundationAzureCreateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Complex of New Azure Foundation")
 
 	foundationAzureUpdateCmd.Flags().StringVarP(&detailSite, "site", "s", "", "Update the Site of Foundation with value")
 	foundationAzureUpdateCmd.Flags().StringVarP(&detailBlueprint, "blueprint", "b", "", "Update the Blueprint of Foundation with value")
-	foundationAzureUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Plot of the Azure Foundation")
+	foundationAzureUpdateCmd.Flags().StringVarP(&detailComplex, "complex", "x", "", "Update the Complex of the Azure Foundation")
 
 	foundationCmd.AddCommand(foundationAzureCmd)
 	foundationAzureCmd.AddCommand(foundationAzureGetCmd, foundationAzureCreateCmd, foundationAzureUpdateCmd)

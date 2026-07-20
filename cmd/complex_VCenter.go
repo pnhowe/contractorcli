@@ -49,7 +49,7 @@ BuiltPercentage:    {{.BuiltPercentage}}
 Members:            {{.Members}}
 VCenter Host:       {{.VcenterHost}}
 VCenter Username:   {{.VcenterUsername}}
-VCenter Password:   {{.VcenterPassword}}
+VCenter Password:   {{.VcenterPassword | maskSecret}}
 VCenter DataCenter: {{.VcenterDatacenter}}
 VCenter Cluster:    {{.VcenterCluster}}
 Created:            {{.Created}}
@@ -115,7 +115,7 @@ BuiltPercentage:    {{.BuiltPercentage}}
 Members:            {{.Members}}
 VCenter Host:       {{.VcenterHost}}
 VCenter Username:   {{.VcenterUsername}}
-VCenter Password:   {{.VcenterPassword}}
+VCenter Password:   {{.VcenterPassword | maskSecret}}
 VCenter DataCenter: {{.VcenterDatacenter}}
 VCenter Cluster:    {{.VcenterCluster}}
 Created:            {{.Created}}
@@ -204,7 +204,7 @@ BuiltPercentage:    {{.BuiltPercentage}}
 Members:            {{.Members}}
 VCenter Host:       {{.VcenterHost}}
 VCenter Username:   {{.VcenterUsername}}
-VCenter Password:   {{.VcenterPassword}}
+VCenter Password:   {{.VcenterPassword | maskSecret}}
 VCenter DataCenter: {{.VcenterDatacenter}}
 VCenter Cluster:    {{.VcenterCluster}}
 Created:            {{.Created}}

@@ -38,7 +38,7 @@ import (
 )
 
 var cfgFile string
-var asJSON, asTOML, debug bool
+var asJSON, asTOML, debug, showSecrets bool
 var version = "development"
 var gitVersion = "none"
 var contractorClient *contractor.Contractor = nil
@@ -46,7 +46,7 @@ var contractorClient *contractor.Contractor = nil
 var rootCmd = &cobra.Command{
 	Use:   "contractorcli",
 	Short: "A CLI utility to work with Contractor",
-	Long: `contractorcli allows you to do some basic maniplutation
+	Long: `contractorcli allows you to do some basic manipulation
 of contractor without having to write your own small app, or use the API`,
 	SilenceUsage:  true,
 	SilenceErrors: false,
@@ -89,6 +89,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&asJSON, "json", false, "Output as JSON")
 	rootCmd.PersistentFlags().BoolVar(&asTOML, "toml", false, "Output as TOML")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "", false, "Debug Output(will interfere with JSON output)")
+	rootCmd.PersistentFlags().BoolVar(&showSecrets, "show-secrets", false, "Show passwords/secrets in plain text in table output (JSON/TOML output always includes them)")
 
 	rootCmd.AddCommand(versionCmd)
 }
@@ -152,6 +153,13 @@ func extractID(value string) string {
 	return strings.Split(value, ":")[1]
 }
 
+func maskSecret(value string) string {
+	if value == "" || showSecrets {
+		return value
+	}
+	return "<hidden, use --show-secrets to display>"
+}
+
 func extractIDList(values []string) string {
 	if len(values) == 0 {
 		return ""
@@ -200,7 +208,8 @@ func editBuffer(value string) (string, error) {
 		return "", err
 	}
 
-	cmd := exec.Command(editor, tmpfile.Name())
+	editorArgs := strings.Fields(editor)
+	cmd := exec.Command(editorArgs[0], append(editorArgs[1:], tmpfile.Name())...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -214,13 +223,12 @@ func editBuffer(value string) (string, error) {
 	}
 	defer fd.Close()
 
-	buf := make([]byte, 4096*1024)
-	len, err := fd.Read(buf)
+	buf, err := io.ReadAll(fd)
 	if err != nil {
 		return "", err
 	}
 
-	return strings.TrimSpace(string(buf[:len])), nil
+	return strings.TrimSpace(string(buf)), nil
 }
 
 func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
@@ -244,7 +252,7 @@ func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader(header)
 		t := template.New("output")
-		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList})
+		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList, "maskSecret": maskSecret})
 		t, err := t.Parse(itemTemplate)
 		if err != nil {
 			fmt.Println(err)
@@ -281,7 +289,7 @@ func outputDetail(value interface{}, detailTemplate string) {
 		os.Stdout.Write(buff)
 	} else {
 		t := template.New("output")
-		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList})
+		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList, "maskSecret": maskSecret})
 		t, err := t.Parse(detailTemplate)
 		if err != nil {
 			fmt.Println(err)

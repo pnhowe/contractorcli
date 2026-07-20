@@ -42,7 +42,7 @@ var foundationRedFishGetCmd = &cobra.Command{
 		outputDetail(o, `Id:                 {{.GetURI | extractID}}
 Locator:            {{.Locator}}
 RedFish Username:   {{.RedfishUsername}}
-RedFish Password:   {{.RedfishPassword}}
+RedFish Password:   {{.RedfishPassword | maskSecret}}
 RedFish Ip Address: {{.RedfishIPAddress}}
 RedFish SOL Port:   {{.RedfishSolPort}}
 Plot:               {{.Plot | extractID}}
@@ -107,7 +107,7 @@ var foundationRedFishCreateCmd = &cobra.Command{
 		outputDetail(o, `Id:                 {{.GetURI | extractID}}
 Locator:            {{.Locator}}
 RedFish Username:   {{.RedfishUsername}}
-RedFish Password:   {{.RedfishPassword}}
+RedFish Password:   {{.RedfishPassword | maskSecret}}
 RedFish Ip Address: {{.RedfishIPAddress}}
 RedFish SOL Port:   {{.RedfishSolPort}}
 Plot:               {{.Plot | extractID}}
@@ -185,7 +185,7 @@ var foundationRedFishUpdateCmd = &cobra.Command{
 		outputDetail(o, `Id:                 {{.GetURI | extractID}}
 Locator:            {{.Locator}}
 RedFish Username:   {{.RedfishUsername}}
-RedFish Password:   {{.RedfishPassword}}
+RedFish Password:   {{.RedfishPassword | maskSecret}}
 RedFish Ip Address: {{.RedfishIPAddress}}
 RedFish SOL Port:   {{.RedfishSolPort}}
 Plot:               {{.Plot | extractID}}
