@@ -1,3 +1,10 @@
+contractorcli (0.20.0-1ubuntu1) UNRELEASED; urgency=medium
+
+  * Added directory
+  * Minor bug fixes, spelling fixes
+
+ -- Peter Howe <pnhowe@gmail.com>  Mon, 20 Jul 2026 08:34:12 -0600
+
 contractorcli (0.19.0-1) noble; urgency=medium
 
   * Updated to cinp 2.0
