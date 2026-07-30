@@ -536,6 +536,62 @@ var structureAddressDeleteCmd = &cobra.Command{
 	},
 }
 
+var structureAddressSetPrimaryCmd = &cobra.Command{
+	Use:   "set-primary",
+	Short: "Make an existing IP address the primary for its structure",
+	Args:  structureAddressArgCheck,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		addressID, err := strconv.Atoi(args[0])
+		if err != nil {
+			return err
+		}
+
+		ctx := cmd.Context()
+
+		target, err := contractorClient.UtilitiesAddressGet(ctx, addressID)
+		if err != nil {
+			return err
+		}
+
+		if target.Networked == nil {
+			return errors.New("address is not attached to a structure")
+		}
+		structureURI := strings.Replace(*target.Networked, "/api/v1/Utilities/Networked", "/api/v1/Building/Structure", 1)
+
+		vchan, err := contractorClient.UtilitiesAddressList(ctx, "structure", map[string]interface{}{"structure": structureURI})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
+			if v.IsPrimary != nil && *v.IsPrimary && *v.ID != addressID {
+				o := contractorClient.UtilitiesAddressNewWithID(*v.ID)
+				o.IsPrimary = cinp.BoolAddr(false)
+				if err := o.Update(ctx); err != nil {
+					return err
+				}
+			}
+		}
+
+		o := contractorClient.UtilitiesAddressNewWithID(addressID)
+		o.IsPrimary = cinp.BoolAddr(true)
+		if err := o.Update(ctx); err != nil {
+			return err
+		}
+
+		rl := []cinp.Object{}
+		vchan, err = contractorClient.UtilitiesAddressList(ctx, "structure", map[string]interface{}{"structure": structureURI})
+		if err != nil {
+			return err
+		}
+		for v := range vchan {
+			rl = append(rl, v)
+		}
+		outputList(rl, []string{"Id", "Interface", "Address", "Address Block", "Offset", "Is Primary", "Created", "Updated"}, "{{.GetURI | extractID}}	{{.InterfaceName}}	{{.IPAddress}}	{{.AddressBlock | extractID}}	{{.Offset}}	{{.IsPrimary}}	{{.Updated}}	{{.Created}}\n")
+
+		return nil
+	},
+}
+
 var structureJobCmd = &cobra.Command{
 	Use:   "job",
 	Short: "Work with Structure Jobs",
@@ -1140,7 +1196,7 @@ func init() {
 	structureCmd.AddCommand(structureListCmd, structureGetCmd, structureCreateCmd, structureUpdateCmd, structureDeleteCmd, structureConfigCmd)
 
 	structureCmd.AddCommand(structureAddressCmd)
-	structureAddressCmd.AddCommand(structureAddressListCmd, structureAddressNextCmd, structureAddressAddCmd, structureAddressUpdateCmd, structureAddressDeleteCmd)
+	structureAddressCmd.AddCommand(structureAddressListCmd, structureAddressNextCmd, structureAddressAddCmd, structureAddressUpdateCmd, structureAddressDeleteCmd, structureAddressSetPrimaryCmd)
 
 	structureCmd.AddCommand(structureJobCmd)
 	structureJobCmd.AddCommand(structureJobIdCmd, structureJobDoCreateCmd, structureJobDoDestroyCmd, structureJobDoUtilityCmd)
