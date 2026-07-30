@@ -55,7 +55,7 @@ var jobFoundationListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Foundation", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetURI | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Foundation", "State", "Status", "Message", "Note", "Script", "Updated", "Created"}, "{{.GetURI | extractID}}	{{.Foundation | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.Note}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -84,6 +84,7 @@ Script:      {{.ScriptName}}
 State:       {{.State}}
 Status:      {{.Status}}
 Message:     {{.Message}}
+Note:        {{.Note}}
 CanStart:    {{.CanStart}}
 Created:     {{.Created}}
 Updated:     {{.Updated}}
@@ -249,7 +250,7 @@ var jobStructureListCmd = &cobra.Command{
 		for v := range vchan {
 			rl = append(rl, v)
 		}
-		outputList(rl, []string{"Id", "Structure", "State", "Status", "Message", "Script", "Updated", "Created"}, "{{.GetURI | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
+		outputList(rl, []string{"Id", "Structure", "State", "Status", "Message", "Note", "Script", "Updated", "Created"}, "{{.GetURI | extractID}}	{{.Structure | extractID}}	{{.State}}	{{.Status}}	{{.Message}}	{{.Note}}	{{.ScriptName}}	{{.Created}}	{{.Updated}}\n")
 
 		return nil
 	},
@@ -278,6 +279,7 @@ Script:      {{.ScriptName}}
 State:       {{.State}}
 Status:      {{.Status}}
 Message:     {{.Message}}
+Note:        {{.Note}}
 CanStart:    {{.CanStart}}
 Created:     {{.Created}}
 Updated:     {{.Updated}}
