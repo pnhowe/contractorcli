@@ -49,7 +49,7 @@ Plot:            {{.Plot | extractID}}
 Type:            {{.Type}}
 Site:            {{.Site | extractID}}
 Blueprint:       {{.Blueprint | extractID}}
-Id Map:          {{.IDMap}}
+Id Map:          {{ prettyMap 17 .IDMap }}
 Class List:      {{.ClassList}}
 State:           {{.State}}
 Located At:      {{.LocatedAt}}
@@ -115,7 +115,7 @@ Plot:            {{.Plot | extractID}}
 Type:            {{.Type}}
 Site:            {{.Site | extractID}}
 Blueprint:       {{.Blueprint | extractID}}
-Id Map:          {{.IDMap}}
+Id Map:          {{ prettyMap 17 .IDMap }}
 Class List:      {{.ClassList}}
 State:           {{.State}}
 Located At:      {{.LocatedAt}}
@@ -194,7 +194,7 @@ Plot:            {{.Plot | extractID}}
 Type:            {{.Type}}
 Site:            {{.Site | extractID}}
 Blueprint:       {{.Blueprint | extractID}}
-Id Map:          {{.IDMap}}
+Id Map:          {{ prettyMap 17 .IDMap }}
 Class List:      {{.ClassList}}
 State:           {{.State}}
 Located At:      {{.LocatedAt}}

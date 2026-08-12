@@ -93,7 +93,7 @@ Type:          {{.Type}}
 Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
 Structure:     {{or .Structure ":<None>:" | extractID}}
-Id Map:        {{.IDMap}}
+Id Map:        {{ prettyMap 15 .IDMap }}
 Class List:    {{.ClassList}}
 State:         {{.State}}
 Located At:    {{.LocatedAt}}

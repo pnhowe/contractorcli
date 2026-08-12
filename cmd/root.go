@@ -24,6 +24,8 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -172,6 +174,175 @@ func extractIDList(values []string) string {
 	return strings.Join(workList, ",")
 }
 
+// The Map fields (config_values, id_map, validation_template, script_map, ...) are arbitrary
+// nested structures, and Go's default map formatting turns anything deeper than one level into an
+// unreadable run-on.  prettyMap flattens them to one sorted "dotted.path = value" per line -- the
+// same path notation contractor itself uses in id_map validation errors, so a mismatch it reports
+// can be looked up here directly.
+func prettyValue(value interface{}) (string, bool) { // ( rendering, is a leaf ) -- a leaf is anything that fits on one line
+	switch item := value.(type) {
+	case map[string]interface{}:
+		return "", false
+
+	case []interface{}:
+		partList := []string{}
+		for _, entry := range item {
+			text, isLeaf := prettyValue(entry)
+			if !isLeaf { // a list with a map in it gets a line per element instead, see appendPretty
+				return "", false
+			}
+			partList = append(partList, text)
+		}
+		return "[" + strings.Join(partList, ", ") + "]", true
+
+	case string:
+		return item, true
+
+	case float64: // everything numeric arrives as a float64 from the json decode, so format it back without the exponent %v would use for anything large
+		return strconv.FormatFloat(item, 'f', -1, 64), true
+
+	case nil:
+		return "<null>", true
+
+	default:
+		return fmt.Sprintf("%v", item), true
+	}
+}
+
+func appendPretty(path string, value interface{}, lineList *[]string) {
+	if text, isLeaf := prettyValue(value); isLeaf {
+		*lineList = append(*lineList, path+" = "+text)
+		return
+	}
+
+	switch item := value.(type) {
+	case map[string]interface{}:
+		if len(item) == 0 {
+			*lineList = append(*lineList, path+" = {}")
+			return
+		}
+		appendPrettyMap(path, item, lineList)
+
+	case []interface{}:
+		if len(item) == 0 {
+			*lineList = append(*lineList, path+" = []")
+			return
+		}
+		for index, entry := range item {
+			appendPretty(fmt.Sprintf("%s.%d", path, index), entry, lineList)
+		}
+	}
+}
+
+func appendPrettyMap(prefix string, value map[string]interface{}, lineList *[]string) {
+	keyList := make([]string, 0, len(value))
+	for key := range value {
+		keyList = append(keyList, key)
+	}
+	sort.Strings(keyList)
+
+	for _, key := range keyList {
+		path := key
+		if prefix != "" {
+			path = prefix + "." + key
+		}
+		appendPretty(path, value[key], lineList)
+	}
+}
+
+func prettyMap(indent int, value *map[string]interface{}) string {
+	if value == nil || len(*value) == 0 {
+		return ""
+	}
+
+	lineList := []string{}
+	appendPrettyMap("", *value, &lineList)
+
+	return strings.Join(lineList, "\n"+strings.Repeat(" ", indent))
+}
+
+// A job's Status is a list of { "percent", "operation", "parameters" } maps, outermost scope
+// first, getting more specific as it goes.  Printed raw that is a wall of Go map formatting, so
+// jobStatus/jobStatusShort render it the way the ui does.  Every lookup below is a comma-ok type
+// assertion and "parameters" is often null, which is fine -- indexing a nil map yields the zero
+// value rather than panicking, so a status entry that is not shaped as expected degrades to a
+// shorter line instead of taking the whole command down.
+func jobStatusLabel(item map[string]interface{}) string {
+	operation, _ := item["operation"].(string)
+	parameters, _ := item["parameters"].(map[string]interface{})
+
+	switch operation {
+	case "Scope":
+		if description, ok := parameters["description"].(string); ok && description != "" {
+			return description
+		}
+
+	case "Function":
+		name, _ := parameters["name"].(string)
+		module, _ := parameters["module"].(string)
+		label := operation
+		if module != "" && name != "" {
+			label = module + "." + name
+		}
+		if dispatched, _ := parameters["dispatched"].(bool); dispatched {
+			label += " [dispatched]"
+		}
+		return label
+
+	default:
+		if doing, ok := parameters["doing"].(string); ok && doing != "" {
+			return operation + "(" + doing + ")"
+		}
+	}
+
+	return operation
+}
+
+func jobStatusLine(item map[string]interface{}) string {
+	percent, _ := item["percent"].(float64)
+	parameters, _ := item["parameters"].(map[string]interface{})
+
+	partList := []string{fmt.Sprintf("%6.2f%%", percent), jobStatusLabel(item)}
+
+	if elapsed, ok := parameters["time_elapsed"].(string); ok && elapsed != "" {
+		partList = append(partList, "Elapsed: "+elapsed)
+	}
+	if remaining, ok := parameters["time_remaining"].(string); ok && remaining != "" {
+		partList = append(partList, "Remaining: "+remaining)
+	}
+
+	return strings.Join(partList, " ")
+}
+
+func jobStatus(indent int, status *[]map[string]interface{}) string { // one line per entry, continuations indented to line up under the template's label column
+	if status == nil || len(*status) == 0 {
+		return ""
+	}
+
+	lineList := []string{}
+	for _, item := range *status {
+		lineList = append(lineList, jobStatusLine(item))
+	}
+
+	return strings.Join(lineList, "\n"+strings.Repeat(" ", indent))
+}
+
+func jobStatusShort(status *[]map[string]interface{}) string { // a single cell for the table output: overall progress, plus whatever it is currently doing
+	if status == nil || len(*status) == 0 {
+		return ""
+	}
+
+	itemList := *status
+	percent, _ := itemList[0]["percent"].(float64) // entry 0 is the outermost scope, ie. the job as a whole
+	result := fmt.Sprintf("%.2f%%", percent)
+
+	if label := jobStatusLabel(itemList[len(itemList)-1]); label != "" { // the last entry is the most specific
+		result += " " + label
+	}
+
+	return result
+}
+
 func editBuffer(value string) (string, error) {
 	editor := os.Getenv("CONTRACTORCLI_EDITOR")
 	if editor == "" {
@@ -252,7 +423,7 @@ func outputList(valueList []cinp.Object, header []string, itemTemplate string) {
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader(header)
 		t := template.New("output")
-		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList, "maskSecret": maskSecret})
+		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList, "maskSecret": maskSecret, "jobStatus": jobStatus, "jobStatusShort": jobStatusShort, "prettyMap": prettyMap})
 		t, err := t.Parse(itemTemplate)
 		if err != nil {
 			fmt.Println(err)
@@ -289,7 +460,7 @@ func outputDetail(value interface{}, detailTemplate string) {
 		os.Stdout.Write(buff)
 	} else {
 		t := template.New("output")
-		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList, "maskSecret": maskSecret})
+		t.Funcs(template.FuncMap{"extractID": extractID, "extractIDList": extractIDList, "maskSecret": maskSecret, "jobStatus": jobStatus, "jobStatusShort": jobStatusShort, "prettyMap": prettyMap})
 		t, err := t.Parse(detailTemplate)
 		if err != nil {
 			fmt.Println(err)
@@ -318,9 +489,9 @@ func outputKV(valueMap map[string]interface{}) {
 			os.Exit(1)
 		}
 		os.Stdout.Write(buff)
-	} else {
-		for k, v := range valueMap {
-			fmt.Printf("%s:\t%+v\n", k, v)
+	} else { // same rendering the Map fields get in the detail output, see prettyMap -- ranging the map directly also meant the order changed from run to run, which made two runs impossible to diff
+		if text := prettyMap(0, &valueMap); text != "" {
+			fmt.Println(text)
 		}
 	}
 }

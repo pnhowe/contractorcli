@@ -73,7 +73,7 @@ Name:          {{.Name}}
 Description:   {{.Description}}
 Parent:        {{or .Parent ":<None>:" | extractID}}
 Zone:          {{.Zone | extractID}}
-Config Values: {{.ConfigValues}}
+Config Values: {{ prettyMap 15 .ConfigValues }}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
@@ -117,7 +117,7 @@ Name:          {{.Name}}
 Description:   {{.Description}}
 Parent:        {{or .Parent ":<None>:" | extractID}}
 Zone:          {{.Zone | extractID}}
-Config Values: {{.ConfigValues}}
+Config Values: {{ prettyMap 15 .ConfigValues }}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)
@@ -167,7 +167,7 @@ Name:          {{.Name}}
 Description:   {{.Description}}
 Parent:        {{or .Parent ":<None>:" | extractID}}
 Zone:          {{.Zone | extractID}}
-Config Values: {{.ConfigValues}}
+Config Values: {{ prettyMap 15 .ConfigValues }}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)

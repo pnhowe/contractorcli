@@ -95,7 +95,7 @@ Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
 Foundation:    {{.Foundation | extractID}}
 Config UUID:   {{.ConfigUUID}}
-Config Values: {{.ConfigValues}}
+Config Values: {{ prettyMap 15 .ConfigValues }}
 State:         {{.State}}
 Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
@@ -150,7 +150,7 @@ Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
 Foundation:    {{.Foundation | extractID}}
 Config UUID:   {{.ConfigUUID}}
-Config Values: {{.ConfigValues}}
+Config Values: {{ prettyMap 15 .ConfigValues }}
 State:         {{.State}}
 Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
@@ -213,7 +213,7 @@ Site:          {{.Site | extractID}}
 Blueprint:     {{.Blueprint | extractID}}
 Foundation:    {{.Foundation | extractID}}
 Config UUID:   {{.ConfigUUID}}
-Config Values: {{.ConfigValues}}
+Config Values: {{ prettyMap 15 .ConfigValues }}
 State:         {{.State}}
 Built At:      {{.BuiltAt}}
 Created:       {{.Created}}
@@ -991,7 +991,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
-Parameters:       {{.Parameters}}
+Parameters:       {{ prettyMap 18 .Parameters }}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)
@@ -1055,7 +1055,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
-Parameters:       {{.Parameters}}
+Parameters:       {{ prettyMap 18 .Parameters }}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)
@@ -1116,7 +1116,7 @@ Network:          {{.Network | extractID}}
 Structure:        {{.Structure | extractID}}
 Primary:          {{.PrimaryInterface | extractID}}
 Secondaries:      {{.SecondaryInterfaces | extractIDList}}
-Parameters:       {{.Parameters}}
+Parameters:       {{ prettyMap 18 .Parameters }}
 Created:          {{.Created}}
 Updated:          {{.Updated}}
 `)

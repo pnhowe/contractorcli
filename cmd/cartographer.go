@@ -73,7 +73,7 @@ Identifier:    {{.Identifier}}
 Message:       {{.Message}}
 Foundation:    {{or .Foundation ":<None>" | extractID}}
 Last Checkin:  {{.LastCheckin}}
-Info Map:      {{.InfoMap}}
+Info Map:      {{ prettyMap 15 .InfoMap }}
 Created:       {{.Created}}
 Updated:       {{.Updated}}
 `)

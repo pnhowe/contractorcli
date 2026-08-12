@@ -75,11 +75,11 @@ var blueprintFoundationGetCmd = &cobra.Command{
 Name:                {{.Name}}
 Description:         {{.Description}}
 Parents:             {{.ParentList}}
-Config Values:       {{.ConfigValues}}
+Config Values:       {{ prettyMap 21 .ConfigValues }}
 Foundation Types:    {{.FoundationTypeList}}
-Validation Template: {{.ValidationTemplate}}
+Validation Template: {{ prettyMap 21 .ValidationTemplate }}
 Physical Interfaces: {{.PhysicalInterfaceNames}}
-Script Map:          {{.ScriptMap}}
+Script Map:          {{ prettyMap 21 .ScriptMap }}
 Created:             {{.Created}}
 Updated:             {{.Updated}}
 `)
@@ -127,11 +127,11 @@ var blueprintFoundationCreateCmd = &cobra.Command{
 Name:                {{.Name}}
 Description:         {{.Description}}
 Parents:             {{.ParentList}}
-Config Values:       {{.ConfigValues}}
+Config Values:       {{ prettyMap 21 .ConfigValues }}
 Foundation Types:    {{.FoundationTypeList}}
-Validation Template: {{.ValidationTemplate}}
+Validation Template: {{ prettyMap 21 .ValidationTemplate }}
 Physical Interfaces: {{.PhysicalInterfaceNames}}
-Script Map:          {{.ScriptMap}}
+Script Map:          {{ prettyMap 21 .ScriptMap }}
 Created:             {{.Created}}
 Updated:             {{.Updated}}
 `)
@@ -232,11 +232,11 @@ var blueprintFoundationUpdateCmd = &cobra.Command{
 Name:                {{.Name}}
 Description:         {{.Description}}
 Parents:             {{.ParentList}}
-Config Values:       {{.ConfigValues}}
+Config Values:       {{ prettyMap 21 .ConfigValues }}
 Foundation Types:    {{.FoundationTypeList}}
-Validation Template: {{.ValidationTemplate}}
+Validation Template: {{ prettyMap 21 .ValidationTemplate }}
 Physical Interfaces: {{.PhysicalInterfaceNames}}
-Script Map:          {{.ScriptMap}}
+Script Map:          {{ prettyMap 21 .ScriptMap }}
 Created:             {{.Created}}
 Updated:             {{.Updated}}
 `)
@@ -440,9 +440,9 @@ var blueprintStructureGetCmd = &cobra.Command{
 Name:                  {{.Name}}
 Description:           {{.Description}}
 Parents:               {{.ParentList}}
-Config Values:         {{.ConfigValues}}
+Config Values:         {{ prettyMap 23 .ConfigValues }}
 Foundation BluePrints: {{.FoundationBlueprintList}}
-Script Map:            {{.ScriptMap}}
+Script Map:            {{ prettyMap 23 .ScriptMap }}
 Created:               {{.Created}}
 Updated:               {{.Updated}}
 `)
@@ -491,9 +491,9 @@ var blueprintStructureCreateCmd = &cobra.Command{
 Name:                  {{.Name}}
 Description:           {{.Description}}
 Parents:               {{.ParentList}}
-Config Values:         {{.ConfigValues}}
+Config Values:         {{ prettyMap 23 .ConfigValues }}
 Foundation BluePrints: {{.FoundationBlueprintList}}
-Script Map:            {{.ScriptMap}}
+Script Map:            {{ prettyMap 23 .ScriptMap }}
 Created:               {{.Created}}
 Updated:               {{.Updated}}
 `)
@@ -583,9 +583,9 @@ var blueprintStructureUpdateCmd = &cobra.Command{
 Name:                  {{.Name}}
 Description:           {{.Description}}
 Parents:               {{.ParentList}}
-Config Values:         {{.ConfigValues}}
+Config Values:         {{ prettyMap 23 .ConfigValues }}
 Foundation BluePrints: {{.FoundationBlueprintList}}
-Script Map:            {{.ScriptMap}}
+Script Map:            {{ prettyMap 23 .ScriptMap }}
 Created:               {{.Created}}
 Updated:               {{.Updated}}
 `)

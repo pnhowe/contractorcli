@@ -22,6 +22,11 @@ dist-clean: clean
 
 .PHONY:: version clean dist-clean
 
+test:
+	go test ./cmd
+
+.PHONY:: test
+
 dpkg-blueprints:
 	echo ubuntu-focal-base
 
